@@ -15,3 +15,270 @@ datasource db {
 }
 
 // DROP SYSTEM SCHEMA MODEL
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  phone_number String
+  email        String     @unique
+  password     String
+  role         ROLE       @default(FREELANCE)
+  is_active    Boolean    @default(true)
+  is_admin     Boolean    @default(false)
+  started_at   DateTime   @default(now())
+  ended_at     DateTime?
+  task         Task[]
+  event        Event[]
+  proposal     Proposal[]
+}
+
+model Inventory {
+  inventory_id       String             @id @default(uuid())
+  item_name          String
+  item_qty           Int
+  item_price         Float
+  inventory_photo    String[]
+  category           InventoryCategory  @default(CONSUMABLE)
+  is_avail           Boolean            @default(true)
+  description        String?
+  created_by         String
+  updated_by         String?
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  actual_budget_item ActualBudgetItem[]
+  budget_plan_item   BudgetPlanItem[]
+}
+
+model Task {
+  task_id     String     @id @default(uuid())
+  title       String
+  description String?
+  assigned_id String?
+  assigned    User?      @relation(fields: [assigned_id], references: [id])
+  due_date    DateTime?
+  status      TaskStatus @default(PENDING)
+  created_by  String
+  updated_by  String?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  event_id    String
+  event       Event      @relation(fields: [event_id], references: [event_id])
+}
+
+model Contact {
+  contact_id   String   @id @default(uuid())
+  name         String
+  pic_name     String
+  location     String
+  email        String
+  phone_number String
+  description  String?
+  created_by   String
+  updated_by   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  vendor       Vendor?
+  client       Client?
+}
+
+model Vendor {
+  vendor_id         String          @id @default(uuid())
+  contact_id        String          @unique
+  rating            Float?          @default(0) //TODO: Derived from Vendor Service
+  bankAccountDetail String //TODO: MultiValued 
+  contact           Contact         @relation(fields: [contact_id], references: [contact_id])
+  vendor_service    VendorService[]
+}
+
+model VendorService {
+  service_id         String                @id @default(uuid())
+  service_name       String
+  category           VendorServiceCategory @default(OTHERS)
+  price              Float
+  rating             Float
+  description        String?
+  vendor_id          String
+  vendor             Vendor                @relation(fields: [vendor_id], references: [vendor_id])
+  actual_budget_item ActualBudgetItem[]
+  budget_plan_item   BudgetPlanItem[]
+}
+
+model Client {
+  client_id  String     @id @default(uuid())
+  contact_id String     @unique
+  contact    Contact    @relation(fields: [contact_id], references: [contact_id])
+  type       ClientType @default(INDIVIDUAL)
+  proposal   Proposal?
+  event      Event[]
+}
+
+model Budget {
+  budget_id   String             @id @default(uuid())
+  total_price Float
+  status      BudgetStatus       @default(PENDING)
+  created_by  String
+  updated_by  String?
+  created_at  DateTime           @default(now())
+  updated_at  DateTime           @updatedAt
+  event_id    String
+  event       Event              @relation(fields: [event_id], references: [event_id])
+  plan_item   BudgetPlanItem[]
+  actual_item ActualBudgetItem[]
+}
+
+model BudgetPlanItem {
+  budget_item_id    String             @id @default(uuid())
+  item_qty          Int
+  item_subtotal     Float
+  category_id       Int
+  category          BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  budget_id         String?
+  budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
+  vendor_service_id String?
+  vendor_service    VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
+  inventory_id      String?
+  inventory         Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
+  other_item_id     String?
+  other_item        Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
+}
+
+model ActualBudgetItem {
+  actual_budget_item_id String             @id @default(uuid())
+  item_qty              Int
+  item_subtotal         Float
+  category_id           Int
+  category              BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  notes                 String?
+  invoice_photo         String[]
+  status                BudgetItemStatus   @default(PENDING)
+  budget_id             String?
+  budget                Budget?            @relation(fields: [budget_id], references: [budget_id])
+  vendor_service_id     String?
+  vendor_service        VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
+  inventory_id          String?
+  inventory             Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
+  other_item_id         String?
+  other_item            Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
+}
+
+model BudgetItemCategory {
+  category_id        Int                @id @default(autoincrement())
+  category_name      String             @unique
+  actual_budget_item ActualBudgetItem[]
+  budget_plan_item   BudgetPlanItem[]
+}
+
+model Purchasing {
+  other_item_id      String             @id @default(uuid())
+  item_name          String
+  item_price         Float
+  description        String?
+  created_by         String
+  updated_by         String?
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  actual_budget_item ActualBudgetItem[]
+  budget_plan_item   BudgetPlanItem[]
+}
+
+model Proposal {
+  proposal_id String         @id @default(uuid())
+  status      ProposalStatus @default(DRAFT)
+  client_id   String         @unique
+  client      Client         @relation(fields: [client_id], references: [client_id])
+  manager_id  String
+  manager     User           @relation(fields: [manager_id], references: [id])
+}
+
+model Report {
+  report_id         String   @id @default(uuid())
+  review            String
+  description       String
+  actualParticipant Int
+  created_by        String
+  updated_by        String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  event_id          String   @unique
+  event             Event    @relation(fields: [event_id], references: [event_id])
+}
+
+model Event {
+  event_id         String      @id @default(uuid())
+  location         String
+  start_date       DateTime
+  end_date         DateTime
+  notes            String?
+  participant_plan Int
+  status           EventStatus @default(PLANNING)
+  budget           Budget[]
+  manager_id       String
+  manager          User        @relation(fields: [manager_id], references: [id])
+  report           Report?
+  task             Task[]
+  client_id        String
+  client           Client      @relation(fields: [client_id], references: [client_id])
+}
+
+enum ROLE {
+  EXECUTIVE
+  INTERNAL
+  FREELANCE
+}
+
+enum TaskStatus {
+  PENDING
+  ON_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum BudgetItemStatus {
+  PENDING
+  DONE
+  CANCELED
+}
+
+enum BudgetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventStatus {
+  PLANNING
+  BUDGETING
+  PREPARATION
+  IMPLEMENTATION
+  REPORTING
+  DONE
+}
+
+enum ProposalStatus {
+  DRAFT
+  ON_REVIEW
+  APPROVED
+  REJECTED
+  SENT
+  ON_CONTACT
+  INTERESTED
+}
+
+enum InventoryCategory {
+  CONSUMABLE
+  NON_CONSUMABLE
+}
+
+enum VendorServiceCategory {
+  FOOD_AND_BEVERAGES
+  DECORATION
+  DOCUMENTATION
+  ACCOMODATION
+  ENTERTAINMENT
+  TRANSPORTATION
+  OTHERS
+}
+
+enum ClientType {
+  INDIVIDUAL
+  ORGANIZATION
+}
