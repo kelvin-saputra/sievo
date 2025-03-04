@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,7 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// DROP SYSTEM SCHEMA MODEL
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -26,9 +19,9 @@ model User {
   is_admin     Boolean    @default(false)
   started_at   DateTime   @default(now())
   ended_at     DateTime?
-  task         Task[]
   event        Event[]
   proposal     Proposal[]
+  task         Task[]
 }
 
 model Inventory {
@@ -53,7 +46,6 @@ model Task {
   title       String
   description String?
   assigned_id String?
-  assigned    User?      @relation(fields: [assigned_id], references: [id])
   due_date    DateTime?
   status      TaskStatus @default(PENDING)
   created_by  String
@@ -61,6 +53,8 @@ model Task {
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
   event_id    String
+  is_deleted  Boolean    @default(false)
+  assigned    User?      @relation(fields: [assigned_id], references: [id])
   event       Event      @relation(fields: [event_id], references: [event_id])
 }
 
@@ -76,15 +70,15 @@ model Contact {
   updated_by   String?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
-  vendor       Vendor?
   client       Client?
+  vendor       Vendor?
 }
 
 model Vendor {
   vendor_id         String          @id @default(uuid())
   contact_id        String          @unique
-  rating            Float?          @default(0) //TODO: Derived from Vendor Service
-  bankAccountDetail String //TODO: MultiValued 
+  rating            Float?          @default(0)
+  bankAccountDetail String
   contact           Contact         @relation(fields: [contact_id], references: [contact_id])
   vendor_service    VendorService[]
 }
@@ -97,18 +91,18 @@ model VendorService {
   rating             Float
   description        String?
   vendor_id          String
-  vendor             Vendor                @relation(fields: [vendor_id], references: [vendor_id])
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
+  vendor             Vendor                @relation(fields: [vendor_id], references: [vendor_id])
 }
 
 model Client {
   client_id  String     @id @default(uuid())
   contact_id String     @unique
-  contact    Contact    @relation(fields: [contact_id], references: [contact_id])
   type       ClientType @default(INDIVIDUAL)
-  proposal   Proposal?
+  contact    Contact    @relation(fields: [contact_id], references: [contact_id])
   event      Event[]
+  proposal   Proposal?
 }
 
 model Budget {
@@ -120,9 +114,9 @@ model Budget {
   created_at  DateTime           @default(now())
   updated_at  DateTime           @updatedAt
   event_id    String
+  actual_item ActualBudgetItem[]
   event       Event              @relation(fields: [event_id], references: [event_id])
   plan_item   BudgetPlanItem[]
-  actual_item ActualBudgetItem[]
 }
 
 model BudgetPlanItem {
@@ -130,15 +124,15 @@ model BudgetPlanItem {
   item_qty          Int
   item_subtotal     Float
   category_id       Int
-  category          BudgetItemCategory @relation(fields: [category_id], references: [category_id])
   budget_id         String?
-  budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
   vendor_service_id String?
-  vendor_service    VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
   inventory_id      String?
-  inventory         Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
   other_item_id     String?
+  budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
+  category          BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  inventory         Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
   other_item        Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
+  vendor_service    VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
 }
 
 model ActualBudgetItem {
@@ -146,18 +140,18 @@ model ActualBudgetItem {
   item_qty              Int
   item_subtotal         Float
   category_id           Int
-  category              BudgetItemCategory @relation(fields: [category_id], references: [category_id])
   notes                 String?
   invoice_photo         String[]
   status                BudgetItemStatus   @default(PENDING)
   budget_id             String?
-  budget                Budget?            @relation(fields: [budget_id], references: [budget_id])
   vendor_service_id     String?
-  vendor_service        VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
   inventory_id          String?
-  inventory             Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
   other_item_id         String?
+  budget                Budget?            @relation(fields: [budget_id], references: [budget_id])
+  category              BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  inventory             Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
   other_item            Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
+  vendor_service        VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
 }
 
 model BudgetItemCategory {
@@ -184,8 +178,8 @@ model Proposal {
   proposal_id String         @id @default(uuid())
   status      ProposalStatus @default(DRAFT)
   client_id   String         @unique
-  client      Client         @relation(fields: [client_id], references: [client_id])
   manager_id  String
+  client      Client         @relation(fields: [client_id], references: [client_id])
   manager     User           @relation(fields: [manager_id], references: [id])
 }
 
@@ -210,13 +204,19 @@ model Event {
   notes            String?
   participant_plan Int
   status           EventStatus @default(PLANNING)
-  budget           Budget[]
   manager_id       String
+  client_id        String
+  created_at       DateTime    @default(now())
+  created_by       String
+  event_name       String      @db.VarChar(255)
+  is_deleted       Boolean     @default(false)
+  updated_at       DateTime    @updatedAt
+  updated_by       String?
+  budget           Budget[]
+  client           Client      @relation(fields: [client_id], references: [client_id])
   manager          User        @relation(fields: [manager_id], references: [id])
   report           Report?
-  task             Task[]
-  client_id        String
-  client           Client      @relation(fields: [client_id], references: [client_id])
+  tasks            Task[]
 }
 
 enum ROLE {
