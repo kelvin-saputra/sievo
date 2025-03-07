@@ -1,5 +1,4 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { EdgeStoreProvider } from "@/lib/edgestore";
 import "@/app/globals.css";
 const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-Plus-Jakarta",
@@ -14,7 +13,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${jakartaSans.className} bg-super-white`}>
-            <EdgeStoreProvider>{children}</EdgeStoreProvider>
+            {children}
       </body>
     </html>
   );
