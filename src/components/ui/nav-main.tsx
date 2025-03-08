@@ -29,12 +29,12 @@ export function NavMain(
               <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     tooltip={item.title}
-                    className={`group hover:cursor-pointer ${pathName.split('/')[1].toLowerCase() === item.url.split('/')[1].toLowerCase() ? 'bg-yellow-matahati' : ''}`}
+                    className={`group hover:cursor-pointer ${pathName.split('/')[1].toLowerCase() === item.url.split('/')[1].toLowerCase() ? 'bg-reguler-blue-matahati/50' : ''}`}
                   >
                     {item.icon && (
                       <span
                         dangerouslySetInnerHTML={{ __html: item.icon }}
-                        className="mr-2 text-sm font-medium text-sidebar-secondary-foreground peer-group-hover:text-white"
+                        className="mr-2 text-sm font-medium text-white"
                       />
                     )}
                     <span>{item.title}</span>
