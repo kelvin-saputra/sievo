@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Edit } from "lucide-react";
 
 import { cn } from "@/utils/shadUtils";
 import {
@@ -55,7 +55,7 @@ interface UpdateEventModalProps {
   ) => Promise<void>;
 }
 
-export function UpdateEventModal({
+export function UpdateEventForm({
   event,
   createdBy,
   onUpdateEvent,
@@ -91,7 +91,10 @@ export function UpdateEventModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">Update Event</Button>
+        <Button className="text-white">
+            <Edit />
+            Update Event
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -357,7 +360,7 @@ export function UpdateEventModal({
               <Button
                 type="submit"
                 form="update-event-form"
-                className="bg-green-500 text-white"
+                className="text-white"
               >
                 Update Event
               </Button>

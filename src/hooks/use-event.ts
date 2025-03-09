@@ -45,18 +45,16 @@ export default function useEvent() {
     try {
       const updatedData = EventSchema.partial().parse({
         ...data,
-        eventId: eventId,
+        event_id: eventId,
         created_by: created_by,
-        // TODO: Connect the people that login ID here
         updated_by: "ID Anonymous",
       });
-
-      const { data: updatedEvent } = await axios.put(
-        `${API_URL}/${eventId}`,
+      
+      const { data: response } = await axios.put(
+        `${API_URL}`,
         updatedData
       );
-
-      const parsedEvent = EventSchema.parse(updatedEvent);
+      const parsedEvent = EventSchema.parse(response.data);
 
       setEvents((prevEvents) =>
         prevEvents.map((ev) => (ev.event_id === eventId ? parsedEvent : ev))
@@ -65,8 +63,7 @@ export default function useEvent() {
         setEvent(parsedEvent);
       }
       toast.success("Event berhasil diperbarui!");
-    } catch (error) {
-      console.error("Terjadi kesalahan saat memperbarui event:", error);
+    } catch {
       toast.error("Gagal memperbarui event.");
     }
   };

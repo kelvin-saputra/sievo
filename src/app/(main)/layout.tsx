@@ -1,20 +1,13 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
-import "../globals.css";
-import { SidebarProvider } from "@/components/ui/sidebar"; // Import the provider
-import { AppSidebar } from "@/components/common/app-sidebar";
-import { Toaster } from "@/components/ui/sonner";
+import "@/app/globals.css";
+import { Footer } from "@/components/common/footer";
+import { SidebarApp } from "@/components/common/sidebar-app";
+import { BreadcrumbApp } from "@/components/common/breadcrumb-nav";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
-const jakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-Plus-Jakarta",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "SIEVO: Sistem Informasi Event Organizer",
-  description: "SIEVO: Sistem Informasi Event Organizer PT Matahati Inspira",
-  icons: [{ url: "/favicon.ico", rel: "icon" }],
-};
 
 export default function RootLayout({
   children,
@@ -22,17 +15,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${jakartaSans.variable} flex h-screen w-screen`}>
-        <SidebarProvider>
-          <AppSidebar />
-          {/* Main content area should take full width & height */}
-          <main className="flex-1 h-full w-full overflow-auto bg-gray-100 p-6">
+    <>
+      <SidebarProvider>
+        <SidebarApp />
+        <SidebarInset className="flex flex-col">
+          <header className="flex h-11 items-center gap-2 border-b px-4 fixed w-screen bg-super-white">
+            <SidebarTrigger className="-ml-1" />
+            <BreadcrumbApp />
+          </header>
+          <main className="mt-16">
             {children}
           </main>
-          <Toaster />
-        </SidebarProvider>
-      </body>
-    </html>
+          <footer className="bg-background">
+            <Footer />
+          </footer>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
+import { responseFormat } from "@/utils/api";
 
 /**
  * ✅ GET semua event (Hanya jika `is_deleted = false`)
@@ -49,4 +50,27 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function PUT(req: Request) {  
+    try {
+        const reqBody = await req.json();
+        const eventId = reqBody.event_id;
+        const existedEvent = await prisma.event.findFirst({
+            where: { event_id: eventId, is_deleted: false },
+        });
+    
+        if (!existedEvent) {
+            return responseFormat(404, "Event yang akan diupdate tidak ditemukan", null);
+        }
+    
+        const updatedEvent = await prisma.event.update({
+            where: { event_id: eventId },
+            data: reqBody,
+        });
+        
+        return responseFormat(200, "Event berhasil diperbarui", updatedEvent);
+    } catch  {
+        return responseFormat(500, "Terjadi kesalahan saat memperbaharui event", null);
+    }
 }
