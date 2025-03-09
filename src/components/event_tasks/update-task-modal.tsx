@@ -56,6 +56,7 @@ interface UpdateTaskModalProps {
 
 export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
   const [open, setOpen] = useState(false);
+  const [openStatus, setOpenStatus] = React.useState(false);
 
   const form = useForm<UpdateTaskDTO>({
     resolver: zodResolver(UpdateTaskDTO),
@@ -195,7 +196,6 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
               control={form.control}
               name="status"
               render={({ field }) => {
-                const [openStatus, setOpenStatus] = React.useState(false);
                 return (
                   <FormItem>
                     <FormLabel>Status</FormLabel>

@@ -50,6 +50,7 @@ interface AddTaskModalProps {
 
 export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
   const [open, setOpen] = useState(false);
+  const [openStatus, setOpenStatus] = React.useState(false);
 
   const form = useForm<AddTaskDTO>({
     resolver: zodResolver(AddTaskDTO),
@@ -178,7 +179,6 @@ export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
               control={form.control}
               name="status"
               render={({ field }) => {
-                const [openStatus, setOpenStatus] = React.useState(false);
                 return (
                   <FormItem>
                     <FormLabel>Status</FormLabel>

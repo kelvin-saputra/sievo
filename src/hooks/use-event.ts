@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axios from "axios";
 import { EventSchema } from "@/models/schemas";
@@ -9,7 +8,6 @@ import { EventStatusEnum } from "@/models/enums";
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
 
 export default function useEvent() {
-  const router = useRouter();
   const [event, setEvent] = useState<EventSchema | null>(null);
   const [events, setEvents] = useState<EventSchema[]>([]);
   const [loading, setLoading] = useState(false);

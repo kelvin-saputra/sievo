@@ -3,7 +3,6 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Home, Calendar, Users, Settings } from "lucide-react";
 import Link from "next/link";

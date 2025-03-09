@@ -61,6 +61,7 @@ export function UpdateEventModal({
   onUpdateEvent,
 }: UpdateEventModalProps) {
   const [open, setOpen] = useState(false);
+  const [openStatus, setOpenStatus] = React.useState(false);
 
   const form = useForm<UpdateEventDTO>({
     resolver: zodResolver(UpdateEventDTO),
@@ -253,7 +254,6 @@ export function UpdateEventModal({
                 control={form.control}
                 name="status"
                 render={({ field }) => {
-                  const [openStatus, setOpenStatus] = React.useState(false);
                   return (
                     <FormItem>
                       <FormLabel>Status</FormLabel>

@@ -6,13 +6,13 @@ import { prisma } from "@/utils/prisma";
  */
 export async function GET(
   req: Request,
-  context: { params: { event_id: string } }
+  context: { params: Promise<{ event_id: string }> }
 ) {
   const { params } = context;
 
   try {
     const event = await prisma.event.findFirst({
-      where: { event_id: params.event_id, is_deleted: false },
+      where: { event_id: (await params).event_id, is_deleted: false },
     });
 
     if (!event) {
@@ -39,7 +39,7 @@ export async function GET(
  */
 export async function PUT(
   req: Request,
-  context: { params: { event_id: string } }
+  context: { params: Promise<{ event_id: string }> }
 ) {
   const { params } = context;
 
@@ -48,7 +48,7 @@ export async function PUT(
 
     // ✅ Periksa apakah event ada dan belum dihapus
     const existingEvent = await prisma.event.findFirst({
-      where: { event_id: params.event_id, is_deleted: false },
+      where: { event_id: (await params).event_id, is_deleted: false },
     });
 
     if (!existingEvent) {
@@ -59,7 +59,7 @@ export async function PUT(
     }
 
     const updatedEvent = await prisma.event.update({
-      where: { event_id: params.event_id },
+      where: { event_id: (await params).event_id },
       data,
     });
 

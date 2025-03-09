@@ -51,6 +51,7 @@ interface AddEventModalProps {
 
 export function AddEventModal({ onAddEvent }: AddEventModalProps) {
   const [open, setOpen] = useState(false);
+  const [openStatus, setOpenStatus] = React.useState(false);
 
   // Fixing error Controlled-Uncontrolled
   const form = useForm<AddEventDTO>({
@@ -237,7 +238,6 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
                 control={form.control}
                 name="status"
                 render={({ field }) => {
-                  const [openStatus, setOpenStatus] = React.useState(false);
                   return (
                     <FormItem>
                       <FormLabel>Status</FormLabel>

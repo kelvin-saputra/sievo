@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axios from "axios";
 import { TaskSchema } from "@/models/schemas";
@@ -8,7 +7,6 @@ import { AddTaskDTO, UpdateTaskDTO } from "@/models/dto";
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
 
 export default function useEventTask(eventId: string) {
-  const router = useRouter();
   const [task, setTask] = useState<TaskSchema | null>(null);
   const [tasks, setTasks] = useState<TaskSchema[]>([]);
   const [loading, setLoading] = useState(false);
