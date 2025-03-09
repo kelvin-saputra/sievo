@@ -6,6 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Inventory } from "@prisma/client";
 import { useRouter } from "next/navigation"; 
+import { useState } from "react";
+import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
 
 
 
@@ -131,6 +133,13 @@ export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const router = useRouter();
+      const [open, setOpen] = useState(false);
+      const [selectedInventory, setSelectedInventory] = useState<Inventory | unknown>(null);
+
+      const handleEditClick = () => {
+        setSelectedInventory(row.original);
+        setOpen(true);
+      };
       return (
         <div className="flex space-x-2">
           <Button
@@ -139,12 +148,12 @@ export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
           >
             Detail
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => console.log("Edit", row.original.inventory_id)}
-          >
-            Edit
-          </Button>
+          <EditInventoryModal
+            inventory={selectedInventory ?? row.original}
+            onUpdateInventory={(data) => console.log("Updated Data:", data)}
+            open={open}
+            setOpen={setOpen}
+          />
           <Button
             variant="destructive"
             onClick={() => console.log("Delete", row.original.inventory_id)}

@@ -39,37 +39,36 @@ import {
 } from "@/components/ui/command";
 import { InventoryCategoryEnum } from "@/models/enums";
 import { InventorySchema } from "@/models/schemas/inventory";
-import { AddInventoryDTO } from "@/models/dto";
+import { UpdateInventoryDTO } from "@/models/dto/inventory.dto";
 
-interface AddInventoryModalProps {
-  onAddInventory: (data: AddInventoryDTO) => void;
+interface EditInventoryModalProps {
+  inventory: UpdateInventoryDTO; 
+  onUpdateInventory: (data: unknown) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
+export function EditInventoryModal({ inventory, onUpdateInventory }: EditInventoryModalProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(InventorySchema),
     defaultValues: {
-      item_name: "",
-      item_qty: 0,
-      item_price: 0.0,
-      inventory_photo: [],
-      category: InventoryCategoryEnum.enum.CONSUMABLE,
-      is_avail: true,
-      description: "",
-      created_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID
-      updated_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID (optional)
-      created_at: new Date(), // ISO date format
-      updated_at: new Date(), // ISO date format    
+      item_name: inventory.item_name,
+      item_qty: inventory.item_qty,
+      item_price: inventory.item_price,
+      inventory_photo: inventory.inventory_photo,
+      category: inventory.category,
+      is_avail: inventory.is_avail,
+      description: inventory.description,
+      updated_by: inventory.updated_by,
+      updated_at: new Date()
     },
   });
 
-  console.log(form.formState.errors); 
-
   const onSubmit = (data: unknown) => {
     console.log("Form submitted:", data);
-    onAddInventory(data);
+    onUpdateInventory(data);
     form.reset();
     setOpen(false);
   };
@@ -77,14 +76,14 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Inventory</Button>
+        <Button className="bg-blue-500 text-white">Edit Inventory</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Inventory</DialogTitle>
+          <DialogTitle>Edit Inventory</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form id="add-inventory-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form id="edit-inventory-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="item_name"
@@ -107,7 +106,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
                   <FormItem>
                     <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
+                      <Input type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,7 +120,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
                   <FormItem>
                     <FormLabel>Price</FormLabel>
                     <FormControl>
-                    <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
+                      <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,8 +187,8 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
               <Button variant="secondary" type="button" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" form="add-inventory-form" className="bg-green-500 text-white">
-                Add Inventory
+              <Button type="submit" form="edit-inventory-form" className="bg-green-500 text-white">
+                Update Inventory
               </Button>
             </div>
           </form>
