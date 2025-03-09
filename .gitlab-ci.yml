@@ -43,7 +43,6 @@ BUILD:
   stage: Build
   cache: *global_cache
   script:
-    - npx prisma generate
     - npm run build
   artifacts:
     paths:
