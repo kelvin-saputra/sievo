@@ -34,6 +34,8 @@ DEPENDENCIES_INSTALLATION:
 TESTING:
   stage: Testing
   cache: *global_cache
+  before_script:
+    - rm -rf node_modules/ .next/
   script:
     - npm run lint --if-present
     - npm run test --if-present
