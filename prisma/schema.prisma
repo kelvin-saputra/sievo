@@ -46,6 +46,7 @@ model Inventory {
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
   is_deleted         Boolean            @default(false)
+  is_deleted         Boolean            @default(false)
 }
 
 model Task {
@@ -125,8 +126,6 @@ model Budget {
   event       Event              @relation(fields: [event_id], references: [event_id])
   plan_item   BudgetPlanItem[]
   actual_item ActualBudgetItem[]
-  categories  BudgetItemCategory[]
-  is_deleted  Boolean            @default(false)
 }
 
 model BudgetPlanItem {
@@ -171,8 +170,6 @@ model BudgetItemCategory {
   category_name      String             @unique
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[] 
-  is_deleted         Boolean            @default(false)
 }
 
 model Purchasing {
@@ -192,12 +189,10 @@ model Purchasing {
 model Proposal {
   proposal_id String         @id @default(uuid())
   status      ProposalStatus @default(DRAFT)
-  client_name String         @unique
-  created_by  String
-  updated_by  String?
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-  is_deleted  Boolean        @default(false)
+  client_id   String         @unique
+  client      Client         @relation(fields: [client_id], references: [client_id])
+  manager_id  String
+  manager     User           @relation(fields: [manager_id], references: [id])
 }
 
 model Report {
@@ -230,11 +225,6 @@ model Event {
   task             Task[]
   client_id        String
   client           Client      @relation(fields: [client_id], references: [client_id])
-  is_deleted       Boolean     @default(false)
-  updated_at       DateTime    @updatedAt
-  updated_by       String?
-  created_at       DateTime    @default(now())
-  created_by       String
 }
 
 enum ROLE {
