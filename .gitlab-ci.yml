@@ -24,7 +24,7 @@ DEPENDENCIES_INSTALLATION:
     - rm -rf node_modules
   script:
     - npm ci --legacy-peer-deps
-    - npm install --save-dev typescript @types/react @types/node @swc/core --legacy-peer-deps
+    - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
   artifacts:
     paths:
       - node_modules/
