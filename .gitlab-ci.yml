@@ -21,8 +21,6 @@ DEPENDENCIES_INSTALLATION:
   stage: Install
   cache: *global_cache
   before_script:
-    - rm -rf .next/ || echo "No .next directory to remove"
-    - rm -rf node_modules/ || echo "No node_modules directory to remove"
     - ls -lah 
   script:
     - npm ci --legacy-peer-deps
@@ -30,8 +28,6 @@ DEPENDENCIES_INSTALLATION:
     - npm install @prisma/client --legacy-peer-deps
     - npx prisma generate
   artifacts:
-    paths:
-      - node_modules/
     expire_in: 1h
 
 TESTING:
