@@ -20,25 +20,31 @@ variables:
 
 DEPENDENCIES_INSTALLATION:
   stage: Install
-  cache: *global_cache
   script:
+    - npm cache clean --force
     - npm ci --legacy-peer-deps || npm install --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
     - npx prisma generate
     - ls -lah node_modules/
-  artifacts:
+  cache:
+    key: dependencies-$CI_COMMIT_REF_SLUG
     paths:
       - node_modules/
+  artifacts:
     expire_in: 1h
 
 TESTING:
   stage: Testing
-  cache: *global_cache
+  # cache: *global_cache
   before_script:
-    - rm -rf node_modules/ .next/
+    - ls -lah node_modules/ || echo "node_modules missing!"
   script:
     - npm run lint --if-present
     - npm run test --if-present
+  cache:
+    key: dependencies-$CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
   artifacts:
     paths:
       - test-reports/
@@ -46,14 +52,15 @@ TESTING:
 
 BUILD:
   stage: Build
-  cache: *global_cache
+  before_script:
+    - ls -lah node_modules/ || echo "node_modules missing!"
   script:
     - npm run build
     - ls -lah .next/
-  artifacts:
+  cache:
+    key: build-$CI_COMMIT_REF_SLUG
     paths:
-      - .next
-    expire_in: 1h
+      - .next/
 
 DEPLOYMENT_PREVIEW:
   stage: Deployment
