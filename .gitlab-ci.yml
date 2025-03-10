@@ -6,7 +6,6 @@ cache: &global_cache
     - node_modules/
     - .next/
   policy: pull-push
-  when: always
 
 stages:
   - Install
@@ -20,31 +19,27 @@ variables:
 
 DEPENDENCIES_INSTALLATION:
   stage: Install
+  cache: *global_cache
+  before_script:
+    - rm -rf .next/ || echo "No .next directory to remove"
+    - rm -rf node_modules/ || echo "No node_modules directory to remove"
+    - ls -lah 
   script:
-    - npm cache clean --force
-    - npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+    - npm ci --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
+    - npm install @prisma/client
     - npx prisma generate
-    - ls -lah node_modules/
-  cache:
-    key: dependencies-$CI_COMMIT_REF_SLUG
+  artifacts:
     paths:
       - node_modules/
-  artifacts:
     expire_in: 1h
 
 TESTING:
   stage: Testing
-  # cache: *global_cache
-  before_script:
-    - ls -lah node_modules/ || echo "node_modules missing!"
+  cache: *global_cache
   script:
     - npm run lint --if-present
     - npm run test --if-present
-  cache:
-    key: dependencies-$CI_COMMIT_REF_SLUG
-    paths:
-      - node_modules/
   artifacts:
     paths:
       - test-reports/
@@ -52,15 +47,13 @@ TESTING:
 
 BUILD:
   stage: Build
-  before_script:
-    - ls -lah node_modules/ || echo "node_modules missing!"
+  cache: *global_cache
   script:
     - npm run build
-    - ls -lah .next/
-  cache:
-    key: build-$CI_COMMIT_REF_SLUG
+  artifacts:
     paths:
-      - .next/
+      - .next
+    expire_in: 1h
 
 DEPLOYMENT_PREVIEW:
   stage: Deployment
