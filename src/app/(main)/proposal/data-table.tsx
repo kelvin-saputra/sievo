@@ -40,7 +40,7 @@ interface ProposalTableProps {
   onDelete: (proposal_name: string) => void;
 }
 
-export function ProposalTable({ columns, data, onDelete }: ProposalTableProps) {
+export function ProposalTable({ columns, data}: ProposalTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

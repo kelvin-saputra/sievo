@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { ProposalTable } from "./data-table";
-import { proposalColumns } from "./columns"; // Keep columns clean
+import { proposalColumns } from "./columns";
 import useProposal from "@/hooks/use-proposals";
 import PageHeader from "@/components/commons/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus } from "lucide-react";
+import { AddProposalModal } from "@/components/proposal/add-proposal-modal";
 
 export default function ViewAllProposal() {
-  const { proposals, loading, fetchAllProposals } = useProposal();
+  const { proposals, loading, fetchAllProposals,handleAddProposal,handleDeleteProposal } = useProposal();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal State
   const itemsPerPage = 8;
 
   useEffect(() => {
@@ -25,28 +26,20 @@ export default function ViewAllProposal() {
     currentPage * itemsPerPage
   );
 
-  // Handle Proposal Deletion
-  const handleDelete = (proposal_name: string) => {
-    console.log(`Deleting proposal: ${proposal_name}`);
-  };
-
+  
   return (
     <div>
       {/* Header */}
-      <PageHeader title="Proposal Overview" breadcrumbs={[{ label: "Proposal", href: "/proposal" }]} />
+      <PageHeader title="Proposal" breadcrumbs={[{ label: "Proposal", href: "/proposal" }]} />
 
       <div className="mb-6 p-6 border rounded-lg shadow-lg bg-white">
-        {/* Action Buttons */}
-        <div className="p-4 border-b flex justify-between">
-          <Button variant="default" size="sm" className="bg-primary text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Proposal
-          </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
+        {/* Action Buttons - Placed Correctly */}
+        <div className="p-4 border-b flex justify-between items-center">
+          
         </div>
+
+        {/* Modal - Only render when open */}
+        {isModalOpen && <AddProposalModal onAddProposal={handleAddProposal} onClose={() => setIsModalOpen(false)} />}
 
         {/* Table or Skeleton Loading */}
         <div className="overflow-x-auto">
@@ -55,7 +48,7 @@ export default function ViewAllProposal() {
           ) : proposals.length === 0 ? (
             <div className="p-6 text-center text-gray-500 text-lg">No proposals available</div>
           ) : (
-            <ProposalTable columns={proposalColumns} data={paginatedProposals} onDelete={handleDelete} />
+            <ProposalTable columns={proposalColumns} data={paginatedProposals} onDelete={handleDeleteProposal} />
           )}
         </div>
 

@@ -1,14 +1,13 @@
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axios from "axios";
 import { ProposalSchema } from "@/models/schemas";
 import { useState, useCallback } from "react";
+import { addProposalDTO } from "@/models/dto/proposal.dto";
 
 const API_URL = process.env.NEXT_PUBLIC_PROPOSAL_API_URL!;
 console.log("API_URL:", API_URL);
 
 export default function useProposal() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [proposals, setProposals] = useState<ProposalSchema[]>([]);
 
@@ -38,9 +37,46 @@ export default function useProposal() {
     }
   }, []);
 
+  const handleAddProposal = async(newProposal: addProposalDTO) => {
+    try {
+      const response = await axios.get(API_URL);
+      if (response.status !== 200){
+        console.error("API Error:", response.data.message);
+        toast.error("Failed to fetch existing proposal: " + response.data.message);
+        return; 
+      }
+      const existingProposal = response.data.data || [];
+      if(!Array.isArray(existingProposal)){
+        console.error("Expected an array but received:", existingProposal);
+        toast.error("Failed to fetch existing proposaals.");
+        return; 
+      }
+      const proposalData = ProposalSchema.partial().parse({
+        ...newProposal,
+        created_by: "ID Anonymous",
+        updated_by: "ID Anonymous",
+
+      })
+      const { data : createdProposal} = await axios.post(API_URL, proposalData);
+      const parsedProposal = ProposalSchema.parse(createdProposal);
+
+      setProposals((prevProposal)=>[...prevProposal,parsedProposal]);
+      toast.success("Event berhasil ditambahkan!");
+    } catch (error) {
+      console.error("Terjadi kesalahan",error)
+      toast.error("Gagal menambahkan Proposal");
+    }
+  }
+
+  const handleDeleteProposal = async (proposalId : string)=>{
+    return proposalId;
+  }
+
   return {
     proposals,
     loading,
     fetchAllProposals,
+    handleAddProposal,
+    handleDeleteProposal,
   };
 }

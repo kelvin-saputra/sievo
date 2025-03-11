@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash2 } from "lucide-react";
+import { ArrowUpDown, Trash2, Pencil } from "lucide-react"; // ✅ Added Pencil icon
 import { Button } from "@/components/ui/button";
 import { ProposalStatusEnum } from "@/models/enums";
 
@@ -53,9 +53,17 @@ export const proposalColumns: ColumnDef<Proposal, unknown>[] = [
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
-      <Button variant="destructive" size="icon" onClick={() => console.log("Delete Proposal", row.original.proposal_name)}>
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      <div className="flex space-x-2">
+        {/* Edit Button */}
+        <Button variant="outline" size="icon" onClick={() => console.log("Edit Proposal", row.original.proposal_name)}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+
+        {/* Delete Button */}
+        <Button variant="destructive" size="icon" onClick={() => console.log("Delete Proposal", row.original.proposal_name)}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
     ),
   },
 ];
