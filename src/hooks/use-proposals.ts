@@ -15,11 +15,10 @@ export default function useProposal() {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
+      console.log("API Response:", response.data);
       
-      // Access the nested data property if applicable
-      const rawProposals = response.data.data || response.data; // Ensure compatibility
+      const rawProposals = response.data.data || response.data;
 
-      // Check if rawProposals is an array
       if (Array.isArray(rawProposals)) {
         const validatedProposals = rawProposals.map((proposal: unknown) =>
           ProposalSchema.parse(proposal)
@@ -27,7 +26,7 @@ export default function useProposal() {
         setProposals(validatedProposals);
       } else {
         console.warn("Expected an array but received:", rawProposals);
-        setProposals([]); // Set to empty array if not an array
+        setProposals([]);
       }
     } catch (error) {
       console.error("Terjadi kesalahan saat mengambil data proposal:", error);
@@ -37,36 +36,37 @@ export default function useProposal() {
     }
   }, []);
 
-  const handleAddProposal = async(newProposal: addProposalDTO) => {
+  const handleAddProposal = async (newProposal: addProposalDTO) => {
     try {
-      const response = await axios.get(API_URL);
-      if (response.status !== 200){
-        console.error("API Error:", response.data.message);
-        toast.error("Failed to fetch existing proposal: " + response.data.message);
-        return; 
-      }
-      const existingProposal = response.data.data || [];
-      if(!Array.isArray(existingProposal)){
-        console.error("Expected an array but received:", existingProposal);
-        toast.error("Failed to fetch existing proposaals.");
-        return; 
-      }
-      const proposalData = ProposalSchema.partial().parse({
-        ...newProposal,
-        created_by: "ID Anonymous",
-        updated_by: "ID Anonymous",
+        const proposalData = ProposalSchema.partial().parse({
+            ...newProposal,
+            created_by: "ID Anonymous",
+            updated_by: "ID Anonymous",
+        });
 
-      })
-      const { data : createdProposal} = await axios.post(API_URL, proposalData);
-      const parsedProposal = ProposalSchema.parse(createdProposal);
+        const { data: createdProposal } = await axios.post(API_URL, proposalData);
 
-      setProposals((prevProposal)=>[...prevProposal,parsedProposal]);
-      toast.success("Event berhasil ditambahkan!");
+        // 🔴 Debug: Log API Response Before Parsing with Zod
+        console.log("📢 Raw API Response Before Zod:", createdProposal);
+
+        // ✅ Convert `created_at` & `updated_at` from strings to Date before Zod validation
+        const transformedProposal = {
+            ...createdProposal,
+            created_at: new Date(createdProposal.created_at),
+            updated_at: new Date(createdProposal.updated_at),
+        };
+
+        console.log("📢 Transformed Proposal Before Zod:", transformedProposal);
+
+        const parsedProposal = ProposalSchema.parse(transformedProposal);
+        setProposals((prevProposal) => [...prevProposal, parsedProposal]);
+
+        toast.success("Proposal berhasil ditambahkan!");
     } catch (error) {
-      console.error("Terjadi kesalahan",error)
-      toast.error("Gagal menambahkan Proposal");
+        console.error("❌ Zod Validation Error:", error);
+        toast.error("Gagal menambahkan Proposal");
     }
-  }
+};
 
   const handleDeleteProposal = async (proposalId : string)=>{
     return proposalId;

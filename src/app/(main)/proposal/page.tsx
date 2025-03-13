@@ -10,38 +10,50 @@ import { Button } from "@/components/ui/button";
 import { AddProposalModal } from "@/components/proposal/add-proposal-modal";
 
 export default function ViewAllProposal() {
-  const { proposals, loading, fetchAllProposals,handleAddProposal,handleDeleteProposal } = useProposal();
+  const { proposals, loading, fetchAllProposals, handleAddProposal, handleDeleteProposal } = useProposal();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 8;
 
+  // Fetch proposals on mount
   useEffect(() => {
-    fetchAllProposals();
+    fetchAllProposals(); // ✅ Ensure it runs when the component mounts
   }, [fetchAllProposals]);
 
-  // Paginate Data
-  const totalPages = Math.ceil(proposals.length / itemsPerPage);
-  const paginatedProposals = proposals.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Convert `updated_at` to a string & Paginate Data
+  const paginatedProposals = proposals
+    .map(proposal => ({
+      ...proposal,
+      updated_at: new Date(proposal.updated_at).toISOString(), // ✅ Convert Date to String
+    }))
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  
+  // Total Pages Calculation
+  const totalPages = Math.ceil(proposals.length / itemsPerPage);
+
   return (
     <div>
-      {/* Header */}
+      {/* Page Header */}
       <PageHeader title="Proposal" breadcrumbs={[{ label: "Proposal", href: "/proposal" }]} />
 
+      {/* Add Proposal Button */}
+      <div className="mb-6">
+        <Button onClick={() => setIsModalOpen(true)} className="mb-4 bg-blue-500 text-white">
+          + Add Proposal
+        </Button>
+
+        {/* Add Proposal Modal */}
+        {isModalOpen && (
+          <AddProposalModal
+            onAddProposal={handleAddProposal}
+            onClose={() => setIsModalOpen(false)}
+            fetchAllProposals={fetchAllProposals}
+          />
+        )}
+      </div>
+
+      {/* Proposals Table */}
       <div className="mb-6 p-6 border rounded-lg shadow-lg bg-white">
-        {/* Action Buttons - Placed Correctly */}
-        <div className="p-4 border-b flex justify-between items-center">
-          
-        </div>
-
-        {/* Modal - Only render when open */}
-        {isModalOpen && <AddProposalModal onAddProposal={handleAddProposal} onClose={() => setIsModalOpen(false)} />}
-
-        {/* Table or Skeleton Loading */}
         <div className="overflow-x-auto">
           {loading ? (
             <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
@@ -52,9 +64,9 @@ export default function ViewAllProposal() {
           )}
         </div>
 
-        {/* Pagination */}
+        {/* Pagination Controls */}
         {proposals.length > 0 && (
-          <div className="p-4 border-t flex justify-end">
+          <div className="p-4 border-t flex justify-end items-center space-x-4">
             <Button
               variant="outline"
               size="sm"
@@ -63,7 +75,7 @@ export default function ViewAllProposal() {
             >
               Previous
             </Button>
-            <span className="mx-4 text-sm">
+            <span className="text-sm">
               Page {currentPage} of {totalPages}
             </span>
             <Button
