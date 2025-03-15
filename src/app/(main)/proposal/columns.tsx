@@ -1,16 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash2, Pencil, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowUpDown, Trash2, Pencil} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProposalStatusEnum } from "@/models/enums";
-import { useState } from "react";
+import StatusDropdown from "@/components/proposal/status-dropdown";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-
-// Define Proposal Type
 export interface Proposal {
+  proposal_id : string;
   proposal_name: string;
   status: keyof typeof ProposalStatusEnum.enum;
   client_name: string;
@@ -18,45 +15,6 @@ export interface Proposal {
   updated_at: string;
 }
 
-// ✅ Create a separate component for the Status Dropdown
-const StatusDropdown = ({ initialStatus }: { initialStatus: keyof typeof ProposalStatusEnum.enum }) => {
-  const [status, setStatus] = useState(initialStatus);
-  const statuses = Object.values(ProposalStatusEnum.enum) as Array<keyof typeof ProposalStatusEnum.enum>;
-
-  const handleStatusChange = (newStatus: keyof typeof ProposalStatusEnum.enum) => {
-    setStatus(newStatus);
-    console.log("Updated Status:", newStatus);
-  };
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-28 text-xs justify-center flex mx-auto">
-          {status}
-          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-32 p-1 text-sm text-center">
-        <Command>
-          <CommandInput placeholder="Search..." className="text-xs" />
-          <CommandList>
-            <CommandEmpty>No status found.</CommandEmpty>
-            <CommandGroup>
-              {statuses.map((s) => (
-                <CommandItem key={s} value={s} onSelect={() => handleStatusChange(s)}>
-                  <Check className={`mr-2 h-4 w-4 ${s === status ? "opacity-100" : "opacity-0"}`} />
-                  {s}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-// ✅ Updated `proposalColumns` with the fixed Status column
 export const proposalColumns: ColumnDef<Proposal, unknown>[] = [
   {
     accessorKey: "proposal_name",
@@ -70,7 +28,9 @@ export const proposalColumns: ColumnDef<Proposal, unknown>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <StatusDropdown initialStatus={row.original.status} />, // ✅ Using StatusDropdown component
+    cell: ({ row }) => (
+      <StatusDropdown proposalId={row.original.proposal_id} initialStatus={row.original.status} />
+    ), 
   },
   {
     accessorKey: "client_name",

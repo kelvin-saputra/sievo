@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { AddProposalModal } from "@/components/proposal/add-proposal-modal";
 
 export default function ViewAllProposal() {
-  const { proposals, loading, fetchAllProposals, handleAddProposal, handleDeleteProposal } = useProposal();
+  const { proposals, loading, fetchAllProposals, handleAddProposal, handleDeleteProposal} = useProposal();
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 8;

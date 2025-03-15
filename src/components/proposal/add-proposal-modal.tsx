@@ -33,7 +33,7 @@ import { addProposalDTO } from "@/models/dto/proposal.dto";
 interface AddProposalModalProps {
   onAddProposal: (data: addProposalDTO) => Promise<void>;
   onClose: () => void;
-  fetchAllProposals: () => Promise<void>; // ✅ Properly typed function
+  fetchAllProposals: () => Promise<void>; 
 }
 
 export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: AddProposalModalProps) {
@@ -63,13 +63,13 @@ export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: 
     console.log("Form submitted:", data);
     await onAddProposal(data);
     form.reset();
-    handleClose(); // ✅ Close the modal properly
-    await fetchAllProposals(); // ✅ Refresh proposal list
-    router.replace("/proposal"); // ✅ Redirect to /proposal
+    handleClose(); 
+    await fetchAllProposals();
+    router.replace("/proposal"); 
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}> {/* ✅ Ensure modal state updates correctly */}
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Proposal</DialogTitle>
@@ -106,7 +106,6 @@ export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: 
               </FormItem>
             )}/>
 
-            {/* Submit & Cancel Buttons */}
             <div className="flex justify-end space-x-2">
               <Button variant="secondary" type="button" onClick={handleClose}>
                 Cancel
