@@ -28,7 +28,6 @@ model User {
   ended_at     DateTime?
   task         Task[]
   event        Event[]
-  proposal     Proposal[]
 }
 
 model Inventory {
@@ -47,6 +46,16 @@ model Inventory {
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
   is_deleted         Boolean            @default(false)
+  inventory_log      InventoryLog[]
+}
+
+model InventoryLog {
+  inventory_log_id    String    @id @default(uuid())
+  updated_by          String
+  updated_at          DateTime  @default(now())
+  action              String
+  inventory_id        String
+  inventory           Inventory @relation(fields: [inventory_id], references: [inventory_id])
 }
 
 model Task {
@@ -69,8 +78,6 @@ model Task {
 model Contact {
   contact_id   String   @id @default(uuid())
   name         String
-  pic_name     String
-  location     String
   email        String
   phone_number String
   description  String?
@@ -112,7 +119,6 @@ model Client {
   contact_id String     @unique
   contact    Contact    @relation(fields: [contact_id], references: [contact_id])
   type       ClientType @default(INDIVIDUAL)
-  proposal   Proposal?
   event      Event[]
   is_deleted Boolean    @default(false)
 }
@@ -129,7 +135,9 @@ model Budget {
   event       Event              @relation(fields: [event_id], references: [event_id])
   plan_item   BudgetPlanItem[]
   actual_item ActualBudgetItem[]
+  categories  BudgetItemCategory[]
   is_deleted  Boolean            @default(false)
+  is_actual   Boolean            @default(false)
 }
 
 model BudgetPlanItem {
@@ -174,6 +182,7 @@ model BudgetItemCategory {
   category_name      String             @unique
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
+  budget             Budget[] 
   is_deleted         Boolean            @default(false)
 }
 
@@ -193,11 +202,14 @@ model Purchasing {
 
 model Proposal {
   proposal_id String         @id @default(uuid())
+  proposal_name String
+  proposal_link String
   status      ProposalStatus @default(DRAFT)
-  client_id   String         @unique
-  client      Client         @relation(fields: [client_id], references: [client_id])
-  manager_id  String
-  manager     User           @relation(fields: [manager_id], references: [id])
+  client_name String         @unique
+  created_by  String
+  updated_by  String?
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
   is_deleted  Boolean        @default(false)
 }
 
@@ -232,6 +244,10 @@ model Event {
   client_id        String
   client           Client      @relation(fields: [client_id], references: [client_id])
   is_deleted       Boolean     @default(false)
+  updated_at       DateTime    @updatedAt
+  updated_by       String?
+  created_at       DateTime    @default(now())
+  created_by       String
 }
 
 enum ROLE {
