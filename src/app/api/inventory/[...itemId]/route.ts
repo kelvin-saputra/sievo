@@ -23,3 +23,22 @@ export async function GET(req: Request) {
         return responseFormat(500, "Failed to retrieve inventory item", null);
     }
 }
+
+/**
+ * ✅ DELETE Inventory Item by ID
+ */
+export async function DELETE(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const id = url.pathname.split("/").pop(); 
+
+        const deletedInventoryItem = await prisma.inventory.delete({
+            where: { inventory_id: id },
+        });
+
+        return responseFormat(200, "[DELETED] Item successfully deleted!", deletedInventoryItem);
+    } catch (error) {
+        console.error("Error deleting inventory item:", error);
+        return responseFormat(500, "Failed to delete inventory item", null);
+    }
+}

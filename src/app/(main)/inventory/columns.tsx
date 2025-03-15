@@ -8,6 +8,9 @@ import { Inventory } from "@prisma/client";
 import { useRouter } from "next/navigation"; 
 import { useState } from "react";
 import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
+import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
+import useInventory from "@/hooks/use-inventory";
+
 
 
 
@@ -135,11 +138,7 @@ export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
       const router = useRouter();
       const [open, setOpen] = useState(false);
       const [selectedInventory, setSelectedInventory] = useState<Inventory | unknown>(null);
-
-      const handleEditClick = () => {
-        setSelectedInventory(row.original);
-        setOpen(true);
-      };
+  
       return (
         <div className="flex space-x-2">
           <Button
@@ -154,15 +153,15 @@ export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
             open={open}
             setOpen={setOpen}
           />
-          <Button
-            variant="destructive"
-            onClick={() => console.log("Delete", row.original.inventory_id)}
-          >
-            Delete
-          </Button>
-
+          <DeleteInventoryModal
+            inventoryId={row.original.inventory_id}
+            onDeleteInventory={(id) => console.log("Deleted Data:", id)}
+            open={open}
+            setOpen={setOpen}
+          />
         </div>
       );
-    },
-  },
+    }
+  }
+  
 ];

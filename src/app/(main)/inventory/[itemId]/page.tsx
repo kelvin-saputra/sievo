@@ -32,11 +32,16 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Pencil, X, Trash2 } from "lucide-react";
 import useInventory from "@/hooks/use-inventory"; // Import your inventory hook
+import { EditItemForm } from "@/components/form/edit-item-form";
+import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
+import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
+import { useState } from "react";
 
 const ItemDetail = () => {
   const { itemId } = useParams();
   const { inventory, loading, fetchInventoryById, handleDeleteInventory } = useInventory(); // Assuming you have these functions in your hook
-
+  const [open, setOpen] = useState(false);
+  
   React.useEffect(() => {
     if (Array.isArray(itemId)) {
       // If itemId is an array, take the first element
@@ -70,43 +75,18 @@ const ItemDetail = () => {
         <div className="my-10 flex justify-between w-full">
           <p className="text-muted-foreground text-2xl">Item Detail</p>
           <div className="grid grid-cols-2 gap-x-4">
-            <div>
-              <AlertDialog>
-                <AlertDialogTrigger>
-                  <Button variant="outline">
-                    <Pencil /> Edit
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <div className="flex justify-between">
-                      <AlertDialogTitle>Edit Item</AlertDialogTitle>
-                      <AlertDialogCancel><X /></AlertDialogCancel>
-                    </div>
-                    {/* <EditItemForm inventory={inventory} />  */}
-                  </AlertDialogHeader>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-            <AlertDialog>
-              <AlertDialogTrigger>
-                <Button variant="destructive">
-                  <Trash2 /> Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the item.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Yes, delete item</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <EditInventoryModal
+                inventory={inventory}
+                onUpdateInventory={(data) => console.log("Updated Data:", data)}
+                open={open}
+                setOpen={setOpen}
+              />
+              <DeleteInventoryModal
+                inventoryId={inventory.inventory_id}
+                onDeleteInventory={(id) => console.log("Deleted Data:", id)}
+                open={open}
+                setOpen={setOpen}
+              />
           </div>
         </div>
         <div className="grid grid-cols-2 my-16">
