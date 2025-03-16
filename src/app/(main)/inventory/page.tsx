@@ -41,11 +41,7 @@ export default function ViewAllInventory() {
         ) : (
           <InventoryTable
             columns={inventoryColumns}
-            data={inventories.map((inventory) => ({
-              ...inventory,
-              description: inventory.description ?? null,
-              updated_by: inventory.updated_by ?? null,
-            }))}
+            data={inventories}
           />
         )}
       </div>

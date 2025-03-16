@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as React from "react";
-import { Inventory } from "@prisma/client"; // Pastikan tipe data diambil dari Prisma
 
 import {
   Table,
@@ -33,10 +32,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InventorySchema } from "@/models/schemas";
 
 interface InventoryTableProps {
-  columns: ColumnDef<Inventory, unknown>[]; // Pastikan tipe data yang digunakan sesuai
-  data: Inventory[];
+  columns: ColumnDef<InventorySchema, unknown>[];
+  data: InventorySchema[];
 }
 
 export function InventoryTable({ columns, data }: InventoryTableProps) {

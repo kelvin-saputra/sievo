@@ -4,14 +4,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Inventory } from "@prisma/client";
+import { InventorySchema } from "@/models/schemas/inventory";
 import { useRouter } from "next/navigation"; 
 import { useState } from "react";
 import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
 import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
 
-// ✅ Separate component for handling actions
-const InventoryActions = ({ inventory }: { inventory: Inventory }) => {
+const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
   const router = useRouter();
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -44,7 +43,7 @@ const InventoryActions = ({ inventory }: { inventory: Inventory }) => {
   );
 };
 
-export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
+export const inventoryColumns: ColumnDef<InventorySchema, unknown>[] = [
   {
     id: "select",
     header: ({ table }) => (
