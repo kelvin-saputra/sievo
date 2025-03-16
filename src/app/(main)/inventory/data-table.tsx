@@ -33,13 +33,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 
 interface InventoryTableProps {
   columns: ColumnDef<Inventory, unknown>[]; // Pastikan tipe data yang digunakan sesuai
   data: Inventory[];
-  onUpdate: (item: Inventory) => void;
-  onDelete: (id: string) => void;
 }
 
 export function InventoryTable({ columns, data }: InventoryTableProps) {

@@ -40,6 +40,8 @@ import {
 import { InventoryCategoryEnum } from "@/models/enums";
 import { InventorySchema } from "@/models/schemas/inventory";
 import { AddInventoryDTO } from "@/models/dto";
+import { useEdgeStore } from "@/lib/edgestore";
+import { FileState, MultiImageDropzone } from "../ui/multi-image-dropzone";
 
 interface AddInventoryModalProps {
   onAddInventory: (data: AddInventoryDTO) => void;
@@ -47,6 +49,10 @@ interface AddInventoryModalProps {
 
 export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
   const [open, setOpen] = useState(false);
+  // const [_file, setFile] = React.useState<File>();
+  const { edgestore } = useEdgeStore();
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(InventorySchema),
@@ -54,7 +60,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
       item_name: "",
       item_qty: 0,
       item_price: 0.0,
-      inventory_photo: [],
+      inventory_photo: [] as string[],
       category: InventoryCategoryEnum.enum.CONSUMABLE,
       is_avail: true,
       description: "",
@@ -67,12 +73,35 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
 
   console.log(form.formState.errors); 
 
-  const onSubmit = (data: unknown) => {
+  const onSubmit = (data: AddInventoryDTO) => {
     console.log("Form submitted:", data);
     onAddInventory(data);
     form.reset();
     setOpen(false);
   };
+  async function uploadFiles(addedFiles: FileState[]) {
+    const uploadedUrls: string[] = [];
+    setIsUploading(true);
+
+    await Promise.all(
+      addedFiles.map(async (fileState) => {
+        if (fileState.file instanceof File) {
+          try {
+            const res = await edgestore.publicFiles.upload({
+              file: fileState.file,
+            });
+            uploadedUrls.push(res.url);
+          } catch (err) {
+            console.error("Upload error:", err);
+          }
+        }
+      })
+    );
+
+    console.log("Uploaded URLs:", uploadedUrls);
+    form.setValue("inventory_photo", uploadedUrls);
+    setIsUploading(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -184,12 +213,65 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="inventory_photo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                    <FormControl>
+                    <div>
+                        {/* <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              setFile(e.target.files[0]);
+                            }
+                          }}
+                        /> */}
+                         <FormField
+                          control={form.control}
+                          name="inventory_photo"
+                          render={() => (
+                            <FormItem>
+                              <FormLabel>Upload Images</FormLabel>
+                              <FormControl>
+                                <MultiImageDropzone
+                                  value={fileStates}
+                                  dropzoneOptions={{ maxFiles: 6 }}
+                                  onChange={setFileStates}
+                                  onFilesAdded={(files) => {
+                                    setFileStates(files);
+                                    uploadFiles(files);
+                                    field.onChange(files.map(f => f.file));
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                      </div>
+                    </FormControl>
+                  <FormMessage />
+                    {isUploading && <p className="text-red-500 text-sm">Uploading images, please wait...</p>}
+                </FormItem>
+              )}
+            />
+
             <div className="flex justify-end space-x-2">
               <Button variant="secondary" type="button" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" form="add-inventory-form" className="bg-green-500 text-white">
-                Add Inventory
+              <Button 
+                type="submit" 
+                form="add-inventory-form" 
+                className="bg-green-500 text-white"
+                disabled={isUploading || form.watch("inventory_photo").length === 0} // ✅ Tombol disabled jika upload belum selesai
+              >
+                {isUploading ? "Uploading..." : "Add Inventory"} {/* ✅ Ubah teks tombol */}
               </Button>
             </div>
           </form>
@@ -198,3 +280,4 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
     </Dialog>
   );
 }
+

@@ -8,17 +8,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+
 import {
   Carousel,
   CarouselContent,
@@ -29,17 +19,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Pencil, X, Trash2 } from "lucide-react";
-import useInventory from "@/hooks/use-inventory"; // Import your inventory hook
-import { EditItemForm } from "@/components/form/edit-item-form";
+import useInventory from "@/hooks/use-inventory"; 
 import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
 import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
 import { useState } from "react";
 
 const ItemDetail = () => {
   const { itemId } = useParams();
-  const { inventory, loading, fetchInventoryById, handleDeleteInventory } = useInventory(); // Assuming you have these functions in your hook
+  const { inventory, loading, fetchInventoryById } = useInventory(); 
   const [open, setOpen] = useState(false);
   
   React.useEffect(() => {
@@ -51,12 +38,6 @@ const ItemDetail = () => {
       fetchInventoryById(itemId);
     }
   }, [itemId, fetchInventoryById]);
-
-  const handleDelete = () => {
-    if (typeof itemId === "string") {
-        handleDeleteInventory(itemId); // Call the delete function
-    }
-  };
 
   if (loading) {
     return <div>Loading...</div>; // Show loading state
@@ -91,25 +72,36 @@ const ItemDetail = () => {
         </div>
         <div className="grid grid-cols-2 my-16">
           <div className="mx-10">
-            <Carousel className="w-full max-w-lg">
-              <CarouselContent>
-                {inventory.inventory_photo.map((photo, index) => (
-                  <CarouselItem key={index}>
+          <Carousel className="w-full max-w-lg">
+            <CarouselContent>
+              {Array.isArray(inventory.inventory_photo) && inventory.inventory_photo.length > 0 ? (
+                inventory.inventory_photo.map((photo, index) => (
+                  <CarouselItem key={index} className="w-full">
                     <div className="p-1">
                       <Card>
                         <CardContent className="flex aspect-square items-center justify-center p-6">
                           <AspectRatio ratio={16 / 9}>
-                            <Image src={photo} alt="Image" width={500} height={500} className="rounded-md object-cover" />
+                            <Image
+                              src={photo}
+                              alt={`Inventory Image ${index + 1}`}
+                              width={500}
+                              height={500}
+                              className="rounded-md object-cover"
+                            />
                           </AspectRatio>
                         </CardContent>
                       </Card>
                     </div>
                   </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
+                ))
+              ) : (
+                <p>No images available</p> 
+              )}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+
           </div>
           <div className="mx-10">
             <h1 className="text-4xl font-bold">{inventory.item_name}</h1>

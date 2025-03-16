@@ -9,10 +9,40 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
 import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
-import useInventory from "@/hooks/use-inventory";
 
+// ✅ Separate component for handling actions
+const InventoryActions = ({ inventory }: { inventory: Inventory }) => {
+  const router = useRouter();
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
-
+  return (
+    <div className="flex space-x-2">
+      <Button
+        variant="outline"
+        onClick={() => router.push(`/inventory/${inventory.inventory_id}`)}
+      >
+        Detail
+      </Button>
+      <EditInventoryModal
+        inventory={{
+            ...inventory,
+            description: inventory.description ?? undefined,
+            updated_by: inventory.updated_by ?? undefined
+          }}
+        onUpdateInventory={(data) => console.log("Updated Data:", data)}
+        open={openEdit}
+        setOpen={setOpenEdit}
+      />
+      <DeleteInventoryModal
+        inventoryId={inventory.inventory_id}
+        onDeleteInventory={(id) => console.log("Deleted Data:", id)}
+        open={openDelete}
+        setOpen={setOpenDelete}
+      />
+    </div>
+  );
+};
 
 export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
   {
@@ -134,34 +164,6 @@ export const inventoryColumns: ColumnDef<Inventory, unknown>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
-      const router = useRouter();
-      const [open, setOpen] = useState(false);
-      const [selectedInventory, setSelectedInventory] = useState<Inventory | unknown>(null);
-  
-      return (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/inventory/${row.original.inventory_id}`)}
-          >
-            Detail
-          </Button>
-          <EditInventoryModal
-            inventory={selectedInventory ?? row.original}
-            onUpdateInventory={(data) => console.log("Updated Data:", data)}
-            open={open}
-            setOpen={setOpen}
-          />
-          <DeleteInventoryModal
-            inventoryId={row.original.inventory_id}
-            onDeleteInventory={(id) => console.log("Deleted Data:", id)}
-            open={open}
-            setOpen={setOpen}
-          />
-        </div>
-      );
-    }
-  }
-  
+    cell: ({ row }) => <InventoryActions inventory={row.original} />, // ✅ Use the separate component here
+  },
 ];

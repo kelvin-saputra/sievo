@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import Image from "next/image";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];
@@ -137,7 +138,14 @@ export function AddItemForm({ onSubmit }: { onSubmit: (data: unknown) => Promise
           <div className="flex flex-wrap gap-2 mt-2">
             {imagePreviews.map((src, index) => (
               <div key={index} className="relative w-24 h-24">
-                <img src={src} alt={`Preview ${index}`} className="w-full h-full object-cover rounded-md" />
+                <Image 
+                  src={src} 
+                  alt={`Preview ${index}`} 
+                  width={96} 
+                  height={96} 
+                  className="w-full h-full object-cover rounded-md"
+                  unoptimized
+                />
                 <button
                   type="button"
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs"

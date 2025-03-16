@@ -7,7 +7,7 @@ import useInventory from "@/hooks/use-inventory";
 import { AddInventoryModal } from "@/components/inventory/add-inventory-modal";
 import { InventoryTable } from "./data-table";
 import { inventoryColumns } from "./columns";
-import { useRouter } from "next/router";
+import * as React from 'react';
 
 export default function ViewAllInventory() {
   const {
@@ -20,7 +20,7 @@ export default function ViewAllInventory() {
   useEffect(() => {
     fetchAllInventories();
   }, [fetchAllInventories]);
-
+  
   
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
@@ -41,10 +41,16 @@ export default function ViewAllInventory() {
         ) : (
           <InventoryTable
             columns={inventoryColumns}
-            data={inventories}
+            data={inventories.map((inventory) => ({
+              ...inventory,
+              description: inventory.description ?? null,
+              updated_by: inventory.updated_by ?? null,
+            }))}
           />
         )}
       </div>
     </div>
   );
 }
+
+ 
