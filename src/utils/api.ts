@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function responseFormat(statusCode: number, message: string, data: unknown) {
-    return new NextResponse(JSON.stringify({ code: statusCode, message: message, data: data }));  
+    const response = {
+        code: statusCode,
+        message: message,
+        data: data,
+    };
+    return new NextResponse(JSON.stringify(response), { status: statusCode });  
 }
 
 export function requestFormat(data: unknown) {
