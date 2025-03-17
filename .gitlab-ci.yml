@@ -24,8 +24,8 @@ DEPENDENCIES_INSTALLATION:
     - npm ci --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
     - du -sh node_modules/
-    - tar -cvf node_modules.tar node_modules
-    - split -b 100M node_modules.tar "node_modules.part."
+    - tar -cf node_modules.tar node_modules 
+    - split -b 300M node_modules.tar "node_modules.part."
   artifacts:
     paths:
       - node_modules.part.*
@@ -55,8 +55,8 @@ BUILD:
     - npx prisma generate
     - npm run build
   after_script:
-    - tar -cvf next_build.tar .next
-    - split -b 500M next_build.tar "next_build.part."
+    - tar -cf next_build.tar .next
+    - split -b 300M next_build.tar "next_build.part."
   artifacts:
     paths:
       - next_build.part.*
