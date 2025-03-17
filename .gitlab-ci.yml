@@ -1,10 +1,11 @@
 image: node:20.17.0
 
 cache: &global_cache
-  key: $CI_COMMIT_REF_SLUG
+  key: node-modules-cache-${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
     - .next/
+    - ~/.npm
   policy: pull-push
 
 stages:
@@ -20,13 +21,16 @@ variables:
 DEPENDENCIES_INSTALLATION:
   stage: Install
   cache: *global_cache
+  before_script:
+    - rm -rf node_modules
   script:
     - npm ci --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
-  artifacts:
-    paths:
-      - node_modules/
-    expire_in: 1h
+    - ls -la node_modules/
+  # artifacts:
+  #   paths:
+  #     - node_modules/
+  #   expire_in: 1h
 
 TESTING:
   stage: Testing
@@ -34,25 +38,27 @@ TESTING:
   script:
     - npm run lint --if-present
     - npm run test --if-present
-  artifacts:
-    paths:
-      - test-reports/
-    expire_in: 1h
+  # artifacts:
+  #   paths:
+  #     - test-reports/
+  #   expire_in: 1h
 
 BUILD:
   stage: Build
   cache: *global_cache
   script:
+    - npx prisma generate
     - npm run build
-  artifacts:
-    paths:
-      - .next
-    expire_in: 1h
+  # artifacts:
+  #   paths:
+  #     - .next
+  #   expire_in: 1h
 
 DEPLOYMENT_PREVIEW:
   stage: Deployment
   only:
     - staging
+  cache: *global_cache  
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
@@ -68,6 +74,7 @@ DEPLOYMENT_PRODUCTION:
   stage: Deployment
   only:
     - main
+  cache: *global_cache
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
