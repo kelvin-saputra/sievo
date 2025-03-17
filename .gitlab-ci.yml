@@ -1,12 +1,10 @@
 image: node:20.17.0
 
-# cache: &global_cache
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
+cache: &global_cache
+  key: $CI_COMMIT_REF_SLUG
   paths:
     - node_modules/
     - .next/
-    - ~/.npm
   policy: pull-push
 
 stages:
@@ -21,67 +19,42 @@ variables:
 
 DEPENDENCIES_INSTALLATION:
   stage: Install
-  # cache: *global_cache
-  before_script:
-    - rm -rf node_modules
-    - ls -la node_modules/ || echo "No cache found"
+  cache: *global_cache
   script:
     - npm ci --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
-    - ls -la node_modules/
-  # artifacts:
-  #   paths:
-  #     - node_modules/
-  #   expire_in: 1h
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}  # Use branch-specific cache
+    - du -sh node_modules
+  artifacts:
     paths:
       - node_modules/
-      - ~/.npm
-    policy: pull-push
+    expire_in: 1h
 
 TESTING:
   stage: Testing
-  # cache: *global_cache
-  before_script:
-    - ls -la node_modules/ || echo "No cache found"
+  cache: *global_cache
   script:
     - npm run lint --if-present
     - npm run test --if-present
-  # artifacts:
-  #   paths:
-  #     - test-reports/
-  #   expire_in: 1h
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
+  artifacts:
     paths:
-      - node_modules/
-      - ~/.npm
-    policy: pull
+      - test-reports/
+    expire_in: 1h
 
 BUILD:
   stage: Build
-  # cache: *global_cache
-  before_script:
-    - ls -la next/ || echo "No cache found"
+  cache: *global_cache
   script:
     - npx prisma generate
     - npm run build
-  # artifacts:
-  #   paths:
-  #     - .next
-  #   expire_in: 1h
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
+  artifacts:
     paths:
-      - .next/
-    policy: pull-push
+      - .next
+    expire_in: 1h
 
 DEPLOYMENT_PREVIEW:
   stage: Deployment
   only:
     - staging
-  cache: *global_cache  
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
@@ -92,17 +65,11 @@ DEPLOYMENT_PREVIEW:
   environment:
     name: preview
     url: $STAGGING_URL
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .next/
-    policy: pull
 
 DEPLOYMENT_PRODUCTION:
   stage: Deployment
   only:
     - main
-  cache: *global_cache
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
@@ -113,11 +80,6 @@ DEPLOYMENT_PRODUCTION:
   environment:
     name: production
     url: $PRODUCTION_URL
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .next/
-    policy: pull
 
 after_script:
   - echo "Cleaning up..."
