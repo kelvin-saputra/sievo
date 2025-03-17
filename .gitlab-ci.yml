@@ -81,7 +81,7 @@ DEPLOYMENT_PREVIEW:
   stage: Deployment
   only:
     - staging
-  cache: *global_cache  
+  # cache: *global_cache  
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
@@ -102,7 +102,7 @@ DEPLOYMENT_PRODUCTION:
   stage: Deployment
   only:
     - main
-  cache: *global_cache
+  # cache: *global_cache
   before_script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
