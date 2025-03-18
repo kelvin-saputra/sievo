@@ -6,3 +6,4 @@ export * from "./proposal-status";
 export * from "./inventory-category";
 export * from "./vendor-service-category";
 export * from "./client-type";
+export * from "./budget-item-status";
