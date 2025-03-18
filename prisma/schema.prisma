@@ -182,7 +182,7 @@ model BudgetItemCategory {
   category_name      String             @unique
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[] 
+  budget             Budget[]           
   is_deleted         Boolean            @default(false)
 }
 
@@ -285,13 +285,13 @@ enum EventStatus {
 }
 
 enum ProposalStatus {
-  DRAFT
+  DRAFT 
   ON_REVIEW
   APPROVED
   REJECTED
-  SENT
   ON_CONTACT
-  INTERESTED
+  ACCEPTED
+  CANCELLED
 }
 
 enum InventoryCategory {
