@@ -289,9 +289,9 @@ enum ProposalStatus {
   ON_REVIEW
   APPROVED
   REJECTED
-  SENT
   ON_CONTACT
-  INTERESTED
+  ACCEPTED
+  CANCELLED
 }
 
 enum InventoryCategory {

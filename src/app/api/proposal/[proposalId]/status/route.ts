@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
 
-export async function PUT(req: NextRequest, { params }: { params: { proposalId: string } }) {
+
+export async function PUT(req: NextRequest, context: { params: Promise<{ proposalId: string }> }) {
   try {
+    // ✅ Wait for params to resolve
+    const { proposalId } = await context.params; // Resolving the promise of params
+
+    // ✅ Parse request body
     const body = await req.json();
     const { status } = body;
-    const { proposalId } = params; // ✅ Correctly extract `proposalId`
 
     if (!proposalId) {
       console.error("🛑 Error: Missing proposalId in request.");
@@ -40,11 +44,12 @@ export async function PUT(req: NextRequest, { params }: { params: { proposalId: 
 
     console.log("✅ Proposal updated successfully:", updatedProposal);
     return NextResponse.json(updatedProposal);
-  } catch (error) {
-    console.error("❌ Prisma Update Error:");
+  } catch (error: unknown) {
+    console.error("❌ Prisma Update Error:", error);
     return NextResponse.json({ 
       message: "Failed to update status", 
-      details: error 
+      error: error instanceof Error ? error.message : "Unknown error",
+      details: error
     }, { status: 500 });
   }
 }
