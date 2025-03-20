@@ -5,12 +5,17 @@ export async function GET() {
   try {
     const users = await prisma.user.findMany({
       include: {
-        event: true, // Include events array
+        event: true,
       },
     });
 
-    // Modify user data to include computed status
-    const updatedUsers = users.map((user) => ({
+    type UserWithEvents = {
+      id: string;
+      is_active: boolean;
+      event: any[];
+    };
+
+    const updatedUsers = users.map((user: UserWithEvents) => ({
       ...user,
       status: !user.is_active
         ? "inactive"
@@ -19,14 +24,13 @@ export async function GET() {
         : "on work",
     }));
 
+    console.log("test", updatedUsers);
+
     return NextResponse.json(updatedUsers);
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: "Failed to fetch users",
-        details: error instanceof Error ? error.message : null,
-      },
-      { status: 500 }
-    );
+    console.error("Error fetching users:", error);  // Log the actual error
+    return NextResponse.json({
+      error: "Failed to fetch users",
+    });
   }
 }
