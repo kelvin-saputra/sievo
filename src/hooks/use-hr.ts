@@ -21,6 +21,7 @@ export default function useHr() {
   const [loading, setLoading] = useState(false);
 
   const fetchAllUsers = useCallback(async () => {
+    
     setLoading(true);
     try {
       console.log("Fetching users from:", `${API_URL}`); // Debugging log
