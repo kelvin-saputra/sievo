@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import Image from "next/image"
-import { SearchForm } from "../form/search-form"
+import { SearchForm } from "../common/search-form"
 import Link from "next/link"
 import { FaHouse } from "react-icons/fa6"
 import { usePathname } from "next/navigation"
@@ -28,7 +28,7 @@ export function NavHeader() {
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar"
             tooltip={"SIEVO"}
           >
-              <Image src={"/sidebar-logo.png"} alt={"Side Bar Logo"} width={50} height={47}/>
+              <Image src={"/sidebar-logo.png"} alt={"Side Bar Logo"} width={42} height={32.25} className="mix-blend-multiply"/>
               <div className="grid flex-1 text-left text-sm leading-tight">
                   <p className="text-xl font-extrabold ml-4 mt-1">SIEVO</p>
               </div>
@@ -38,10 +38,10 @@ export function NavHeader() {
         <SidebarMenuItem key={"Home"}>
           <Link href={"/"}>
             <SidebarMenuButton
-              className={`group data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:cursor-pointer ${pathName.split('/')[1].toLowerCase() === "" ? 'bg-sidebar-accent' : ''}`}
+              className={`group data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:cursor-pointer ${pathName.split('/')[1].toLowerCase() === "" ? 'bg-yellow-matahati' : ''}`}
               tooltip={"Home"}
             >
-              <FaHouse className="mr-2 text-sm font-medium text-super-white"/>
+              <FaHouse className="mr-2 text-sm font-medium text-sidebar-secondary-foreground"/>
               <span>Home</span>
             </SidebarMenuButton>
           </Link>
