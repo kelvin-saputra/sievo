@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const ProposalStatusEnum = z.enum([
-  "DRAFT",
+  "DRAFT", 
   "ON_REVIEW",
   "APPROVED",
   "REJECTED",
-  "SENT",
   "ON_CONTACT",
-  "INTERESTED",
+  "ACCEPTED",
+  "CANCELLED",
 ]);
 export type ProposalStatusEnum = z.infer<typeof ProposalStatusEnum>;
