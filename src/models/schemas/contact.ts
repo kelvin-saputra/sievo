@@ -28,14 +28,31 @@ export const ContactSchema = z.object({
     updated_by: z
         .string()
         .uuid({ message: "ID user tidak valid" })
-        .optional(),
+        .nullable(),
     created_at: z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })
         .default(() => new Date()),
     updated_at: z.coerce
-        .date({ invalid_type_error: "Tanggal diupdate tidak valid" })
+        .date({ invalid_type_error: "Tanggal diupdate tidak valid" }),
+    is_deleted: z
+        .boolean()
+        .default(false),
+    role: z.enum(["none", "client", "vendor"]).default("none")
 });
 
-
-
 export type ContactSchema = z.infer<typeof ContactSchema>;
+
+export type ContactWithRole = {
+    contact_id: string;
+    name: string;
+    email: string;
+    phone_number: string;
+    description: string | null;
+    created_by: string;
+    updated_by: string | null;
+    created_at: Date;
+    updated_at: Date;
+    is_deleted: boolean;
+    role: "none" | "client" | "vendor"; 
+  };
+  

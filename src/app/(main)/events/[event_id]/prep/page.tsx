@@ -3,7 +3,7 @@
 import React from "react";
 import { getPrepColumns } from "@/components/event_tasks/prep-columns";
 import { DataTable } from "@/components/event_tasks/data-table";
-import EventContext from "@/models/context/event.context";
+import EventContext from "@/models/context/event-context";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import { AddTaskModal } from "@/components/event_tasks/add-task-modal";
 
