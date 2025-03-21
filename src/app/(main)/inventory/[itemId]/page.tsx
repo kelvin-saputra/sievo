@@ -23,6 +23,7 @@ import useInventory from "@/hooks/use-inventory";
 import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
 import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
 import { useState } from "react";
+import PageHeader from "@/components/common/page-header";
 
 const ItemDetail = () => {
   const { itemId } = useParams();
@@ -40,20 +41,20 @@ const ItemDetail = () => {
   }, [itemId, fetchInventoryById]);
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading state
+    return <div>Loading...</div>; 
   }
 
   if (!inventory) {
-    return <div>Inventory not found.</div>; // Handle case where inventory is not found
+    return <div>Inventory not found.</div>;
   }
 
   return (
-    <div className="bg-white h-screen flex items-center justify-center md:max-w-4xl justify-self-center my-12">
+    <div className="bg-white min-h-screen p-6 w-full max-w-7xl mx-auto">
       <div>
-        <p className="text-6xl mb-10 font-bold">Inventory</p>
-        <Separator />
-        <Separator />
-        <div className="my-10 flex justify-between w-full">
+        <PageHeader
+          title="Inventory Overview"
+        />
+      <div className="my-6 flex flex-col md:flex-row justify-between items-start md:items-center">
           <p className="text-muted-foreground text-2xl">Item Detail</p>
           <div className="grid grid-cols-2 gap-x-4">
             <EditInventoryModal
@@ -86,8 +87,8 @@ const ItemDetail = () => {
                               alt={`Inventory Image ${index + 1}`}
                               width={500}
                               height={500}
-                              className="rounded-md object-cover"
-                            />
+                              className="rounded-md object-cover w-full h-full"
+                              />
                           </AspectRatio>
                         </CardContent>
                       </Card>

@@ -23,18 +23,20 @@ export default function ViewAllInventory() {
   
   
   return (
-    <div className="p-6 w-full max-w-7xl mx-auto">
-      <PageHeader
+    <div className="flex-1 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-hidden">
+      <div className="hidden md:block md:w-[250px] lg:w-[280px]"></div>
+
+    <PageHeader
         title="Inventory Overview"
         breadcrumbs={[{ label: "Inventory", href: "/inventory" }]}
       />
 
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6 flex justify-end">
         <AddInventoryModal onAddInventory={handleAddInventory} />
       </div>
 
 
-      <div className="mb-8 p-6 border rounded-lg shadow-lg bg-super-white">
+      <div className="mb-8 p-4 md:p-6 border rounded-lg shadow-sm md:shadow-lg bg-white overflow-x-auto">
 
         {loading ? (
           <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
