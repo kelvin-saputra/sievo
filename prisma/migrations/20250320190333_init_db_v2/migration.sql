@@ -14,7 +14,7 @@ CREATE TYPE "BudgetStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE "EventStatus" AS ENUM ('PLANNING', 'BUDGETING', 'PREPARATION', 'IMPLEMENTATION', 'REPORTING', 'DONE');
 
 -- CreateEnum
-CREATE TYPE "ProposalStatus" AS ENUM ('DRAFT', 'ON_REVIEW', 'APPROVED', 'REJECTED', 'SENT', 'ON_CONTACT', 'INTERESTED');
+CREATE TYPE "ProposalStatus" AS ENUM ('DRAFT', 'ON_REVIEW', 'APPROVED', 'REJECTED', 'ON_CONTACT', 'ACCEPTED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "InventoryCategory" AS ENUM ('CONSUMABLE', 'NON_CONSUMABLE');
@@ -55,8 +55,20 @@ CREATE TABLE "Inventory" (
     "updated_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Inventory_pkey" PRIMARY KEY ("inventory_id")
+);
+
+-- CreateTable
+CREATE TABLE "InventoryLog" (
+    "inventory_log_id" TEXT NOT NULL,
+    "updated_by" TEXT NOT NULL,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "action" TEXT NOT NULL,
+    "inventory_id" TEXT NOT NULL,
+
+    CONSTRAINT "InventoryLog_pkey" PRIMARY KEY ("inventory_log_id")
 );
 
 -- CreateTable
@@ -72,6 +84,7 @@ CREATE TABLE "Task" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "event_id" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("task_id")
 );
@@ -80,8 +93,6 @@ CREATE TABLE "Task" (
 CREATE TABLE "Contact" (
     "contact_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "pic_name" TEXT NOT NULL,
-    "location" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone_number" TEXT NOT NULL,
     "description" TEXT,
@@ -89,6 +100,7 @@ CREATE TABLE "Contact" (
     "updated_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Contact_pkey" PRIMARY KEY ("contact_id")
 );
@@ -99,6 +111,7 @@ CREATE TABLE "Vendor" (
     "contact_id" TEXT NOT NULL,
     "rating" DOUBLE PRECISION DEFAULT 0,
     "bankAccountDetail" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Vendor_pkey" PRIMARY KEY ("vendor_id")
 );
@@ -112,6 +125,7 @@ CREATE TABLE "VendorService" (
     "rating" DOUBLE PRECISION NOT NULL,
     "description" TEXT,
     "vendor_id" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "VendorService_pkey" PRIMARY KEY ("service_id")
 );
@@ -121,6 +135,7 @@ CREATE TABLE "Client" (
     "client_id" TEXT NOT NULL,
     "contact_id" TEXT NOT NULL,
     "type" "ClientType" NOT NULL DEFAULT 'INDIVIDUAL',
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Client_pkey" PRIMARY KEY ("client_id")
 );
@@ -128,13 +143,14 @@ CREATE TABLE "Client" (
 -- CreateTable
 CREATE TABLE "Budget" (
     "budget_id" TEXT NOT NULL,
-    "total_price" DOUBLE PRECISION NOT NULL,
     "status" "BudgetStatus" NOT NULL DEFAULT 'PENDING',
     "created_by" TEXT NOT NULL,
     "updated_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "event_id" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
+    "is_actual" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Budget_pkey" PRIMARY KEY ("budget_id")
 );
@@ -149,6 +165,7 @@ CREATE TABLE "BudgetPlanItem" (
     "vendor_service_id" TEXT,
     "inventory_id" TEXT,
     "other_item_id" TEXT,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "BudgetPlanItem_pkey" PRIMARY KEY ("budget_item_id")
 );
@@ -166,6 +183,7 @@ CREATE TABLE "ActualBudgetItem" (
     "vendor_service_id" TEXT,
     "inventory_id" TEXT,
     "other_item_id" TEXT,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "ActualBudgetItem_pkey" PRIMARY KEY ("actual_budget_item_id")
 );
@@ -174,6 +192,7 @@ CREATE TABLE "ActualBudgetItem" (
 CREATE TABLE "BudgetItemCategory" (
     "category_id" SERIAL NOT NULL,
     "category_name" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "BudgetItemCategory_pkey" PRIMARY KEY ("category_id")
 );
@@ -188,6 +207,7 @@ CREATE TABLE "Purchasing" (
     "updated_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Purchasing_pkey" PRIMARY KEY ("other_item_id")
 );
@@ -195,9 +215,15 @@ CREATE TABLE "Purchasing" (
 -- CreateTable
 CREATE TABLE "Proposal" (
     "proposal_id" TEXT NOT NULL,
+    "proposal_name" TEXT NOT NULL,
+    "proposal_link" TEXT NOT NULL,
     "status" "ProposalStatus" NOT NULL DEFAULT 'DRAFT',
-    "client_id" TEXT NOT NULL,
-    "manager_id" TEXT NOT NULL,
+    "client_name" TEXT NOT NULL,
+    "created_by" TEXT NOT NULL,
+    "updated_by" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Proposal_pkey" PRIMARY KEY ("proposal_id")
 );
@@ -213,6 +239,7 @@ CREATE TABLE "Report" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "event_id" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Report_pkey" PRIMARY KEY ("report_id")
 );
@@ -220,6 +247,7 @@ CREATE TABLE "Report" (
 -- CreateTable
 CREATE TABLE "Event" (
     "event_id" TEXT NOT NULL,
+    "event_name" TEXT NOT NULL,
     "location" TEXT NOT NULL,
     "start_date" TIMESTAMP(3) NOT NULL,
     "end_date" TIMESTAMP(3) NOT NULL,
@@ -228,8 +256,21 @@ CREATE TABLE "Event" (
     "status" "EventStatus" NOT NULL DEFAULT 'PLANNING',
     "manager_id" TEXT NOT NULL,
     "client_id" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_by" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_by" TEXT NOT NULL,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("event_id")
+);
+
+-- CreateTable
+CREATE TABLE "_BudgetToBudgetItemCategory" (
+    "A" TEXT NOT NULL,
+    "B" INTEGER NOT NULL,
+
+    CONSTRAINT "_BudgetToBudgetItemCategory_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -242,13 +283,16 @@ CREATE UNIQUE INDEX "Vendor_contact_id_key" ON "Vendor"("contact_id");
 CREATE UNIQUE INDEX "Client_contact_id_key" ON "Client"("contact_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BudgetItemCategory_category_name_key" ON "BudgetItemCategory"("category_name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Proposal_client_id_key" ON "Proposal"("client_id");
+CREATE UNIQUE INDEX "Proposal_client_name_key" ON "Proposal"("client_name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Report_event_id_key" ON "Report"("event_id");
+
+-- CreateIndex
+CREATE INDEX "_BudgetToBudgetItemCategory_B_index" ON "_BudgetToBudgetItemCategory"("B");
+
+-- AddForeignKey
+ALTER TABLE "InventoryLog" ADD CONSTRAINT "InventoryLog_inventory_id_fkey" FOREIGN KEY ("inventory_id") REFERENCES "Inventory"("inventory_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_assigned_id_fkey" FOREIGN KEY ("assigned_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -299,12 +343,6 @@ ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_inventory_id_fke
 ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_other_item_id_fkey" FOREIGN KEY ("other_item_id") REFERENCES "Purchasing"("other_item_id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Proposal" ADD CONSTRAINT "Proposal_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "Client"("client_id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Proposal" ADD CONSTRAINT "Proposal_manager_id_fkey" FOREIGN KEY ("manager_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Report" ADD CONSTRAINT "Report_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -312,3 +350,9 @@ ALTER TABLE "Event" ADD CONSTRAINT "Event_manager_id_fkey" FOREIGN KEY ("manager
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "Client"("client_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Budget"("budget_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCategory_B_fkey" FOREIGN KEY ("B") REFERENCES "BudgetItemCategory"("category_id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -98,11 +98,13 @@ export async function DELETE(
       );
     }
 
+    const eventId = (await params).event_id;
+
     // ✅ Soft delete dengan mengubah `is_deleted = true`
-    await prisma.event.update({
-      where: { event_id: (await params).event_id },
-      data: { is_deleted: true },
-    });
+      await prisma.event.update({
+        where: { event_id: eventId },
+        data: { is_deleted: true },
+      })
 
     return NextResponse.json({ message: "Event berhasil dihapus" });
   } catch (error: unknown) {

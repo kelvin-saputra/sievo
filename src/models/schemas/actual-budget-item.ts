@@ -27,16 +27,14 @@ export const ActualBudgetItemSchema = z.object({
         .optional(),
     vendor_service_id: z
         .string()
-        .uuid({ message: "ID vendor service tidak valid" })
         .optional(),
     inventory_id: z
         .string()
-        .uuid({ message: "ID inventory tidak valid" })
         .optional(),
     other_item_id: z
         .string()
-        .uuid({ message: "ID other item tidak valid" })
         .optional(),
+    is_deleted: z.boolean().default(false),
 });
 
 export type ActualBudgetItemSchema = z.infer<typeof ActualBudgetItemSchema>;
