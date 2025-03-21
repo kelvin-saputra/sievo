@@ -8,13 +8,13 @@ export async function GET() {
         return NextResponse.json(proposals);
     } catch (error: unknown) {
         return NextResponse.json(
-          {
-            error: "Gagal mengambil data proposal",
-            details: error instanceof Error ? error.message : null,
-          },
-          { status: 500 }
+            {
+                error: "Gagal mengambil data proposal",
+                details: error instanceof Error ? error.message : null,
+            },
+            { status: 500 }
         );
-      }
+    }
 }
 
 export async function POST(req: Request) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
             console.error("Invalid request: Failed to parse JSON", error);
             throw new TypeError("Invalid request: Failed to parse JSON");
         }
-        
+
 
         console.log("📢 Parsed Request Body:", dataBody);
 
@@ -50,8 +50,8 @@ export async function POST(req: Request) {
             proposal_link: dataBody.proposal_link,
             created_by: dataBody.created_by,
             updated_by: dataBody.updated_by,
-            created_at: new Date(dataBody.created_at),  
-            updated_at: new Date(dataBody.updated_at)  
+            created_at: new Date(dataBody.created_at),
+            updated_at: new Date(dataBody.updated_at)
         };
 
         console.log("📢 Sending to Prisma (Without `status`):", proposalData);
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
         return Response.json({
             proposal_id: proposalItem.proposal_id,
             proposal_name: proposalItem.proposal_name,
-            status: proposalItem.status, 
+            status: proposalItem.status,
             client_name: proposalItem.client_name,
             proposal_link: proposalItem.proposal_link,
             created_by: proposalItem.created_by,

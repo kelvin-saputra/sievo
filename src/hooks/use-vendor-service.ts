@@ -15,9 +15,6 @@ export default function useVendorService() {
 
             const validatedVendorServices = rawVendorServices.data.map((vendorService: any) => VendorServiceSchema.parse(vendorService));
             setVendorServices(validatedVendorServices);
-            if (rawVendorServices.message) {
-                toast.success(rawVendorServices.message);
-            }
         } catch {
             toast.error("Gagal mengambil data vendor services");
         }

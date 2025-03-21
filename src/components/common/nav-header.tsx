@@ -1,14 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { SidebarGroup, useSidebar } from "@/components/ui/sidebar"
-
+import * as React from "react";
+import { SidebarGroup, useSidebar } from "@/components/ui/sidebar";
 
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 import Image from "next/image"
 import { SearchForm } from "../form/search-form"
@@ -34,7 +33,7 @@ export function NavHeader() {
               </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
-          {state === "expanded" && <SearchForm className="mt-4 mb-2"/>}
+        {state === "expanded" && <SearchForm className="mt-4 mb-2" />}
         <SidebarMenuItem key={"Home"}>
           <Link href={"/"}>
             <SidebarMenuButton
@@ -48,5 +47,5 @@ export function NavHeader() {
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }
