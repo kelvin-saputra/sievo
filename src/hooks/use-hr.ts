@@ -19,7 +19,7 @@ export default function useHr() {
     try {
       const { data: validatedUsers } = await axios.get(`${API_URL}`);
       setUsers(validatedUsers);
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch users.");
     }
     setLoading(false);

@@ -1,3 +1,4 @@
+"use client"
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -24,7 +25,7 @@ export default function useInventory() {
         console.warn("Expected an array but received:", rawInventories);
         setInventorys([]);
       }
-    } catch (error) {
+    } catch {
       toast.error("Gagal mengambil data Inventory.");
     }
     setLoading(false);
@@ -35,7 +36,7 @@ export default function useInventory() {
     try {
       const { data } = await axios.get(`${API_URL}/${id}`);
       setInventory(InventorySchema.parse(data.data));
-    } catch (error) {
+    } catch {
       toast.error("Gagal mengambil Inventory.");
     }
     setLoading(false);
@@ -69,7 +70,7 @@ export default function useInventory() {
         setInventory(parsedInventory);
       }
       toast.success("Inventory berhasil diperbarui!");
-    } catch (error) {
+    } catch {
       toast.error("Gagal memperbarui Inventory.");
     }
   };
@@ -81,7 +82,7 @@ export default function useInventory() {
         prevInventorys.filter((ev) => ev.inventory_id !== inventoryId)
       );
       toast.success("Inventory berhasil dihapus!");
-    } catch (error) {
+    } catch {
       toast.error("Gagal menghapus Inventory.");
     }
   };
@@ -103,7 +104,7 @@ export default function useInventory() {
       if (inventory?.inventory_id === inventoryId) {
         setInventory(parsedInventory);
       }
-    } catch (error) {
+    } catch {
       toast.error("Gagal memperbarui status Inventory.");
     }
     setLoading(false);
@@ -143,7 +144,7 @@ export default function useInventory() {
 
       setInventorys((prevInventorys) => [...prevInventorys, parsedInventory]);
       toast.success("Inventory berhasil ditambahkan!");
-    } catch (error) {
+    } catch {
       toast.error("Gagal menambahkan Inventory.");
     }
   };

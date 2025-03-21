@@ -26,7 +26,7 @@ export default function useProposal() {
         console.warn("Expected an array but received:", rawProposals);
         setProposals([]);
       }
-    } catch (error) {
+    } catch {
       toast.error("Gagal mengambil data proposal.");
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ export default function useProposal() {
       const parsedProposal = ProposalSchema.parse(transformedProposal);
       setProposals((prevProposal) => [...prevProposal, parsedProposal]);
       toast.success("Proposal berhasil ditambahkan!");
-    } catch (error) {
+    } catch {
       toast.error("Gagal menambahkan Proposal");
     }
   };
@@ -73,7 +73,7 @@ export default function useProposal() {
         )
       );
       toast.success("Status updated successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status.");
     } finally {
       setLoading(false);
