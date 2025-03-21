@@ -52,8 +52,8 @@ export function NavFooter({
               size="lg"
               className="group transition-colors duration-200 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:cursor-pointer"
             >
-              <Avatar className="h-9 w-9 rounded-lg border border-border/50 transition-all duration-200 group-hover:border-border bg-super-white">
-                <AvatarFallback className="rounded-lg text-primary bg-super-white">
+              <Avatar className="h-9 w-9 rounded-lg border border-border/50 transition-all duration-200 group-hover:border-border">
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
                   {getUserInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
@@ -65,14 +65,14 @@ export function NavFooter({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg bg-sidebar"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={8}
           >
-            <DropdownMenuLabel className="p-0 font-normal text-super-white">
+            <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-3 p-3 text-left text-sm">
-                <Avatar className="h-10 w-10 rounded-lg border border-border/50 bg-super-white">
+                <Avatar className="h-10 w-10 rounded-lg border border-border/50">
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
                     {getUserInitials(user.name)}
                   </AvatarFallback>
@@ -86,14 +86,14 @@ export function NavFooter({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                  <Link href="/account" className="flex w-full cursor-pointer items-center text-white hover:bg-sidebar-accent">
+                  <Link href="/account" className="flex w-full cursor-pointer items-center">
                     <BadgeCheck className="mr-2 size-4" />
                     <span>Account</span>
                   </Link>
                 </DropdownMenuItem>
               {user.is_admin === true && (
                 <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex w-full cursor-pointer items-center text-white hover:bg-sidebar-accent">
+                  <Link href="/settings" className="flex w-full cursor-pointer items-center">
                     <Settings className="mr-2 size-4" />
                     <span>Settings</span>
                   </Link>
@@ -101,7 +101,7 @@ export function NavFooter({
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive hover:bg-sidebar-accent">
+            <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 size-4" />
               <span>Log out</span>
             </DropdownMenuItem>
