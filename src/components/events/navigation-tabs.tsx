@@ -12,7 +12,7 @@ import { ChevronDownIcon } from "lucide-react";
 
 const tabs = [
   { name: "Overview", path: "" },
-  { name: "Budget", path: "budget" },
+  { name: "Budget", path: "plan" },
   { name: "Preparation", path: "prep" },
   { name: "Implementation", path: "impl" },
   { name: "Report", path: "report" },

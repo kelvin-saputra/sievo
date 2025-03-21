@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
-import { EventSchema } from "@/models/schemas";
-import { AddEventDTO, UpdateEventDTO } from "@/models/dto";
+import { BudgetSchema, EventSchema } from "@/models/schemas";
+import { AddBudgetDTO, AddEventDTO, UpdateEventDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
 
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
+const BUDGET_API_URL = process.env.NEXT_PUBLIC_BUDGET_API_URL!;
 
 export default function useEvent() {
   const [event, setEvent] = useState<EventSchema | null>(null);
@@ -115,11 +116,20 @@ export default function useEvent() {
       });
       const { data: createdEvent } = await axios.post(API_URL, eventData);
       const parsedEvent = EventSchema.parse(createdEvent);
-
+      
       setEvents((prevEvents) => [...prevEvents, parsedEvent]);
-      toast.success("Event berhasil ditambahkan!");
-    } catch (error) {
-      console.error("Terjadi kesalahan saat menambahkan event:", error);
+
+      const addBudgetDTO: AddBudgetDTO = {
+        status: "PENDING",
+        created_by: parsedEvent.manager_id,
+        event_id: createdEvent.event_id,
+      };
+
+      const budgetData = BudgetSchema.partial().parse({
+        ...addBudgetDTO,
+      });
+      await axios.post(BUDGET_API_URL, budgetData);
+    } catch {
       toast.error("Gagal menambahkan event.");
     }
   };

@@ -6,9 +6,6 @@ export const BudgetSchema = z.object({
         .string({ required_error: "ID budget wajib diisi" })
         .uuid({ message: "ID budget tidak valid" })
         .default(() => crypto.randomUUID()),
-    total_price: z
-        .number({ required_error: "Total harga wajib diisi" })
-        .min(0, { message: "Total harga minimal 0" }),
     status: BudgetStatusEnum.default("PENDING"),
     created_by: z
         .string({required_error: "ID user wajib diisi"})
@@ -26,7 +23,13 @@ export const BudgetSchema = z.object({
         .optional(),
     event_id: z
         .string()
-        .uuid({ message: "ID event tidak valid" })
+        .uuid({ message: "ID event tidak valid" }),
+    is_deleted: z
+        .boolean()
+        .default(false),
+    is_actual: z
+        .boolean()
+        .default(false)
 });
 
 export type BudgetSchema = z.infer<typeof BudgetSchema>;

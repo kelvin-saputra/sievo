@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const data = await req.json();
 
     const { manager_id, client_id, ...eventData } = data; // Destructure IDs separately
-
+    console.log(eventData);
     const event = await prisma.event.create({
       data: {
         ...eventData, // Spread the rest of the event data

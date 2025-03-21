@@ -8,6 +8,9 @@ export const BudgetItemCategorySchema = z.object({
     category_name: z
         .string({ required_error: "Nama category wajib diisi" })
         .min(3, { message: "Nama category minimal 3 karakter"}),
+    is_deleted: z
+        .boolean()
+        .default(false),
 });
 
 export type BudgetItemCategorySchema = z.infer<typeof BudgetItemCategorySchema>;

@@ -46,6 +46,16 @@ model Inventory {
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
   is_deleted         Boolean            @default(false)
+  inventory_log      InventoryLog[]
+}
+
+model InventoryLog {
+  inventory_log_id    String    @id @default(uuid())
+  updated_by          String
+  updated_at          DateTime  @default(now())
+  action              String
+  inventory_id        String
+  inventory           Inventory @relation(fields: [inventory_id], references: [inventory_id])
 }
 
 model Task {
@@ -84,7 +94,7 @@ model Vendor {
   vendor_id         String          @id @default(uuid())
   contact_id        String          @unique
   rating            Float?          @default(0) //TODO: Derived from Vendor Service
-  bankAccountDetail String //TODO: MultiValued 
+  bankAccountDetail String          //TODO: MultiValued 
   contact           Contact         @relation(fields: [contact_id], references: [contact_id])
   vendor_service    VendorService[]
   is_deleted        Boolean         @default(false)
@@ -115,7 +125,6 @@ model Client {
 
 model Budget {
   budget_id   String             @id @default(uuid())
-  total_price Float
   status      BudgetStatus       @default(PENDING)
   created_by  String
   updated_by  String?
@@ -127,6 +136,7 @@ model Budget {
   actual_item ActualBudgetItem[]
   categories  BudgetItemCategory[]
   is_deleted  Boolean            @default(false)
+  is_actual   Boolean            @default(false)
 }
 
 model BudgetPlanItem {
@@ -134,7 +144,7 @@ model BudgetPlanItem {
   item_qty          Int
   item_subtotal     Float
   category_id       Int
-  category          BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  category          BudgetItemCategory? @relation(fields: [category_id], references: [category_id])
   budget_id         String?
   budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
   vendor_service_id String?
@@ -168,10 +178,10 @@ model ActualBudgetItem {
 
 model BudgetItemCategory {
   category_id        Int                @id @default(autoincrement())
-  category_name      String             @unique
+  category_name      String             
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[] 
+  budget             Budget[]           
   is_deleted         Boolean            @default(false)
 }
 
@@ -191,6 +201,8 @@ model Purchasing {
 
 model Proposal {
   proposal_id String         @id @default(uuid())
+  proposal_name String
+  proposal_link String
   status      ProposalStatus @default(DRAFT)
   client_name String         @unique
   created_by  String
@@ -272,13 +284,13 @@ enum EventStatus {
 }
 
 enum ProposalStatus {
-  DRAFT
+  DRAFT 
   ON_REVIEW
   APPROVED
   REJECTED
-  SENT
   ON_CONTACT
-  INTERESTED
+  ACCEPTED
+  CANCELLED
 }
 
 enum InventoryCategory {

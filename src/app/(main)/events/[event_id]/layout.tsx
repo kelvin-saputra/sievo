@@ -11,6 +11,11 @@ import useEventTask from "@/hooks/use-event-task";
 import EventDetailSkeleton from "@/components/events/event-detail-skeleton";
 import { UpdateEventForm } from "@/components/form/update-event-form";
 import { Trash } from "lucide-react";
+import useBudgetPlan from "@/hooks/use-budget-plan";
+import useCategory from "@/hooks/use-category";
+import useActualBudget from "@/hooks/use-budget-actual";
+import usePurchasing from "@/hooks/use-purchase";
+import useVendorService from "@/hooks/use-vendor-service";
 
 export default function EventLayout({
   children,
@@ -38,27 +43,95 @@ export default function EventLayout({
     handleAddTask,
   } = useEventTask(event_id as string);
 
+  const {
+    budgetPlan,
+    budgetPlanItems,
+    loading: budgetPlanLoading ,
+    fetchBudgetPlan,
+    fetchAllBudgetPlanItems,
+    handleAddBudgetPlanItem,
+    handleUpdateBudgetPlanItem,
+    handleDeleteBudgetPlanItem,  
+  } = useBudgetPlan(event_id as string);
+  
+  const {
+    actualBudget,
+    actualBudgetItems,
+    loading: actualBudgetLoading,
+    fetchActualBudget,
+    fetchAllActualBudgetItems,
+    handleAddActualBudgetItem,
+    handleUpdateActualBudgetItem,
+    handleDeleteActualBudgetItem, 
+    handleImportBudgetData, 
+  } = useActualBudget(event_id as string);
+
+  const {
+    categoriesPlan,
+    actualCategories,
+    loading: budgetCategoriesLoadingPlan,
+    fetchCategoriesByBudgetIdPlan,
+    fetchCategoriesByActualBudgetId,
+    handleAddCategory,
+    handleUpdateCategory,
+    handleDeleteCategory,
+    // TODO: Budget Implement Param
+  } = useCategory(event_id as string, budgetPlan?.budget_id as string, actualBudget?.budget_id as string);
+
+  const {
+    handleAddPurchase,
+    handleUpdatePurchase,
+    handleDeletePurchase,
+  } = usePurchasing();
+
+  const {
+    vendorServices,  
+    fetchAllVendorServices,
+  } = useVendorService();
+
+  // const {
+  //   inventories,
+  //   fetchInventories,
+  // } = useInventory();
+  
   useEffect(() => {
     if (event_id) {
       fetchEventById(event_id as string);
       fetchAllTasks();
+      fetchBudgetPlan();
+      fetchActualBudget();
+      fetchAllBudgetPlanItems();
+      fetchAllActualBudgetItems();
+      fetchCategoriesByBudgetIdPlan();
+      fetchCategoriesByActualBudgetId();
+      fetchAllVendorServices();
+      // fetchInventories();
     }
-  }, [event_id, fetchEventById, fetchAllTasks]);
+    // TODO: Add fetch for inventory
+  }, [event_id, fetchActualBudget, fetchAllActualBudgetItems, fetchAllBudgetPlanItems, fetchAllTasks, fetchAllVendorServices, fetchBudgetPlan, fetchCategoriesByActualBudgetId, fetchCategoriesByBudgetIdPlan, fetchEventById, handleImportBudgetData]);
 
-  if (eventLoading || taskLoading) {
+if (eventLoading|| budgetPlanLoading || budgetCategoriesLoadingPlan || taskLoading) {
     return <EventDetailSkeleton />;
   } else if (!event) {
     return <p className="text-red-500 text-lg">Event not found.</p>;
   } else if (!tasks) {
     return <p className="text-red-500 text-lg">Task not found.</p>;
-  }
-
+  } 
+  
   return (
     <EventContext.Provider
       value={{
         event,
         tasks,
-        loading: eventLoading || taskLoading,
+        budgetPlan,
+        actualBudget,
+        budgetPlanItems,
+        actualBudgetItems,
+        categoriesPlan,
+        actualCategories,
+        // inventories,
+        vendorServices,
+        loading: eventLoading || taskLoading || budgetPlanLoading || budgetCategoriesLoadingPlan || actualBudgetLoading,
         handleUpdateEvent,
         handleDeleteEvent,
         handleStatusChange,
@@ -67,6 +140,27 @@ export default function EventLayout({
         handleUpdateTask,
         handleDeleteTask,
         handleAddTask,
+        fetchBudgetPlan,
+        fetchAllBudgetPlanItems,
+        handleAddBudgetPlanItem,
+        handleDeleteBudgetPlanItem,
+        handleUpdateBudgetPlanItem,
+        fetchActualBudget,
+        fetchAllActualBudgetItems,
+        handleAddActualBudgetItem,
+        handleDeleteActualBudgetItem,
+        handleUpdateActualBudgetItem,
+        handleImportBudgetData,
+        fetchCategoriesByBudgetIdPlan,
+        fetchCategoriesByActualBudgetId,
+        handleAddCategory,
+        handleUpdateCategory,
+        handleDeleteCategory,
+        // fetchAllInventories,
+        fetchAllVendorServices,
+        handleAddPurchase,
+        handleUpdatePurchase,
+        handleDeletePurchase,
       }}
     >
       <div className="p-6 max-w-4xl mx-auto">
