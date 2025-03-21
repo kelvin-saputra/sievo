@@ -16,15 +16,15 @@ datasource db {
 
 // DROP SYSTEM SCHEMA MODEL
 model User {
-  id           String     @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String
   phone_number String
-  email        String     @unique
+  email        String    @unique
   password     String
-  role         ROLE       @default(FREELANCE)
-  is_active    Boolean    @default(true)
-  is_admin     Boolean    @default(false)
-  started_at   DateTime   @default(now())
+  role         ROLE      @default(FREELANCE)
+  is_active    Boolean   @default(true)
+  is_admin     Boolean   @default(false)
+  started_at   DateTime  @default(now())
   ended_at     DateTime?
   task         Task[]
   event        Event[]
@@ -50,12 +50,12 @@ model Inventory {
 }
 
 model InventoryLog {
-  inventory_log_id    String    @id @default(uuid())
-  updated_by          String
-  updated_at          DateTime  @default(now())
-  action              String
-  inventory_id        String
-  inventory           Inventory @relation(fields: [inventory_id], references: [inventory_id])
+  inventory_log_id String    @id @default(uuid())
+  updated_by       String
+  updated_at       DateTime  @default(now())
+  action           String
+  inventory_id     String
+  inventory        Inventory @relation(fields: [inventory_id], references: [inventory_id])
 }
 
 model Task {
@@ -94,7 +94,7 @@ model Vendor {
   vendor_id         String          @id @default(uuid())
   contact_id        String          @unique
   rating            Float?          @default(0) //TODO: Derived from Vendor Service
-  bankAccountDetail String          //TODO: MultiValued 
+  bankAccountDetail String //TODO: MultiValued 
   contact           Contact         @relation(fields: [contact_id], references: [contact_id])
   vendor_service    VendorService[]
   is_deleted        Boolean         @default(false)
@@ -124,36 +124,36 @@ model Client {
 }
 
 model Budget {
-  budget_id   String             @id @default(uuid())
-  status      BudgetStatus       @default(PENDING)
+  budget_id   String               @id @default(uuid())
+  status      BudgetStatus         @default(PENDING)
   created_by  String
   updated_by  String?
-  created_at  DateTime           @default(now())
-  updated_at  DateTime           @updatedAt
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
   event_id    String
-  event       Event              @relation(fields: [event_id], references: [event_id])
+  event       Event                @relation(fields: [event_id], references: [event_id])
   plan_item   BudgetPlanItem[]
   actual_item ActualBudgetItem[]
   categories  BudgetItemCategory[]
-  is_deleted  Boolean            @default(false)
-  is_actual   Boolean            @default(false)
+  is_deleted  Boolean              @default(false)
+  is_actual   Boolean              @default(false)
 }
 
 model BudgetPlanItem {
-  budget_item_id    String             @id @default(uuid())
+  budget_item_id    String              @id @default(uuid())
   item_qty          Int
   item_subtotal     Float
   category_id       Int
   category          BudgetItemCategory? @relation(fields: [category_id], references: [category_id])
   budget_id         String?
-  budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
+  budget            Budget?             @relation(fields: [budget_id], references: [budget_id])
   vendor_service_id String?
-  vendor_service    VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
+  vendor_service    VendorService?      @relation(fields: [vendor_service_id], references: [service_id])
   inventory_id      String?
-  inventory         Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
+  inventory         Inventory?          @relation(fields: [inventory_id], references: [inventory_id])
   other_item_id     String?
-  other_item        Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
-  is_deleted        Boolean            @default(false)
+  other_item        Purchasing?         @relation(fields: [other_item_id], references: [other_item_id])
+  is_deleted        Boolean             @default(false)
 }
 
 model ActualBudgetItem {
@@ -178,10 +178,10 @@ model ActualBudgetItem {
 
 model BudgetItemCategory {
   category_id        Int                @id @default(autoincrement())
-  category_name      String             
+  category_name      String
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[]           
+  budget             Budget[]
   is_deleted         Boolean            @default(false)
 }
 
@@ -200,16 +200,16 @@ model Purchasing {
 }
 
 model Proposal {
-  proposal_id String         @id @default(uuid())
+  proposal_id   String         @id @default(uuid())
   proposal_name String
   proposal_link String
-  status      ProposalStatus @default(DRAFT)
-  client_name String         @unique
-  created_by  String
-  updated_by  String?
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-  is_deleted  Boolean        @default(false)
+  status        ProposalStatus @default(DRAFT)
+  client_name   String         @unique
+  created_by    String
+  updated_by    String?
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  is_deleted    Boolean        @default(false)
 }
 
 model Report {
@@ -284,7 +284,7 @@ enum EventStatus {
 }
 
 enum ProposalStatus {
-  DRAFT 
+  DRAFT
   ON_REVIEW
   APPROVED
   REJECTED

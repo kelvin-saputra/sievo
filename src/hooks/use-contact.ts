@@ -16,27 +16,25 @@ export default function useContact() {
     try {
       const response = await axios.get(API_URL);
       const rawContacts = response.data.data;
-  
+
       if (Array.isArray(rawContacts)) {
         const validatedContacts = rawContacts.map((c: unknown) => {
           const parsedContact = ContactSchema.parse(c);
-          
+
           const rawContact = c as { client?: object; vendor?: object };
-        
+
           let role: "none" | "client" | "vendor" = "none";
           if (rawContact.client) role = "client";
           if (rawContact.vendor) role = "vendor";
-          
+
           return {
             ...parsedContact,
-            is_deleted: parsedContact.is_deleted ?? false, 
-            updated_by: parsedContact.updated_by ?? null, 
-            description: parsedContact.description ?? null,
+            is_deleted: parsedContact.is_deleted ?? false,
+            updated_by: parsedContact.updated_by ?? null,
+            description: parsedContact.description ?? undefined,
             role
           };
         });
-        
-  
         setContacts(validatedContacts);
       } else {
         console.warn("Expected an array but received:", rawContacts);
@@ -48,18 +46,18 @@ export default function useContact() {
     }
     setLoading(false);
   }, []);
-  
+
   const fetchContactById = useCallback(async (id: string) => {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/${id}`);
       const rawContact = data.data;
       const parsedContact = ContactSchema.parse(rawContact);
-      
+
       let role: "none" | "client" | "vendor" = "none";
       if (rawContact.client) role = "client";
       if (rawContact.vendor) role = "vendor";
-      
+
       setContact({
         ...parsedContact,
         role
@@ -78,33 +76,33 @@ export default function useContact() {
   ) => {
     try {
       const { role, ...contactData } = data;
-      
+
       const updatedData = ContactSchema.partial().parse({
         ...contactData,
         updated_by: created_by,
       });
-      
+
       const { data: updatedContact } = await axios.put(
         `${API_URL}/${contactId}`,
         updatedData
       );
-      
+
       if (role) {
         await axios.put(
           `${API_URL}/${contactId}/role`,
           { role }
         );
       }
-      
+
       const parsedContact = ContactSchema.parse({
         ...updatedContact.data,
         role: role || updatedContact.data.role || "none"
       });
-      
+
       setContacts((prevContacts) =>
         prevContacts.map((c) => (c.contact_id === contactId ? parsedContact : c))
       );
-      
+
       if (contact?.contact_id === contactId) {
         setContact(parsedContact);
       }
@@ -118,7 +116,7 @@ export default function useContact() {
   const handleDeleteContact = async (contactId: string) => {
     try {
       await axios.delete(`${API_URL}/${contactId}`);
-      
+
       setContacts((prevContacts) =>
         prevContacts.filter((c) => c.contact_id !== contactId)
       );
@@ -134,30 +132,30 @@ export default function useContact() {
       const isDuplicate = contacts.some(
         (c: ContactSchema) => c.email.toLowerCase() === newContact.email.toLowerCase()
       );
-      
+
       if (isDuplicate) {
         toast.error("Email sudah terdaftar. Gunakan email lain.");
         return;
       }
-      
+
       const contactPayload = {
         ...newContact,
-        description: newContact.description || "", 
+        description: newContact.description || "",
         created_by: newContact.created_by || "550e8400-e29b-41d4-a716-446655440000",
         updated_by: newContact.updated_by || "550e8400-e29b-41d4-a716-446655440000",
       };
 
       const { data: createdContact } = await axios.post(API_URL, contactPayload);
-      
+
       const parsedContact = ContactSchema.parse({
         ...createdContact.data,
         role: newContact.role || "none"
       });
-      
+
       setContacts((prevContacts) => [...prevContacts, parsedContact]);
 
       toast.success("Contact berhasil ditambahkan!");
-      
+
     } catch (error) {
       console.error("Terjadi kesalahan saat menambahkan Contact:", error);
       toast.error("Gagal menambahkan Contact.");

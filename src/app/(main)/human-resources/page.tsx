@@ -13,7 +13,7 @@ export default function UsersPage() {
   }, [fetchAllUsers]);
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="p-6 w-full max-w-7xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Users</h1>
       <HrTable columns={hrColumns} data={users} />
     </div>

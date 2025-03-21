@@ -131,7 +131,7 @@
   --color-sidebar-secondary-foreground: var(--color-text-gray);
   --color-sidebar-primary: var(--color-blue-matahati);
   --color-sidebar-foreground: var(--color-blue-matahati);
-  --color-sidebar: var(--color-super-light-blue-matahati);
+  --color-sidebar: var(--color-blue-matahati);
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 

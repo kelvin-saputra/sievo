@@ -8,9 +8,6 @@ export const ContactSchema = z.object({
     name: z
         .string()
         .min(2, { message: "Nama kontak minimal 2 karakter" }),
-    pic_name: z
-        .string()
-        .min(2, { message: "Nama PIC kontak minimal 2 karakter" }),
     email: z
         .string()
         .email({ message: "Email tidak valid" })
@@ -23,7 +20,7 @@ export const ContactSchema = z.object({
         .string()
         .optional(),
     created_by: z
-        .string({required_error: "ID user wajib diisi"})
+        .string({ required_error: "ID user wajib diisi" })
         .uuid({ message: "ID user tidak valid" }),
     updated_by: z
         .string()
@@ -53,6 +50,6 @@ export type ContactWithRole = {
     created_at: Date;
     updated_at: Date;
     is_deleted: boolean;
-    role: "none" | "client" | "vendor"; 
-  };
-  
+    role: "none" | "client" | "vendor";
+};
+
