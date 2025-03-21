@@ -16,6 +16,7 @@ import useCategory from "@/hooks/use-category";
 import useActualBudget from "@/hooks/use-budget-actual";
 import usePurchasing from "@/hooks/use-purchase";
 import useVendorService from "@/hooks/use-vendor-service";
+import useInventory from "@/hooks/use-inventory";
 
 export default function EventLayout({
   children,
@@ -89,10 +90,10 @@ export default function EventLayout({
     fetchAllVendorServices,
   } = useVendorService();
 
-  // const {
-  //   inventories,
-  //   fetchInventories,
-  // } = useInventory();
+  const {
+    inventories,
+    fetchAllInventories,
+  } = useInventory();
   
   useEffect(() => {
     if (event_id) {
@@ -105,10 +106,10 @@ export default function EventLayout({
       fetchCategoriesByBudgetIdPlan();
       fetchCategoriesByActualBudgetId();
       fetchAllVendorServices();
-      // fetchInventories();
+      fetchAllInventories();
     }
     // TODO: Add fetch for inventory
-  }, [event_id, fetchActualBudget, fetchAllActualBudgetItems, fetchAllBudgetPlanItems, fetchAllTasks, fetchAllVendorServices, fetchBudgetPlan, fetchCategoriesByActualBudgetId, fetchCategoriesByBudgetIdPlan, fetchEventById, handleImportBudgetData]);
+  }, [event_id, fetchActualBudget, fetchAllActualBudgetItems, fetchAllBudgetPlanItems, fetchAllInventories, fetchAllTasks, fetchAllVendorServices, fetchBudgetPlan, fetchCategoriesByActualBudgetId, fetchCategoriesByBudgetIdPlan, fetchEventById, handleImportBudgetData]);
 
 if (eventLoading|| budgetPlanLoading || budgetCategoriesLoadingPlan || taskLoading) {
     return <EventDetailSkeleton />;
@@ -129,7 +130,7 @@ if (eventLoading|| budgetPlanLoading || budgetCategoriesLoadingPlan || taskLoadi
         actualBudgetItems,
         categoriesPlan,
         actualCategories,
-        // inventories,
+        inventories,
         vendorServices,
         loading: eventLoading || taskLoading || budgetPlanLoading || budgetCategoriesLoadingPlan || actualBudgetLoading,
         handleUpdateEvent,
@@ -156,7 +157,7 @@ if (eventLoading|| budgetPlanLoading || budgetCategoriesLoadingPlan || taskLoadi
         handleAddCategory,
         handleUpdateCategory,
         handleDeleteCategory,
-        // fetchAllInventories,
+        fetchAllInventories,
         fetchAllVendorServices,
         handleAddPurchase,
         handleUpdatePurchase,

@@ -13,7 +13,7 @@ export default function EventBudgetPlanningPage() {
     budgetPlan,
     budgetPlanItems,
     categoriesPlan,
-    // inventories,
+    inventories,
     vendorServices,
     loading: budgetPlanLoading,
     handleAddBudgetPlanItem,
@@ -104,7 +104,7 @@ export default function EventBudgetPlanningPage() {
               categoriesPlan={categoriesPlan}
               categoriesItemPlan={categoriesDict}
               // TODO: Add With Inventory and Vendor Services
-              inventories={[]}
+              inventories={inventories}
               vendorServices={vendorServices}
               budgetPlan={budgetPlan}
               totalPriceMap={totalPriceMap}

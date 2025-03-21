@@ -97,7 +97,6 @@ export function AddBudgetItemPlanForm({
         }
         
         await onAddBudgetItemPlan(budgetPlanData)
-        toast.success("Item added successfully")
       }
 
       // Reset form and close dialog

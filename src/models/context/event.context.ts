@@ -1,6 +1,6 @@
 // src/context/event-context.tsx
 import { createContext } from "react";
-import { BudgetItemCategorySchema, BudgetSchema, EventSchema, TaskSchema, VendorServiceSchema } from "@/models/schemas";
+import { BudgetItemCategorySchema, BudgetSchema, EventSchema, InventorySchema, TaskSchema, VendorServiceSchema } from "@/models/schemas";
 import { UpdateEventDTO } from "@/models/dto/event.dto";
 import { UpdateTaskDTO, AddTaskDTO, AddBudgetPlanItemDTO, UpdateBudgetPlanItemDTO, AddBudgetItemCategoryDTO, AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, AddPurchaseDTO, UpdatePurchaseDTO, UpdateBudgetItemCategoryDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
@@ -20,7 +20,7 @@ interface EventContextType {
   actualCategories: BudgetItemCategorySchema[];
 
   // INVENTORY
-  // inventories: InventorySchema[];
+  inventories: InventorySchema[];
 
   // VENDORSERVICE
   vendorServices: VendorServiceSchema[];
@@ -75,7 +75,7 @@ interface EventContextType {
   handleDeleteCategory: (categoryId: number, is_actual:boolean) => Promise<void>;
 
   // INVENTORY
-  // fetchAllInventories: () => Promise<void>;
+  fetchAllInventories: () => Promise<void>;
 
   // VENDOR SERVICE
   fetchAllVendorServices: () => Promise<void>;

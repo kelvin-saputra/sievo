@@ -1,11 +1,11 @@
 import { AddActualBudgetItemDTO, UpdateActualBudgetItemDTO } from "@/models/dto";
 import { ActualBudgetItemResponse } from "@/models/response/item-actual.response";
-import { BudgetSchema } from "@/models/schemas";
+import { ActualBudgetItemSchema, BudgetSchema } from "@/models/schemas";
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-const BUDGET_IMPL_API = process.env.NEXT_PUBLIC_BUDGET_ACTUAL_API_URL!;
+const BUDGET_IMPL_API = process.env.NEXT_PUBLIC_BUDGET_ACTUAL_API_URL;
 const BUDGET_PLAN_API= process.env.NEXT_PUBLIC_BUDGET_PLAN_API_URL!;
 const BUDGET_IMPL_BATCH_API = process.env.NEXT_PUBLIC_IMPL_BATCH_API_URL!;
 const BUDGET_API = process.env.NEXT_PUBLIC_BUDGET_API_URL!;
@@ -47,7 +47,6 @@ export default function useActualBudget(event_id: string) {
                 requestData = { budget_id: actualBudget?.budget_id };
             }
             const { data: rawActualBudgetItems } = await axios.get(`${BUDGET_IMPL_API}`, { params: requestData });
-            console.log("RAWWWWWWWWWWWWR")
             const validatedActualBudgetItems = rawActualBudgetItems.data.map((budget: any) => ActualBudgetItemResponse.parse(budget));
             setActualBudgetItems(validatedActualBudgetItems);
         } catch (error){
@@ -64,12 +63,14 @@ export default function useActualBudget(event_id: string) {
                 ...data,
                 budget_id: actualBudget?.budget_id,
             };
-            const response = await axios.post(`${BUDGET_IMPL_API}`, requestData);
+            const parsedRequest = ActualBudgetItemSchema.parse(requestData)
+            const response = await axios.post(`${BUDGET_IMPL_API}`, parsedRequest);
 
             const parsedActualBudgetItem = ActualBudgetItemResponse.parse(response.data);
             setActualBudgetItems((prevItems) => [...prevItems, parsedActualBudgetItem]);
             toast.success("Berhasil menambahkan item budget aktual.");
-        } catch {
+        } catch (error) {
+            console.log(error instanceof Error ? error.message : error);
             toast.error("Gagal menambahkan item budget aktual.");
         }
         setLoading(false);
@@ -98,7 +99,10 @@ export default function useActualBudget(event_id: string) {
     const handleDeleteActualBudgetItem = async (actual_budget_item_id: string) => {
         setLoading(true);
         try {
-            await axios.delete(`${BUDGET_IMPL_API}/${actual_budget_item_id}`);
+            const requestData = {
+                actual_budget_item_id: actual_budget_item_id,
+            }
+            await axios.delete(`${BUDGET_IMPL_API}`, { data: requestData });
             setActualBudgetItems((prevItems) => prevItems.filter((item) => item.actual_budget_item_id !== actual_budget_item_id));
             toast.success("Berhasil menghapus item budget aktual.");
         } catch {

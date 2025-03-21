@@ -13,7 +13,7 @@ export default function EventBudgetImplementationPage() {
     actualBudget,
     actualBudgetItems,
     actualCategories,
-    // inventories,
+    inventories,
     vendorServices,
     loading: actualBudgetLoading,
     handleAddActualBudgetItem,
@@ -92,7 +92,7 @@ export default function EventBudgetImplementationPage() {
               actualCategories={actualCategories}
               categoriesActualItems={categoriesDict}
               // TODO: Add With Inventory and Vendor Services
-              inventories={[]}
+              inventories={inventories}
               vendorServices={vendorServices}
               actualBudget={actualBudget}
               totalPriceMap={totalPriceMap}

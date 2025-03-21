@@ -62,6 +62,25 @@ BUILD:
       - next_build.part.*
     expire_in: 1h
 
+DEPLOYMENT_DEVELOPMENT:
+  stage: Deployment
+  only:
+    - development
+  before_script:
+    - cat next_build.part.* > next_build.tar
+    - tar -xvf next_build.tar
+    - npm config set legacy-peer-deps=true
+    - npm install -g vercel
+    - npx prisma generate
+    - vercel pull --yes --environment=development --token $VERCEL_TOKEN
+  script:
+    - vercel build --token $VERCEL_TOKEN
+    - vercel deploy --prebuilt --token $VERCEL_TOKEN --alias $DEV_URL
+  environment:
+    name: development
+    url: $DEV_URL
+
+
 DEPLOYMENT_PREVIEW:
   stage: Deployment
   only:
@@ -75,7 +94,7 @@ DEPLOYMENT_PREVIEW:
     - vercel pull --yes --environment=preview --token $VERCEL_TOKEN
   script:
     - vercel build --token $VERCEL_TOKEN
-    - vercel deploy --prebuilt --token $VERCEL_TOKEN
+    - vercel deploy --prebuilt --token $VERCEL_TOKEN --alias $STAGGING_URL
   environment:
     name: preview
     url: $STAGGING_URL
@@ -93,7 +112,7 @@ DEPLOYMENT_PRODUCTION:
     - vercel pull --yes --environment=production --token $VERCEL_TOKEN
   script:
     - vercel build --prod --token $VERCEL_TOKEN
-    - vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token $VERCEL_TOKEN --alias $PRODUCTION_URL
   environment:
     name: production
     url: $PRODUCTION_URL

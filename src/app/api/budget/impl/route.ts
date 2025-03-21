@@ -82,7 +82,7 @@ export async function POST(req: Request) {
                         ...actualData,
                         category: {connect: {category_id: categoryId}},
                         budget: {connect: {budget_id: budgetId}},
-                        other_item: { connect: { purchasing_id: purchasingId } },
+                        other_item: { connect: { other_item_id: purchasingId } },
                     },
                     include: {
                         category: true,
@@ -128,16 +128,18 @@ export async function POST(req: Request) {
             return responseFormat(400, "Gagal dalam menambahkan anggaran", null);
         }
         return responseFormat(201, "Anggaran berhasil dibuat", actualBudgetItem);
-    } catch {
+    } catch (error) {
+        console.log(error instanceof Error ? error.message : error);
         return responseFormat(500, "Gagal membuat anggaran", null);
     }
 }
 
 export async function DELETE(req: Request) {
     try {
+        console.log("masuk DELETE budgetitem actual")
         const reqBody = await req.json();
         const { actual_budget_item_id } = reqBody;
-
+        console.log(actual_budget_item_id)
         const deletedBudgetItem = await prisma.$transaction(async (transactions) => {
             const actualBudget = await transactions.actualBudgetItem.update({
                 where: { actual_budget_item_id: actual_budget_item_id, is_deleted: false },
@@ -149,6 +151,7 @@ export async function DELETE(req: Request) {
                     other_item: true,
                 },
             });
+            console.log("DELETE actualBudgetItem", actualBudget);
             if (actualBudget.vendor_service_id) {
                 await transactions.vendorService.update({
                     where: { service_id: actualBudget.vendor_service_id },
@@ -181,15 +184,6 @@ export async function DELETE(req: Request) {
                 });
             }
 
-            await transactions.budgetItemCategory.update({
-                where: { category_id: actualBudget.category_id },
-                data: {
-                    actual_budget_item: {
-                        disconnect: { actual_budget_item_id: actual_budget_item_id },
-                    },
-                },
-            });
-
             await transactions.budget.update({
                 where: { budget_id: actualBudget.budget_id! },
                 data: {
@@ -206,7 +200,8 @@ export async function DELETE(req: Request) {
         }
         
         return responseFormat(200, "Rencana anggaran berhasil dihapus", deletedBudgetItem);
-    } catch {
+    } catch (error) {
+        console.log(error instanceof Error ? error.message : error);
         return responseFormat(500, "Gagal menghapus rencana anggaran", null);
     }
 }
@@ -214,7 +209,7 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
     try {
         const reqBody = await req.json();
-        const { actual_budget_item_id, category_id:categoryId, vendor_service_id:serviceId, inventory_id:inventoryId, other_item_id:purchasingId,  ...actualData } = reqBody;
+        const { actual_budget_item_id, category_id:categoryId, vendor_service_id:serviceId, inventory_id:inventoryId, other_item_id:purchasingId, budget_id:budgetId,  ...actualData } = reqBody;
 
         const existingActualBudget = await prisma.actualBudgetItem.findFirst({
             where: { actual_budget_item_id: actual_budget_item_id, is_deleted: false },
@@ -335,11 +330,8 @@ export async function PUT(req: Request) {
                 where: { actual_budget_item_id: actual_budget_item_id },
                 data: {
                     ...actualData,
-                    inventory_id: inventoryId,
-                    vendor_service_id: serviceId,
-                    other_item_id: purchasingId,
                     category: {connect: {category_id: categoryId}},
-                    budget: {connect: {budget_id: existingActualBudget.budget_id}},
+                    budget: {connect: {budget_id: budgetId}},
                 },
             });
             return updatedActualBudget;
@@ -351,19 +343,19 @@ export async function PUT(req: Request) {
         }
 
         return responseFormat(200, "Rencana anggaran berhasil diubah", updatedActualBudget);
-    } catch {
+    } catch (error){
+        console.log(error instanceof Error ? error.message : error);
         return responseFormat(500, "Gagal mengubah rencana anggaran", null);
     }
 }
 
 export async function GET(req: Request) {
     try {
+        console.log("Masuk API GET ACTUAL")
         const { searchParams } = new URL(req.url);
         const event_id = searchParams.get("event_id");
         const budget_id = searchParams.get("budget_id");
 
-        console.log(event_id)
-        console.log(budget_id)
 
         if (budget_id) {
             console.log("pake budget id")
@@ -382,16 +374,15 @@ export async function GET(req: Request) {
         }
 
         if (event_id) {
-            console.log("pake event id")
             const actualBudgetItems = await prisma.$transaction(async (transactions) => {
                 const budget = await transactions.budget.findFirst({
                     where: {
                         event_id: event_id,
                         is_deleted: false,
-                        is_actual: false,
+                        is_actual: true,
                     },
                 });
-    
+                console.log("Masuk dapat budgetitng", budget)
                 const actualBudgetItems = await prisma.actualBudgetItem.findMany({
                     where: {
                         budget_id: budget?.budget_id,
@@ -405,6 +396,7 @@ export async function GET(req: Request) {
                 });
                 return actualBudgetItems;
             });
+            console.log(actualBudgetItems)
             return responseFormat(200, "Rencana anggaran ditemukan", actualBudgetItems);
         }
     } catch (error) {

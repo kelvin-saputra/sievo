@@ -26,7 +26,6 @@ export async function GET(req: Request) {
                 },
             })
             console.log("Categories", categories)
-            console.log("Budget", budget)
             return categories;
         });
 
