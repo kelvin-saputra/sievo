@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { useSafeContext } from "@/hooks/use-safe-context";
-import EventContext from "@/models/context/event-context";
+import EventContext from "@/models/context/event.context";
 import { EventStatusEnum } from "@/models/enums";
 import {
   DropdownMenu,

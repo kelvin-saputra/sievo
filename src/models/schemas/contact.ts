@@ -18,7 +18,7 @@ export const ContactSchema = z.object({
         .min(10, { message: "Nomor handphone minimal 10 karakter" }),
     description: z
         .string()
-        .nullable(),
+        .optional(),
     created_by: z
         .string({ required_error: "ID user wajib diisi" })
         .uuid({ message: "ID user tidak valid" }),
@@ -50,6 +50,6 @@ export type ContactWithRole = {
     created_at: Date;
     updated_at: Date;
     is_deleted: boolean;
-    role: "none" | "client" | "vendor"; 
-  };
-  
+    role: "none" | "client" | "vendor";
+};
+
