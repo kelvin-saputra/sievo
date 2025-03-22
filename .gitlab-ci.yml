@@ -30,6 +30,7 @@ DEPENDENCIES_INSTALLATION:
   #   paths:
   #     - node_modules.part.*
   #   expire_in: 1h
+  
 
 TESTING:
   stage: Testing
