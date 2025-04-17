@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { cookies } from "next/headers";
 import { encryptAES } from "./aes";
 import redisClient from "@/utils/redis";
 
@@ -69,4 +68,11 @@ export async function updateAccessToken(refreshToken: string) {
     } catch {
         throw new Error("Invalid refresh token");
     }
+}
+
+export async function createRegisterToken(role:string, duration:number) {
+    const token = jwt.sign({ role: role }, ACCESS_SECRET, { expiresIn: `${duration}s` })
+
+    await redisClient.set(`registerToken:${encryptAES(token)}`, token, 'EX', duration);
+    return token;
 }
