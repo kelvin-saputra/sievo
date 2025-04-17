@@ -1,39 +1,72 @@
-import { UserSchema } from "@/models/schemas";
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
 import { encryptAES } from "./aes";
 import redisClient from "@/utils/redis";
 
-
-export async function generateToken(user: UserSchema) {
-    if (!process.env.JWT_TOKEN_SECRET || !process.env.JWT_REFRESH_TOKEN_SECRET) {
-        throw new Error("JWT token secret is not set");
-    }
-
+const ACCESS_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET!
+const REFRESH_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET!
+export async function setSession(userId: string, role: string) {
     try {
-        const accessToken = jwt.sign({ id:user.id, role: user.role }, process.env.JWT_TOKEN_SECRET, { expiresIn:'15m' });
-        const refreshToken = jwt.sign({ id:user.id, role:user.role }, process.env.JWT_REFRESH_TOKEN_SECRET, { expiresIn:'1d' });
+        const accessToken = jwt.sign({ id: userId, role: role }, ACCESS_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign({ id: userId, role: role }, REFRESH_SECRET, { expiresIn: '1d' });
 
-        return {accessToken, refreshToken};
+        return setCookies(accessToken, refreshToken, userId);
     } catch {
         throw new Error("Token Generation Failed");
     }
 }
 
-export async function setCookies(accessToken:string, refreshToken:string, userID:string) {
-    const cookieStore = await cookies();
-    // SET accessToke   n cookie for 15 minutes
-    cookieStore.set("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 15 * 60
-    })
+export async function setCookies(accessToken: string, refreshToken: string, userID: string) {
+    const cookiesToSet = [
+        {
+            name: "accessToken",
+            value: accessToken,
+            options: {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 15 * 60,
+                path: "/"
+            }
+        },
+        {
+            name: "refreshToken",
+            value: refreshToken,
+            options: {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 1 * 24 * 60 * 60,
+                path: "/"
+            }
+        }
+    ]
 
-    redisClient.set(`refreshToken:${encryptAES(userID)}`, refreshToken, 'EX', 1 * 24 * 60 * 60);
+    await redisClient.set(`refreshToken:${encryptAES(userID)}`, refreshToken, 'EX', 1 * 24 * 60 * 60);
+    return cookiesToSet;
 }
 
-export async function sendToken(user:UserSchema) {
-    const {accessToken, refreshToken} = await generateToken(user);
-    await setCookies(accessToken, refreshToken, user.id);
+export async function updateAccessToken(refreshToken: string) {
+    try {
+        const decodedRefreshToken = jwt.verify(refreshToken, REFRESH_SECRET);
+        const newAccessToken = jwt.sign({ id: (decodedRefreshToken as any).id, role: (decodedRefreshToken as any).role }, ACCESS_SECRET, { expiresIn: '15m' });
+
+        const cookiesToSet = [
+            {
+                name: "accessToken",
+                value: newAccessToken,
+                options: {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    maxAge: 15 * 60,
+                    path: "/"
+                }
+            }
+        ]
+
+        return cookiesToSet;
+    } catch {
+        throw new Error("Invalid refresh token");
+    }
 }

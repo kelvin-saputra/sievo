@@ -17,6 +17,10 @@ export const UserSchema = z.object({
         .string()
         .email({ message: "Email tidak valid" })
         .nonempty({ message: "Email wajib diisi" }),
+    password: z
+        .string()
+        .nonempty({message: "Password wajib diisi" })
+        .min(8, { message: "Password minimal 8 karakter" }),
     role: RoleEnum.default("FREELANCE"),
     is_active: z
         .boolean()
