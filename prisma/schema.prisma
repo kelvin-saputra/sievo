@@ -251,7 +251,6 @@ model Event {
 }
 
 enum ROLE {
-  ADMIN
   EXECUTIVE
   INTERNAL
   FREELANCE
