@@ -1,5 +1,4 @@
 import { createRegisterToken } from "@/lib/auth";
-import { RoleEnum } from "@/models/enums";
 import { responseFormat } from "@/utils/api";
 
 export async function GET(req: Request) {
