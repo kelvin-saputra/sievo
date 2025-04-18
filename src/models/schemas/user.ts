@@ -20,7 +20,8 @@ export const UserSchema = z.object({
     password: z
         .string()
         .nonempty({message: "Password wajib diisi" })
-        .min(8, { message: "Password minimal 8 karakter" }),
+        .min(8, { message: "Password minimal 8 karakter" })
+        .optional(),
     role: RoleEnum.default("FREELANCE"),
     is_active: z
         .boolean()

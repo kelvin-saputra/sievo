@@ -30,7 +30,7 @@ export async function POST(req: Request) {
                 phone_number: encryptAES(phone_number),
                 role: role,
                 name: name,
-                is_admin: true,
+                is_admin: true || is_admin,
             }
         })
 
