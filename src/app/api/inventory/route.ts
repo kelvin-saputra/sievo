@@ -32,4 +32,3 @@ export async function GET() {
         return responseFormat(500, "Failed to retrieve all inventory item", null);
     }
 }
-

@@ -25,7 +25,8 @@ import { useState } from "react";
 
 const ItemDetail = () => {
   const { itemId } = useParams();
-  const { inventory, loading, fetchInventoryById } = useInventory(); 
+
+  const { inventory, loading, fetchInventoryById, handleDeleteInventory, handleUpdateInventory } = useInventory(); 
   const [open, setOpen] = useState(false);
   
   React.useEffect(() => {
@@ -52,7 +53,7 @@ const ItemDetail = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full">
           <p className="text-muted-foreground text-xl sm:text-2xl">Item Detail</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <EditInventoryModal inventory={inventory} onUpdateInventory={(data) => console.log("Updated Data:", data)} open={open} setOpen={setOpen} />
+            <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
             <DeleteInventoryModal inventoryId={inventory.inventory_id} onDeleteInventory={(id) => console.log("Deleted Data:", id)} open={open} setOpen={setOpen} />
           </div>
         </div>

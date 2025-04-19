@@ -44,36 +44,66 @@ export default function useInventory() {
 
   const handleUpdateInventory = async (
     inventoryId: string,
-    created_by: string,
     data: UpdateInventoryDTO
   ) => {
     try {
+      // Fetch semua inventaris terlebih dahulu untuk mengecek apakah ada duplikasi
+      const response = await axios.get(API_URL);
+      if (response.status !== 200) {
+        toast.error("Failed to fetch existing inventories: " + response.data.message);
+        return;
+      }
+  
+      const existingInventories = response.data.data || [];
+      if (!Array.isArray(existingInventories)) {
+        toast.error("Failed to fetch existing inventories.");
+        return;
+      }
+  
+      // Mengecek apakah ada duplikasi nama item yang sedang diupdate
+      const isDuplicate = existingInventories.some(
+        (item: InventorySchema) =>
+          item.item_name.toLowerCase() === data.item_name?.toLowerCase() &&
+          item.inventory_id !== inventoryId // Jangan cek duplikasi untuk item yang sedang diupdate
+      );
+  
+      if (isDuplicate) {
+        toast.error("Item name already exists. Please choose a different name.");
+        return;
+      }
+  
+      // Persiapkan data untuk request PUT
       const updatedData = InventorySchema.partial().parse({
         ...data,
         inventoryId: inventoryId,
-        created_by: created_by,
-        // TODO: Connect the people that login ID here
-        updated_by: "ID Anonymous",
+        updated_by: "550e8400-e29b-41d4-a716-446655440000", // Gunakan ID yang sesuai dari login
+        updated_at: new Date(),
       });
-
+  
+      // Kirim request PUT untuk update inventory
       const { data: updatedInventory } = await axios.put(
         `${API_URL}/${inventoryId}`,
         updatedData
       );
-
       const parsedInventory = InventorySchema.parse(updatedInventory.data);
-
+  
+      // Update state inventories setelah data berhasil diperbarui
       setInventorys((prevInventorys) =>
-        prevInventorys.map((ev) => (ev.inventory_id === inventoryId ? parsedInventory : ev))
+        prevInventorys.map((ev) =>
+          ev.inventory_id === inventoryId ? parsedInventory : ev
+        )
       );
       if (inventory?.inventory_id === inventoryId) {
         setInventory(parsedInventory);
       }
+  
       toast.success("Inventory berhasil diperbarui!");
-    } catch {
+    } catch (error) {
+      console.error("Failed to update inventory:", error);
       toast.error("Gagal memperbarui Inventory.");
     }
   };
+  
 
   const handleDeleteInventory = async (inventoryId: string) => {
     try {

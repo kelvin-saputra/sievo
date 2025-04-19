@@ -42,3 +42,28 @@ export async function DELETE(req: Request) {
         return responseFormat(500, "Failed to delete inventory item", null);
     }
 }
+
+/**
+ * ✅ PUT Replace Inventory Item by ID
+ */
+export async function PUT(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const id = url.pathname.split("/").pop();
+        const dataBody = await req.json();
+        const { ...inventoryData } = dataBody;
+
+        const updatedInventoryItem = await prisma.inventory.update({
+            where: { inventory_id: id },
+            data: {
+                ...inventoryData,
+            },
+        });
+
+        return responseFormat(200, "[REPLACED] Item successfully replaced!", updatedInventoryItem);
+    } catch (error) {
+        console.error("Error replacing inventory item:", error);
+        return responseFormat(500, "Failed to replace inventory item", null);
+    }
+}
+
