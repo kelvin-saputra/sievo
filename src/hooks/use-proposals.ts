@@ -35,28 +35,37 @@ export default function useProposal() {
 
   const handleAddProposal = async (newProposal: addProposalDTO) => {
     try {
+      
       const proposalData = ProposalSchema.partial().parse({
         ...newProposal,
+        status: newProposal.status ?? "DRAFT", 
         created_by: "ID Anonymous",
         updated_by: "ID Anonymous",
+        created_at: new Date().toISOString(), // ✅ Ensure valid ISO format
+        updated_at: new Date().toISOString(),
       });
-
+  
       const { data: createdProposal } = await axios.post(API_URL, proposalData);
-
+  
       const transformedProposal = {
         ...createdProposal,
-        created_at: new Date(createdProposal.created_at),
-        updated_at: new Date(createdProposal.updated_at),
+        created_at: createdProposal.created_at
+          ? new Date(createdProposal.created_at)
+          : new Date(),
+        updated_at: createdProposal.updated_at
+          ? new Date(createdProposal.updated_at)
+          : new Date(),
       };
-
+  
       const parsedProposal = ProposalSchema.parse(transformedProposal);
       setProposals((prevProposal) => [...prevProposal, parsedProposal]);
       toast.success("Proposal berhasil ditambahkan!");
-    } catch {
+    } catch (error) {
+      console.error("❌ Failed to add proposal:", error); // ✅ Log for debugging
       toast.error("Gagal menambahkan Proposal");
     }
   };
-
+  
   const handleStatusChange = async (proposalId: string, newStatus: ProposalStatusEnum) => {
     try {
       setLoading(true);
@@ -81,8 +90,27 @@ export default function useProposal() {
   };
 
   const handleDeleteProposal = async (proposalId: string) => {
-    return proposalId;
-  }
+    try {
+      setLoading(true);
+      const { data: updatedProposal } = await axios.delete(`/api/proposal/${proposalId}`);
+  
+      setProposals((prevProposals) =>
+        prevProposals.map((proposal) =>
+          proposal.proposal_id === proposalId
+            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at) }
+            : proposal
+        )
+      );
+      await fetchAllProposals();
+      toast.success("Proposal deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete proposal.");
+      console.error("Delete proposal error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   return {
     proposals,

@@ -9,21 +9,22 @@ export const ProposalSchema = z.object({
 
     proposal_name: z
       .string({ required_error: "Nama client wajib diisi" })
-      .min(1, "Nama client tidak boleh kosong"), // ✅ Prevents empty strings
+      .min(1, "Nama client tidak boleh kosong"),
 
     status: ProposalStatusEnum.default("DRAFT"),
 
     client_name: z
       .string({ required_error: "Nama client wajib diisi" })
-      .min(1, "Nama client tidak boleh kosong"), // ✅ Prevents empty strings
+      .min(1, "Nama client tidak boleh kosong"),
 
     proposal_link: z
       .string({ required_error: "Link Proposal wajib diisi" })
-      .min(1, "Link Proposal tidak boleh kosong"), // ✅ Prevents empty strings
+      .min(1, "Link Proposal tidak boleh kosong") 
+      .url("Link Proposal harus berupa URL yang valid"),
 
     created_by: z
       .string({ required_error: "ID user wajib diisi" })
-      .min(1, "ID user tidak boleh kosong"), // ✅ Prevents empty strings
+      .min(1, "ID user tidak boleh kosong"), 
 
     updated_by: z.string().optional(),
 

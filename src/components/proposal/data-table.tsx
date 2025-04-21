@@ -30,17 +30,16 @@ import { ProposalStatusEnum } from "@/models/enums"
 interface ProposalTableProps {
   columns: ColumnDef<Proposal, unknown>[]
   data: Proposal[]
-  onDelete: (proposal_name: string) => void
+  onDelete: (proposalId: string) => void
 }
 
-export function ProposalTable({ columns, data }: ProposalTableProps) {
+export function ProposalTable({ columns, data, onDelete }: ProposalTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [statusFilter, setStatusFilter] = React.useState<ProposalStatusEnum | undefined>(undefined)
 
-  // Apply status filter to the data before passing to the table
   const filteredData = React.useMemo(() => {
     return statusFilter ? data.filter((proposal) => proposal.status === statusFilter) : data
   }, [data, statusFilter])
@@ -174,4 +173,3 @@ export function ProposalTable({ columns, data }: ProposalTableProps) {
     </div>
   )
 }
-

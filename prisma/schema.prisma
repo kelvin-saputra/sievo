@@ -205,7 +205,7 @@ model Proposal {
   proposal_name String
   proposal_link String
   status        ProposalStatus @default(DRAFT)
-  client_name   String         @unique
+  client_name   String         
   created_by    String
   updated_by    String?
   created_at    DateTime       @default(now())
