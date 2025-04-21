@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import type { ProposalStatusEnum } from "@/models/enums"
 import StatusDropdown from "@/components/proposal/status-dropdown"
 import { useState } from "react"
-import { DeleteConfirmationModal } from "./delete-confirmation-modal"
+import { DeleteConfirmationModal } from "./form/delete-confirmation-modal"
+import { UpdateProposalModal } from "./form/edit-proposal-modal"
+import { updateProposalDTO } from "@/models/dto/proposal.dto"
 
 export interface Proposal {
   proposal_id: string
@@ -15,13 +17,28 @@ export interface Proposal {
   client_name: string
   proposal_link: string
   updated_at: string
+  updated_by:string
 }
 
-function ActionCell({ row, onDelete }: { row: any; onDelete: (proposalName: string) => void }) {
+// Create a wrapper component for the actions cell to manage delete and update modals
+function ActionCell({
+  row,
+  onDelete,
+  onUpdate,
+}: {
+  row: any
+  onDelete: (proposalId: string) => void
+  onUpdate: (proposalId: string, updatedBy: string, data:updateProposalDTO) => void
+}) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
 
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true)
+  }
+
+  const handleEditClick = () => {
+    setIsUpdateModalOpen(true)
   }
 
   const handleConfirmDelete = () => {
@@ -33,12 +50,7 @@ function ActionCell({ row, onDelete }: { row: any; onDelete: (proposalName: stri
     <>
       <div className="flex justify-center space-x-2">
         {/* Edit Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="p-1 h-8 w-8"
-          onClick={() => console.log("Edit Proposal", row.original.proposal_name)}
-        >
+        <Button variant="outline" size="icon" className="p-1 h-8 w-8" onClick={handleEditClick}>
           <Pencil className="h-4 w-4" />
         </Button>
 
@@ -53,6 +65,13 @@ function ActionCell({ row, onDelete }: { row: any; onDelete: (proposalName: stri
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         proposalName={row.original.proposal_name}
+      />
+
+      <UpdateProposalModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        onUpdate={onUpdate}
+        proposal={row.original}
       />
     </>
   )
@@ -124,20 +143,29 @@ export const proposalColumns = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }: any) => <ActionCell row={row} onDelete={(id) => console.log("Delete Proposal", id)} />,
+    cell: ({ row }: any) => (
+      <ActionCell
+        row={row}
+        onDelete={(id) => console.log("Delete Proposal", id)}
+        onUpdate={(id, data) => console.log("Update Proposal", id, data)}
+      />
+    ),
   },
 ] as ColumnDef<Proposal, unknown>[]
 
-// Export a function to create columns with the delete handler
-export function createProposalColumnsWithActions(onDelete: (proposalId: string) => void) {
+// Export a function to create columns with the delete and update handlers
+export function createProposalColumnsWithActions(
+  onDelete: (proposalId: string) => void,
+  onUpdate: (proposalId: string, updatedBy: string, data:updateProposalDTO) => void,
+) {
   // Create a copy of the columns array
   const columnsWithActions = [...proposalColumns]
 
-  // Replace the actions column with one that has the onDelete handler
+  // Replace the actions column with one that has the onDelete and onUpdate handlers
   columnsWithActions[columnsWithActions.length - 1] = {
     id: "actions",
     header: "Actions",
-    cell: ({ row }: any) => <ActionCell row={row} onDelete={onDelete} />,
+    cell: ({ row }: any) => <ActionCell row={row} onDelete={onDelete} onUpdate={onUpdate} />,
   }
 
   return columnsWithActions

@@ -10,28 +10,21 @@ import { Button } from "@/components/ui/button"
 import { AddProposalModal } from "@/components/proposal/form/add-proposal-modal"
 
 export default function ViewAllProposal() {
-  const { proposals, loading, fetchAllProposals, handleAddProposal, handleDeleteProposal } = useProposal()
-  const [currentPage, setCurrentPage] = useState(1)
+  const { proposals, loading, fetchAllProposals, handleAddProposal, handleUpdateProposal, handleDeleteProposal } =
+    useProposal()
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const itemsPerPage = 8
 
   useEffect(() => {
     fetchAllProposals()
   }, [fetchAllProposals])
 
-  const paginatedProposals = proposals
-  .map((proposal) => ({
+  const formattedProposals = proposals.map((proposal) => ({
     ...proposal,
-    updated_at:
-      proposal.updated_at && !isNaN(new Date(proposal.updated_at).getTime())
-        ? new Date(proposal.updated_at).toISOString()
-        : "", // or use `null`, `"-"`, etc.
+    updated_at: new Date(proposal.updated_at).toISOString(),
+    updated_by: proposal.updated_by ?? "system",
   }))
-  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const totalPages = Math.ceil(proposals.length / itemsPerPage)
-
-  const columnsWithActions = createProposalColumnsWithActions(handleDeleteProposal)
+  const columnsWithActions = createProposalColumnsWithActions(handleDeleteProposal, handleUpdateProposal)
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
@@ -55,32 +48,9 @@ export default function ViewAllProposal() {
           ) : proposals.length === 0 ? (
             <div className="p-6 text-center text-gray-500 text-lg">No proposals available</div>
           ) : (
-            <ProposalTable columns={columnsWithActions} data={paginatedProposals} onDelete={handleDeleteProposal} />
+            <ProposalTable columns={columnsWithActions} data={formattedProposals} onDelete={handleDeleteProposal} />
           )}
         </div>
-        {proposals.length > 0 && (
-          <div className="p-4 border-t flex justify-end items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   )

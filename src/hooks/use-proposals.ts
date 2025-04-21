@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { ProposalSchema } from "@/models/schemas";
 import { useState, useCallback } from "react";
-import { addProposalDTO } from "@/models/dto/proposal.dto";
+import { addProposalDTO, updateProposalDTO } from "@/models/dto/proposal.dto";
 import { ProposalStatusEnum } from "@/models/enums";
 
 const API_URL = process.env.NEXT_PUBLIC_PROPOSAL_API_URL!;
@@ -110,6 +110,46 @@ export default function useProposal() {
       setLoading(false);
     }
   };
+
+  const handleUpdateProposal = async (
+    proposalId: string,
+    updated_by: string,
+    data: updateProposalDTO
+  ) => {
+    try {
+      const updatedData = ProposalSchema.pick({
+        proposal_name: true,
+        client_name: true,
+        proposal_link: true,
+        updated_by: true,
+        updated_at: true,
+      })
+        .partial()
+        .parse({
+          ...data,
+          updated_by,
+          updated_at: new Date().toISOString(),
+        });
+  
+      const { data: updatedProposal } = await axios.put(
+        `/api/proposal/${proposalId}`,
+        updatedData
+      );
+  
+      const parsedProposal = ProposalSchema.parse(updatedProposal);
+  
+      setProposals((prevProposals) =>
+        prevProposals.map((p) =>
+          p.proposal_id === proposalId ? parsedProposal : p
+        )
+      );
+  
+      toast.success("Proposal berhasil diperbarui!");
+    } catch (error) {
+      console.error("❌ Gagal memperbarui Proposal:", error);
+      toast.error("Gagal memperbarui Proposal.");
+    }
+  };
   
 
   return {
@@ -119,5 +159,6 @@ export default function useProposal() {
     handleAddProposal,
     handleDeleteProposal,
     handleStatusChange,
+    handleUpdateProposal,
   };
 }
