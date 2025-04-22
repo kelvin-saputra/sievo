@@ -33,7 +33,6 @@ export function UpdateProposalModal({ isOpen, onClose, onUpdate, proposal }: Upd
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
     reset,
   } = useForm<UpdateProposalType>({

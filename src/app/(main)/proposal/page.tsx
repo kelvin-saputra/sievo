@@ -12,18 +12,23 @@ import { AddProposalModal } from "@/components/proposal/form/add-proposal-modal"
 export default function ViewAllProposal() {
   const { proposals, loading, fetchAllProposals, handleAddProposal, handleUpdateProposal, handleDeleteProposal } =
     useProposal()
+  const [currentPage, setCurrentPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const itemsPerPage = 8
 
   useEffect(() => {
     fetchAllProposals()
   }, [fetchAllProposals])
 
-  const formattedProposals = proposals.map((proposal) => ({
-    ...proposal,
-    updated_at: new Date(proposal.updated_at).toISOString(),
-    updated_by: proposal.updated_by ?? "system",
-  }))
+  const paginatedProposals = proposals
+    .map((proposal) => ({
+      ...proposal,
+      updated_at: new Date(proposal.updated_at).toISOString(),
+      updated_by: proposal.updated_by ?? "system",
+    }))
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
+  const totalPages = Math.ceil(proposals.length / itemsPerPage)
   const columnsWithActions = createProposalColumnsWithActions(handleDeleteProposal, handleUpdateProposal)
 
   return (
@@ -48,9 +53,32 @@ export default function ViewAllProposal() {
           ) : proposals.length === 0 ? (
             <div className="p-6 text-center text-gray-500 text-lg">No proposals available</div>
           ) : (
-            <ProposalTable columns={columnsWithActions} data={formattedProposals} onDelete={handleDeleteProposal} />
+            <ProposalTable columns={columnsWithActions} data={paginatedProposals} />
           )}
         </div>
+        {proposals.length > 0 && (
+          <div className="p-4 border-t flex justify-end items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

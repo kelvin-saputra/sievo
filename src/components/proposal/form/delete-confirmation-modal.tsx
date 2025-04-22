@@ -15,10 +15,10 @@ interface DeleteConfirmationModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
-  proposalName?: string
+  proposalName: string
 }
 
-export function DeleteConfirmationModal({ isOpen, onClose, onConfirm, proposalName }: DeleteConfirmationModalProps) {
+export function DeleteConfirmationModal({ isOpen, onClose, onConfirm}: DeleteConfirmationModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">

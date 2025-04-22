@@ -20,7 +20,6 @@ export interface Proposal {
   updated_by:string
 }
 
-// Create a wrapper component for the actions cell to manage delete and update modals
 function ActionCell({
   row,
   onDelete,

@@ -92,7 +92,9 @@ export default function useProposal() {
   const handleDeleteProposal = async (proposalId: string) => {
     try {
       setLoading(true);
-      const { data: updatedProposal } = await axios.delete(`/api/proposal/${proposalId}`);
+      const response = await axios.delete(`/api/proposal/${proposalId}`);
+      const updatedProposal = response.data.data;
+      console.log(updatedProposal.updated_at)
   
       setProposals((prevProposals) =>
         prevProposals.map((proposal) =>

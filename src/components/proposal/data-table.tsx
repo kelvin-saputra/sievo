@@ -30,10 +30,9 @@ import { ProposalStatusEnum } from "@/models/enums"
 interface ProposalTableProps {
   columns: ColumnDef<Proposal, unknown>[]
   data: Proposal[]
-  onDelete: (proposalId: string) => void
 }
 
-export function ProposalTable({ columns, data, onDelete }: ProposalTableProps) {
+export function ProposalTable({ columns, data }: ProposalTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
