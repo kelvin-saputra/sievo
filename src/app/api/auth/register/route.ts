@@ -1,9 +1,17 @@
-import { encryptAES } from "@/lib/aes";
+import { decryptAES, encryptAES } from "@/lib/aes";
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
+import redisClient from "@/utils/redis";
+import jwt from "jsonwebtoken";
 
 export async function POST(req:Request) {
     const reqBody = await req.json();
+    const { searchParams } = new URL(req.url);
+    const encryptedToken = searchParams.get("token");
+    if (!encryptedToken) {
+        return responseFormat(400, "Registration token is not valid", null);
+    }
+    const decryptedToken = decryptAES(encryptedToken);
     const { email, password, name, phone_number, role, ...userData } = reqBody
 
     if (!email || !password || !name || !phone_number || !role) {
@@ -21,22 +29,24 @@ export async function POST(req:Request) {
     }
     
     try {
+        const decodedToken = jwt.verify(decryptedToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
         const newUser = await prisma.user.create({
             data: {
                 ...userData,
                 email: email,
                 password: encryptAES(password),
                 phone_number: encryptAES(phone_number),
-                role: role,
+                role: (decodedToken as any).role,
                 name: name,
             }
         });
-        
+
         if (!newUser) {
             return responseFormat(400, "Terjadi kesalahan saat menyimpan data pengguna", null);
         }
         newUser.password = "[PASSWORD IS HIDDEN]"
-        return responseFormat(201, "Pengguna berhasil dibuat", newUser);
+        await redisClient.del(`registerToken:${encryptedToken}`)
+        return responseFormat(201, "Pengguna berhasil dibuat", newUser, undefined, "/login" );
     } catch (error) {
         return responseFormat(500, "Terjadi kesalahan internal", error instanceof Error ? error.message : String(error));   
     }

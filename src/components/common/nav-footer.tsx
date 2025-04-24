@@ -1,4 +1,4 @@
-  "use client"
+"use client"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -23,14 +23,11 @@ import {
   SidebarMenuItem,
   useSidebar
 } from "@/components/ui/sidebar"
-import { UserSchema } from "@/models/schemas"
 
 export function NavFooter({
-  user,
-  onLogout = () => console.log('Logging out...')
+  onLogout
 }: {
-  user: UserSchema
-  onLogout?: () => void
+  onLogout: () => Promise<void>
 }) {
   const { isMobile } = useSidebar()
   const [isOpen, setIsOpen] = useState(false)
@@ -42,6 +39,7 @@ export function NavFooter({
       ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
       : nameParts[0][0].toUpperCase()
   }
+  const user = JSON.parse(localStorage.getItem("authUser")!);
 
   return (
     <SidebarMenu>

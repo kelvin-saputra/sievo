@@ -6,18 +6,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { UserSchema } from "@/models/schemas"
 import { data } from "@/static/sidebar-menu"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 
-export function NavMain(
-  { user }: {
-    user: UserSchema
-  }
-) {
+export function NavMain() {
   const pathName = usePathname()
+  const user = JSON.parse(localStorage.getItem("authUser")!)
   const userRole = user.role
   const userAdmin = user.is_admin
   return (

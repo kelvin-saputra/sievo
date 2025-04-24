@@ -20,7 +20,8 @@ export const UserSchema = z.object({
     password: z
         .string()
         .nonempty({message: "Password wajib diisi" })
-        .min(8, { message: "Password minimal 8 karakter" }),
+        .min(8, { message: "Password minimal 8 karakter" })
+        .optional(),
     role: RoleEnum.default("FREELANCE"),
     is_active: z
         .boolean()
@@ -31,9 +32,9 @@ export const UserSchema = z.object({
     started_at: z.coerce
         .date({ invalid_type_error: "Tanggal mulai tidak valid" })
         .default(() => new Date()),
-    ended_at: z.coerce.date({ invalid_type_error: "Tanggal akhir tidak valid" }),
+    ended_at: z
+        .coerce.date({ invalid_type_error: "Tanggal akhir tidak valid" })
+        .optional(),
 });
-
-
 
 export type UserSchema = z.infer<typeof UserSchema>;
