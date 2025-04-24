@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/common/page-header";
 import useInventory from "@/hooks/use-inventory";
-import { AddInventoryModal } from "@/components/inventory/add-inventory-modal";
-import { InventoryTable } from "./data-table";
-import { inventoryColumns } from "./columns";
+import { AddInventoryModal } from "@/components/inventory/form/add-inventory-modal";
+import { InventoryTable } from "../../../components/inventory/data-table";
+import { inventoryColumns } from "../../../components/inventory/columns";
 import * as React from 'react';
 
 export default function ViewAllInventory() {
@@ -48,5 +48,3 @@ export default function ViewAllInventory() {
     </div>
   );
 }
-
- 

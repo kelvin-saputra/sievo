@@ -9,9 +9,9 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 
-import { NavMain } from "@/components/ui/nav-main"
-import { NavFooter } from "@/components/ui/nav-footer"
-import { NavHeader } from "@/components/ui/nav-header"
+import { NavMain } from "@/components/common/nav-main"
+import { NavFooter } from "@/components/common/nav-footer"
+import { NavHeader } from "@/components/common/nav-header"
 import { userData } from "@/static/user"
 
 export function SidebarApp({ ...props }: React.ComponentProps<typeof Sidebar>) {

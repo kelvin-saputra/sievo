@@ -25,6 +25,10 @@ export const VendorServiceSchema = z.object({
     vendor_id: z
         .string({ required_error: "ID vendor wajib diisi" })
         .uuid({ message: "ID vendor tidak valid" }),
+    is_deleted: z
+        .boolean()
+        .default(false)
+        .optional(),
 });
 
 export type VendorServiceSchema = z.infer<typeof VendorServiceSchema>;

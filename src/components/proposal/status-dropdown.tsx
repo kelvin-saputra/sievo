@@ -71,13 +71,13 @@ const StatusDropdown = ({ proposalId, initialStatus }: {
   };
 
   const statusColors: Record<ProposalStatusEnum, string> = {
-    DRAFT: "bg-gray-400 text-white",
-    ON_REVIEW: "bg-blue-400 text-white",
-    APPROVED: "bg-green-500 text-white",
+    DRAFT: "bg-gray-500 text-white",
+    ON_REVIEW: "bg-blue-500 text-white",
+    APPROVED: "bg-green-300 text-white",
     REJECTED: "bg-red-500 text-white",
     ON_CONTACT: "bg-blue-300 text-white",
     ACCEPTED: "bg-green-500 text-white",
-    CANCELLED: "bg-red-400 text-white",
+    CANCELLED: "bg-red-300 text-white",
   };
 
   const getStatusColor = (status: ProposalStatusEnum | null) => {

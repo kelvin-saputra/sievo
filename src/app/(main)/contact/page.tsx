@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/common/page-header";
 import useContact from "@/hooks/use-contact";
-import { AddContactModal } from "@/components/contact/add-contact-modal";
-import { ContactTable } from "./data-table";
-import { contactColumns, ContactWithRole } from "./columns";
+import { AddContactModal } from "@/components/contact/form/add-contact-modal";
+import { ContactTable } from "../../../components/contact/data-table";
+import { contactColumns, ContactWithRole } from "../../../components/contact/columns";
 
 export default function ViewAllContacts() {
   const {

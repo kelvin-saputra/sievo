@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EventCard from "@/components/events/event-card";
 import PageHeader from "@/components/common/page-header";
 import useEvent from "@/hooks/use-event";
-import { AddEventModal } from "@/components/events/add-event-modal";
+import { AddEventModal } from "@/components/events/form/add-event-modal";
 
 export default function ViewAllEvents() {
   const {

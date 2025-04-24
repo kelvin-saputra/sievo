@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
 import {
   Carousel,
   CarouselContent,
@@ -20,8 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import useInventory from "@/hooks/use-inventory"; 
-import { DeleteInventoryModal } from "@/components/inventory/delete-inventory-modal";
-import { EditInventoryModal } from "@/components/inventory/edit-inventory-modal";
+import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
+import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { useState } from "react";
 
 const ItemDetail = () => {
@@ -31,127 +30,82 @@ const ItemDetail = () => {
   
   React.useEffect(() => {
     if (Array.isArray(itemId)) {
-      // If itemId is an array, take the first element
       fetchInventoryById(itemId[0]);
     } else if (typeof itemId === "string") {
-      // If itemId is a string, use it directly
       fetchInventoryById(itemId);
     }
   }, [itemId, fetchInventoryById]);
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading state
+    return <div>Loading...</div>;
   }
 
   if (!inventory) {
-    return <div>Inventory not found.</div>; // Handle case where inventory is not found
+    return <div>Inventory not found.</div>;
   }
 
   return (
-    <div className="bg-white h-screen flex items-center justify-center md:max-w-4xl justify-self-center my-12">
-      <div>
-        <p className="text-6xl mb-10 font-bold">Inventory</p>
-        <Separator />
-        <Separator />
-        <div className="my-10 flex justify-between w-full">
-          <p className="text-muted-foreground text-2xl">Item Detail</p>
-          <div className="grid grid-cols-2 gap-x-4">
-            <EditInventoryModal
-                inventory={inventory}
-                onUpdateInventory={(data) => console.log("Updated Data:", data)}
-                open={open}
-                setOpen={setOpen}
-              />
-              <DeleteInventoryModal
-                inventoryId={inventory.inventory_id}
-                onDeleteInventory={(id) => console.log("Deleted Data:", id)}
-                open={open}
-                setOpen={setOpen}
-              />
+    <div className="bg-white min-h-screen flex flex-col items-start px-4 sm:px-8 md:px-16 lg:px-24 py-12 ">
+      <p className="text-4xl sm:text-5xl font-bold mb-6 text-center justify-self-start">Inventory</p>
+      <Separator className="w-full" />
+      <div className="w-full my-6">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full">
+          <p className="text-muted-foreground text-xl sm:text-2xl">Item Detail</p>
+          <div className="flex gap-4 mt-4 md:mt-0">
+            <EditInventoryModal inventory={inventory} onUpdateInventory={(data) => console.log("Updated Data:", data)} open={open} setOpen={setOpen} />
+            <DeleteInventoryModal inventoryId={inventory.inventory_id} onDeleteInventory={(id) => console.log("Deleted Data:", id)} open={open} setOpen={setOpen} />
           </div>
         </div>
-        <div className="grid grid-cols-2 my-16">
-          <div className="mx-10">
-          <Carousel className="w-full max-w-lg">
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-10 w-full">
+        <div className="md:col-span-1">
+          <Carousel className="w-full max-w-sm">
             <CarouselContent>
               {Array.isArray(inventory.inventory_photo) && inventory.inventory_photo.length > 0 ? (
                 inventory.inventory_photo.map((photo, index) => (
-                  <CarouselItem key={index} className="w-full">
-                    <div className="p-1">
-                      <Card>
-                        <CardContent className="flex aspect-square items-center justify-center p-6">
-                          <AspectRatio ratio={16 / 9}>
-                            <Image
-                              src={photo}
-                              alt={`Inventory Image ${index + 1}`}
-                              width={500}
-                              height={500}
-                              className="rounded-md object-cover"
-                            />
-                          </AspectRatio>
-                        </CardContent>
-                      </Card>
-                    </div>
+                  <CarouselItem key={index}>
+                    <Card className="justify-center">
+                      <CardContent className="flex aspect-square items-center justify-center p-0">
+                        <AspectRatio ratio={1 / 1}>
+                          <Image src={photo} alt={`Inventory Image ${index + 1}`} width={300} height={300} className="rounded-md object-cover" />
+                        </AspectRatio>
+                      </CardContent>
+                    </Card>
                   </CarouselItem>
                 ))
               ) : (
-                <p>No images available</p> 
+                <p>No images available</p>
               )}
             </CarouselContent>
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
-
-          </div>
-          <div className="mx-10">
-            <h1 className="text-4xl font-bold">{inventory.item_name}</h1>
-            <div>
-              <div className="flex justify-between my-5">
-                <div><p>Quantity</p></div>
-                <div><p>{inventory.item_qty}</p></div>
-              </div>
-              <Separator />
-              <div className="flex justify-between my-5">
-                <div><p>Price</p></div>
-                <div><p>{inventory.item_price}</p></div>
-              </div>
-              <Separator />
-              <div className="flex justify-between my-5">
-                <div><p>Status</p></div>
-                <div>
-                  <Badge variant={inventory.is_avail ? "default" : "destructive"}>
-                    {inventory.is_avail ? "Available" : "Unavailable"}
-                  </Badge>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex justify-between my-5">
-                <div><p>Category</p></div>
-                <div><Badge variant="secondary">{inventory.category}</Badge></div>
-              </div>
-            </div>
+        </div>
+        
+        <div className="md:col-span-2">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">{inventory.item_name}</h1>
+          <div className="space-y-4">
+            <div className="flex justify-between"><p>Quantity</p><p>{inventory.item_qty}</p></div>
+            <Separator />
+            <div className="flex justify-between"><p>Price</p><p>{inventory.item_price}</p></div>
+            <Separator />
+            <div className="flex justify-between"><p>Status</p><Badge variant={inventory.is_avail ? "default" : "destructive"}>{inventory.is_avail ? "Available" : "Unavailable"}</Badge></div>
+            <Separator />
+            <div className="flex justify-between"><p>Category</p><Badge variant="secondary">{inventory.category}</Badge></div>
           </div>
         </div>
-        <div className="my-16">
-          <Tabs defaultValue="description" className="container">
-            <TabsList>
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="changelog">Change Log</TabsTrigger>
-            </TabsList>
-            <TabsContent value="description">
-              {inventory.description}
-            </TabsContent>
-            <TabsContent value="changelog">
-              {/* <div className="space-y-2 flex-col">
-                {inventory.change_log.map((log, index) => (
-                  <p key={index}>
-                    {log.date} — <span className="text-muted-foreground">{log.updated_by}</span>
-                  </p>
-                ))}
-              </div> */}
-            </TabsContent>
-          </Tabs>
-        </div>
+      </div>
+      
+      <div className="my-12 w-full max-w-5xl">
+        <Tabs defaultValue="description" className="w-full">
+          <TabsList>
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="changelog">Change Log</TabsTrigger>
+          </TabsList>
+          <TabsContent value="description">{inventory.description}</TabsContent>
+          <TabsContent value="changelog"></TabsContent>
+        </Tabs>
       </div>
     </div>
   );

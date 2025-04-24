@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -16,18 +17,19 @@ datasource db {
 
 // DROP SYSTEM SCHEMA MODEL
 model User {
-  id           String     @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String
   phone_number String
-  email        String     @unique
+  email        String    @unique
   password     String
-  role         ROLE       @default(FREELANCE)
-  is_active    Boolean    @default(true)
-  is_admin     Boolean    @default(false)
-  started_at   DateTime   @default(now())
+  role         ROLE      @default(FREELANCE)
+  is_active    Boolean   @default(true)
+  is_admin     Boolean   @default(false)
+  started_at   DateTime  @default(now())
   ended_at     DateTime?
   task         Task[]
   event        Event[]
+  userEvents   UserEvent[] 
 }
 
 model Inventory {
@@ -50,12 +52,12 @@ model Inventory {
 }
 
 model InventoryLog {
-  inventory_log_id    String    @id @default(uuid())
-  updated_by          String
-  updated_at          DateTime  @default(now())
-  action              String
-  inventory_id        String
-  inventory           Inventory @relation(fields: [inventory_id], references: [inventory_id])
+  inventory_log_id String    @id @default(uuid())
+  updated_by       String
+  updated_at       DateTime  @default(now())
+  action           String
+  inventory_id     String
+  inventory        Inventory @relation(fields: [inventory_id], references: [inventory_id])
 }
 
 model Task {
@@ -124,37 +126,36 @@ model Client {
 }
 
 model Budget {
-  budget_id   String             @id @default(uuid())
-  total_price Float
-  status      BudgetStatus       @default(PENDING)
+  budget_id   String               @id @default(uuid())
+  status      BudgetStatus         @default(PENDING)
   created_by  String
   updated_by  String?
-  created_at  DateTime           @default(now())
-  updated_at  DateTime           @updatedAt
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
   event_id    String
-  event       Event              @relation(fields: [event_id], references: [event_id])
+  event       Event                @relation(fields: [event_id], references: [event_id])
   plan_item   BudgetPlanItem[]
   actual_item ActualBudgetItem[]
   categories  BudgetItemCategory[]
-  is_deleted  Boolean            @default(false)
-  is_actual   Boolean            @default(false)
+  is_deleted  Boolean              @default(false)
+  is_actual   Boolean              @default(false)
 }
 
 model BudgetPlanItem {
-  budget_item_id    String             @id @default(uuid())
+  budget_item_id    String              @id @default(uuid())
   item_qty          Int
   item_subtotal     Float
   category_id       Int
-  category          BudgetItemCategory @relation(fields: [category_id], references: [category_id])
+  category          BudgetItemCategory? @relation(fields: [category_id], references: [category_id])
   budget_id         String?
-  budget            Budget?            @relation(fields: [budget_id], references: [budget_id])
+  budget            Budget?             @relation(fields: [budget_id], references: [budget_id])
   vendor_service_id String?
-  vendor_service    VendorService?     @relation(fields: [vendor_service_id], references: [service_id])
+  vendor_service    VendorService?      @relation(fields: [vendor_service_id], references: [service_id])
   inventory_id      String?
-  inventory         Inventory?         @relation(fields: [inventory_id], references: [inventory_id])
+  inventory         Inventory?          @relation(fields: [inventory_id], references: [inventory_id])
   other_item_id     String?
-  other_item        Purchasing?        @relation(fields: [other_item_id], references: [other_item_id])
-  is_deleted        Boolean            @default(false)
+  other_item        Purchasing?         @relation(fields: [other_item_id], references: [other_item_id])
+  is_deleted        Boolean             @default(false)
 }
 
 model ActualBudgetItem {
@@ -179,10 +180,10 @@ model ActualBudgetItem {
 
 model BudgetItemCategory {
   category_id        Int                @id @default(autoincrement())
-  category_name      String             @unique
+  category_name      String
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[]           
+  budget             Budget[]
   is_deleted         Boolean            @default(false)
 }
 
@@ -201,30 +202,16 @@ model Purchasing {
 }
 
 model Proposal {
-  proposal_id String         @id @default(uuid())
+  proposal_id   String         @id @default(uuid())
   proposal_name String
   proposal_link String
-  status      ProposalStatus @default(DRAFT)
-  client_name String         @unique
-  created_by  String
-  updated_by  String?
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-  is_deleted  Boolean        @default(false)
-}
-
-model Report {
-  report_id         String   @id @default(uuid())
-  review            String
-  description       String
-  actualParticipant Int
-  created_by        String
-  updated_by        String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-  event_id          String   @unique
-  event             Event    @relation(fields: [event_id], references: [event_id])
-  is_deleted        Boolean  @default(false)
+  status        ProposalStatus @default(DRAFT)
+  client_name   String         
+  created_by    String
+  updated_by    String?
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  is_deleted    Boolean        @default(false)
 }
 
 model Event {
@@ -239,7 +226,6 @@ model Event {
   budget           Budget[]
   manager_id       String
   manager          User        @relation(fields: [manager_id], references: [id])
-  report           Report?
   task             Task[]
   client_id        String
   client           Client      @relation(fields: [client_id], references: [client_id])
@@ -248,6 +234,16 @@ model Event {
   updated_by       String?
   created_at       DateTime    @default(now())
   created_by       String
+  userEvents       UserEvent[] 
+}
+
+model UserEvent {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [event_id])
+  eventId   String
+  assignedAt DateTime @default(now())
 }
 
 enum ROLE {
@@ -285,7 +281,7 @@ enum EventStatus {
 }
 
 enum ProposalStatus {
-  DRAFT 
+  DRAFT
   ON_REVIEW
   APPROVED
   REJECTED

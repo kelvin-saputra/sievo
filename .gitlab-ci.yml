@@ -1,12 +1,5 @@
 image: node:20.17.0
 
-cache: &global_cache
-  key: $CI_COMMIT_REF_SLUG
-  paths:
-    - node_modules/
-    - .next/
-  policy: pull-push
-
 stages:
   - Install
   - Testing
@@ -19,7 +12,6 @@ variables:
 
 DEPENDENCIES_INSTALLATION:
   stage: Install
-  cache: *global_cache
   script:
     - npm ci --legacy-peer-deps
     - npm install --save-dev typescript @types/react @types/node --legacy-peer-deps
@@ -30,10 +22,10 @@ DEPENDENCIES_INSTALLATION:
     paths:
       - node_modules.part.*
     expire_in: 1h
+  
 
 TESTING:
   stage: Testing
-  cache: *global_cache
   before_script:
     - cat node_modules.part.* > node_modules.tar
     - tar -xvf node_modules.tar
@@ -47,7 +39,6 @@ TESTING:
 
 BUILD:
   stage: Build
-  cache: *global_cache
   before_script:
     - cat node_modules.part.* > node_modules.tar
     - tar -xvf node_modules.tar
@@ -62,6 +53,26 @@ BUILD:
       - next_build.part.*
     expire_in: 1h
 
+DEPLOYMENT_DEVELOPMENT:
+  stage: Deployment
+  only:
+    - development
+  before_script:
+    - cat next_build.part.* > next_build.tar
+    - tar -xvf next_build.tar
+    - npm config set legacy-peer-deps=true
+    - npm install -g vercel
+    - npx prisma generate
+    - vercel pull --yes --environment=development --token $VERCEL_TOKEN
+  script:
+    - vercel build --token $VERCEL_TOKEN
+    - DEPLOY_OUTPUT="$(vercel deploy --prebuilt --token $VERCEL_TOKEN)"
+    - vercel alias set $DEPLOY_OUTPUT $DEV_URL --token $VERCEL_TOKEN
+  environment:
+    name: development
+    url: $DEV_URL
+
+
 DEPLOYMENT_PREVIEW:
   stage: Deployment
   only:
@@ -69,12 +80,14 @@ DEPLOYMENT_PREVIEW:
   before_script:
     - cat next_build.part.* > next_build.tar
     - tar -xvf next_build.tar
+  script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
+    - npx prisma generate
     - vercel pull --yes --environment=preview --token $VERCEL_TOKEN
-  script:
     - vercel build --token $VERCEL_TOKEN
-    - vercel deploy --prebuilt --token $VERCEL_TOKEN
+    - DEPLOY_OUTPUT="$(vercel deploy --prebuilt --token $VERCEL_TOKEN)"
+    - vercel alias set $DEPLOY_OUTPUT $STAGGING_URL --token $VERCEL_TOKEN 
   environment:
     name: preview
     url: $STAGGING_URL
@@ -86,12 +99,14 @@ DEPLOYMENT_PRODUCTION:
   before_script:
     - cat next_build.part.* > next_build.tar
     - tar -xvf next_build.tar
+  script:
     - npm config set legacy-peer-deps=true
     - npm install -g vercel
+    - npx prisma generate
     - vercel pull --yes --environment=production --token $VERCEL_TOKEN
-  script:
     - vercel build --prod --token $VERCEL_TOKEN
-    - vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+    - DEPLOY_OUTPUT="$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN)"
+    - vercel alias set $DEPLOY_OUTPUT $PRODUCTION_URL --token $VERCEL_TOKEN
   environment:
     name: production
     url: $PRODUCTION_URL

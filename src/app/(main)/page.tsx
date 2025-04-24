@@ -1,15 +1,3 @@
-import type { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: "SIEVO: Sistem Informasi Event Organizer",
-  description: "SIEVO: Sistem Informasi Event Organizer PT Matahati Inspira",
-  icons: [{ url: "/favicon.ico", rel: "icon" }],
-  other: {
-    uri: "/",
-    pathName: "Home",
-  },
-}
-
 export default function Home() {
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12">

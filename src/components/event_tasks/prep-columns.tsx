@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { TaskSchema } from "@/models/schemas";
 import { taskColumns } from "@/components/event_tasks/columns";
-import { UpdateTaskModal } from "./update-task-modal";
+import { UpdateTaskModal } from "./form/update-task-modal";
 import { UpdateTaskDTO } from "@/models/dto";
 import {
   Dialog,

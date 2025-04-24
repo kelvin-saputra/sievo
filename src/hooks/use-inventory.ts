@@ -1,3 +1,4 @@
+"use client"
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -16,20 +17,15 @@ export default function useInventory() {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-      
-      // Access the nested data property
-      const rawInventories = response.data.data; // This is where the inventory items are located
-  
-      // Check if rawInventories is an array
+      const rawInventories = response.data.data;
       if (Array.isArray(rawInventories)) {
         const validatedInventories = rawInventories.map((ev: unknown) => InventorySchema.parse(ev));
         setInventorys(validatedInventories);
       } else {
         console.warn("Expected an array but received:", rawInventories);
-        setInventorys([]); // Set to empty array if not an array
+        setInventorys([]);
       }
-    } catch (error) {
-      console.error("Terjadi kesalahan saat mengambil data Inventory:", error);
+    } catch {
       toast.error("Gagal mengambil data Inventory.");
     }
     setLoading(false);
@@ -39,10 +35,8 @@ export default function useInventory() {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/${id}`);
-      console.log(data)
       setInventory(InventorySchema.parse(data.data));
-    } catch (error) {
-      console.error("Terjadi kesalahan saat mengambil Inventory:", error);
+    } catch {
       toast.error("Gagal mengambil Inventory.");
     }
     setLoading(false);
@@ -76,8 +70,7 @@ export default function useInventory() {
         setInventory(parsedInventory);
       }
       toast.success("Inventory berhasil diperbarui!");
-    } catch (error) {
-      console.error("Terjadi kesalahan saat memperbarui Inventory:", error);
+    } catch {
       toast.error("Gagal memperbarui Inventory.");
     }
   };
@@ -89,8 +82,7 @@ export default function useInventory() {
         prevInventorys.filter((ev) => ev.inventory_id !== inventoryId)
       );
       toast.success("Inventory berhasil dihapus!");
-    } catch (error) {
-      console.error("Terjadi kesalahan saat menghapus Inventory:", error);
+    } catch {
       toast.error("Gagal menghapus Inventory.");
     }
   };
@@ -112,8 +104,7 @@ export default function useInventory() {
       if (inventory?.inventory_id === inventoryId) {
         setInventory(parsedInventory);
       }
-    } catch (error) {
-      console.error("Terjadi kesalahan saat memperbarui status Inventory:", error);
+    } catch {
       toast.error("Gagal memperbarui status Inventory.");
     }
     setLoading(false);
@@ -122,47 +113,38 @@ export default function useInventory() {
   const handleAddInventory = async (newInventory: AddInventoryDTO) => {
     try {
       const response = await axios.get(API_URL);
-      
-      console.log("API Response:", response);
-  
       if (response.status !== 200) {
-        console.error("API Error:", response.data.message);
         toast.error("Failed to fetch existing inventories: " + response.data.message);
-        return; 
+        return;
       }
-  
-      const existingInventories = response.data.data || []; 
+
+      const existingInventories = response.data.data || [];
       if (!Array.isArray(existingInventories)) {
-        console.error("Expected an array but received:", existingInventories);
         toast.error("Failed to fetch existing inventories.");
-        return; 
+        return;
       }
-  
+
       const isDuplicate = existingInventories.some(
         (item: InventorySchema) => item.item_name.toLowerCase() === newInventory.item_name.toLowerCase()
       );
-  
+
       if (isDuplicate) {
         toast.error("Item name already exists. Please choose a different name.");
-        return; 
+        return;
       }
-  
+
       const InventoryData = InventorySchema.partial().parse({
         ...newInventory,
-        created_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID
-        updated_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID (optional)
+        created_by: "550e8400-e29b-41d4-a716-446655440000",
+        updated_by: "550e8400-e29b-41d4-a716-446655440000",
       });
-  
-      console.log("Inventory Data to be added:", InventoryData);
-  
+
       const { data: createdInventory } = await axios.post(API_URL, InventoryData);
       const parsedInventory = InventorySchema.parse(createdInventory.data);
-  
+
       setInventorys((prevInventorys) => [...prevInventorys, parsedInventory]);
-      console.log("Inventory added:", parsedInventory);
       toast.success("Inventory berhasil ditambahkan!");
-    } catch (error) {
-      console.error("Terjadi kesalahan saat menambahkan Inventory:", error);
+    } catch {
       toast.error("Gagal menambahkan Inventory.");
     }
   };

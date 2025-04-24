@@ -146,7 +146,27 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div>
         <div className="grid grid-cols-[repeat(1,1fr)] gap-2 sm:grid-cols-[repeat(2,1fr)] lg:grid-cols-[repeat(3,1fr)] xl:grid-cols-[repeat(4,1fr)]">
-          {/* Images */}
+          {/* Dropzone */}
+          {(!value || value.length < (dropzoneOptions?.maxFiles ?? 0)) && (
+            <div
+              {...getRootProps({
+                className: dropZoneClassName,
+              })}
+            >
+              {/* Main File Input */}
+              <input ref={ref} {...getInputProps()} />
+              <div className="flex flex-col items-center justify-center text-xs text-gray-400">
+                <UploadCloudIcon className="mb-2 h-7 w-7" />
+                <div className="text-gray-400">drag & drop to upload</div>
+                <div className="mt-3">
+                  <Button type="button" disabled={disabled}>
+                    select
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+            {/* Images */}
           {value?.map(({ file, progress }, index) => (
             <div key={index} className={variants.image + ' aspect-square'}>
             <Image
@@ -183,26 +203,6 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
             </div>
           ))}
 
-          {/* Dropzone */}
-          {(!value || value.length < (dropzoneOptions?.maxFiles ?? 0)) && (
-            <div
-              {...getRootProps({
-                className: dropZoneClassName,
-              })}
-            >
-              {/* Main File Input */}
-              <input ref={ref} {...getInputProps()} />
-              <div className="flex flex-col items-center justify-center text-xs text-gray-400">
-                <UploadCloudIcon className="mb-2 h-7 w-7" />
-                <div className="text-gray-400">drag & drop to upload</div>
-                <div className="mt-3">
-                  <Button type="button" disabled={disabled}>
-                    select
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
         {/* Error Text */}
         <div className="mt-1 text-xs text-red-500">

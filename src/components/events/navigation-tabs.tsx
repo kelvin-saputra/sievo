@@ -2,11 +2,17 @@
 
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/utils/shadUtils";
-import { motion } from "framer-motion";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
+import { ChevronDownIcon } from "lucide-react";
 
 const tabs = [
   { name: "Overview", path: "" },
-  { name: "Budget", path: "budget" },
+  { name: "Budget", path: "plan" },
   { name: "Preparation", path: "prep" },
   { name: "Implementation", path: "impl" },
   { name: "Report", path: "report" },
@@ -18,35 +24,39 @@ export default function NavigationTabs() {
   const pathname = usePathname();
 
   const handleNavigation = (path: string) => {
-    router.push(`/events/${event_id}/${path ? `${path}/` : ""}`);
+    router.push(`/events/${event_id}/${path ? `${path}` : ""}`);
   };
 
   return (
-    <div className="relative flex gap-4 border-b pb-2">
-      {tabs.map((tab) => {
+    <div className="relative flex gap-4">
+      <NavigationMenu className="max-w-full w-full justify-start">
+      <NavigationMenuList className="space-x-2">
+        {tabs.map((tab) => {
         const isActive =
-          pathname === `/events/${event_id}/${tab.path ? `${tab.path}/` : ""}`;
-
-        return (
-          <button
-            key={tab.path}
-            onClick={() => handleNavigation(tab.path)}
-            className={cn(
-              "relative px-4 py-2 text-gray-600 transition-all duration-300 hover:text-blue-600",
-              isActive && "text-blue-600 font-semibold"
-            )}
-          >
-            {tab.name}
-            {isActive && (
-              <motion.div
-                layoutId="active-tab"
-                className="absolute left-0 bottom-0 w-full h-1 bg-blue-600 rounded-md"
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          pathname === `/events/${event_id}${tab.path ? `/${tab.path}` : ""}`;
+          
+          return(
+            <NavigationMenuItem key={tab.name} >
+            <NavigationMenuTrigger
+              className={cn(
+              "px-6 py-4 text-sm font-medium whitespace-nowrap",
+              isActive ? "text-primary bg-accent" : "text-muted-foreground",
+              )}
+              onClick={() => handleNavigation(tab.path)}
+            >
+              {tab.name}
+              <ChevronDownIcon
+              className={cn(
+                "relative top-[1px] ml-1 size-3 transition duration-300",
+                isActive ? "" : "rotate-180"
+              )}
+              aria-hidden="true"
               />
-            )}
-          </button>
-        );
-      })}
+            </NavigationMenuTrigger>
+            </NavigationMenuItem>
+        )})}
+      </NavigationMenuList>
+    </NavigationMenu>
     </div>
   );
 }
