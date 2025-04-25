@@ -19,20 +19,18 @@ export function ConfirmationModal({
   onConfirm,
   isLoading = false,
   userName,
-  eventName,
 }: ConfirmationModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Confirm Reassignment</DialogTitle>
+          <DialogTitle>Confirm Assignment</DialogTitle>
         </DialogHeader>
         <div className="py-2">
           <p className="text-sm text-muted-foreground mb-4">
-            <strong>{userName}</strong> is already assigned to another event. Assigning them to{" "}
-            <strong>{eventName}</strong> will replace their current assignment.
+            <strong>{userName}</strong> is already assigned to another event.
           </p>
-          <p className="text-sm text-muted-foreground">Do you want to proceed with this reassignment?</p>
+          <p className="text-sm text-muted-foreground">Do you want to proceed with this assignment?</p>
         </div>
         <DialogFooter className="flex justify-between sm:justify-between">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
@@ -42,10 +40,10 @@ export function ConfirmationModal({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Reassigning...
+                Assigning...
               </>
             ) : (
-              "Confirm Reassignment"
+              "Confirm Assignment"
             )}
           </Button>
         </DialogFooter>
