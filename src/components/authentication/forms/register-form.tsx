@@ -109,7 +109,7 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
               </div>
               <div className="mt-4 text-center text-sm">
                 Sudah Memiliki Akun?{" "}
-                <Link href="#" className="underline underline-offset-4">
+                <Link href="/login" className="underline underline-offset-4">
                   Masuk Disini
                 </Link>
               </div>

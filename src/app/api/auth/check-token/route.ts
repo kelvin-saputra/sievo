@@ -13,7 +13,8 @@ export async function POST(req: Request) {
         }
 
         return responseFormat(200, "Token yang anda masukkan valid", token)
-    } catch {
+    } catch (error) {
+        console.log(error instanceof Error ? error.message : error)
         return responseFormat(500, "Terjadi kesalahan saat mengambil data token, silahkan coba lagi beberapa saat", null);
     }
 }

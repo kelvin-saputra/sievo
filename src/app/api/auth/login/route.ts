@@ -22,9 +22,7 @@ export async function POST(req: Request) {
         if (!user) {
             return responseFormat(404, "Pengguna tidak ditemukan, silakan mendaftar terlebih dahulu", null);
         }
-        console.log("Create Session");
         const cookiesToSet = await setSession(user.id, user.role);
-        console.log("Create Session Finish");
         user.password="[PASSWORD IS HIDDEN]";
         return responseFormat(200, "Login Berhasil", user, cookiesToSet, "/");
     } catch {

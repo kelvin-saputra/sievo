@@ -42,7 +42,7 @@ export default function TokenVerificationForm({ onTokenVerified, onCheckToken }:
       if (isValid) {
         onTokenVerified(values.token);
       } else {
-        setVerificationError("Token registrasi tidak valid")
+        setVerificationError("Token registrasi tidak valid atau kadaluwarsa")
       }
     } catch {
       setVerificationError("Terjadi kesalahan saat memverifikasi token")
