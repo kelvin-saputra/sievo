@@ -39,7 +39,6 @@ export function UpdateProposalModal({ isOpen, onClose, onUpdate, proposal }: Upd
     resolver: zodResolver(UpdateProposalSchema),
   })
 
-  // Set default values when proposal changes or modal opens
   useEffect(() => {
     if (proposal && isOpen) {
       reset({

@@ -8,8 +8,8 @@ export const ProposalSchema = z.object({
       .default(() => crypto.randomUUID()),
 
     proposal_name: z
-      .string({ required_error: "Nama client wajib diisi" })
-      .min(1, "Nama client tidak boleh kosong"),
+      .string({ required_error: "Nama Proposal wajib diisi" })
+      .min(1, "Nama Proposal tidak boleh kosong"),
 
     status: ProposalStatusEnum.default("DRAFT"),
 
