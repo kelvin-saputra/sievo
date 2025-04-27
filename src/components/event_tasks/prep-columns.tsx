@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import * as React from "react";
+import { UserWithStatus } from "@/hooks/use-hr";
 
 interface PrepColumnsProps {
   onDeleteTask: (taskId: string) => void;
@@ -23,9 +24,11 @@ interface PrepColumnsProps {
     createdBy: string,
     dto: UpdateTaskDTO
   ) => Promise<void>;
+  users: UserWithStatus[];
+  eventStartDate?: Date;
+  eventEndDate?: Date;
 }
 
-// Inline component for deletion confirmation
 const DeleteTaskCell = ({
   task,
   onDeleteTask,
@@ -86,8 +89,11 @@ const DeleteTaskCell = ({
 export const getPrepColumns = ({
   onDeleteTask,
   onUpdateTask,
+  users,
+  eventStartDate,
+  eventEndDate,
 }: PrepColumnsProps): ColumnDef<TaskSchema>[] => [
-  ...taskColumns,
+  ...taskColumns(users),
   {
     id: "actions",
     header: () => <div className="text-right">Actions</div>,
@@ -95,7 +101,13 @@ export const getPrepColumns = ({
       const task = row.original;
       return (
         <div className="flex justify-start gap-2">
-          <UpdateTaskModal task={task} onUpdateTask={onUpdateTask} />
+          <UpdateTaskModal
+            task={task}
+            onUpdateTask={onUpdateTask}
+            users={users}
+            eventStartDate={eventStartDate || new Date()}
+            eventEndDate={eventEndDate || new Date()}
+          />
           <DeleteTaskCell task={task} onDeleteTask={onDeleteTask} />
         </div>
       );

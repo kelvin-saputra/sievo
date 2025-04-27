@@ -42,7 +42,18 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { EventStatusEnum } from "@/models/enums";
+import { ContactSchema } from "@/models/schemas/contact";
+import { UserWithStatus } from "@/hooks/use-hr";
+import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
 import { EventSchema } from "@/models/schemas";
 
 interface UpdateEventModalProps {
@@ -53,12 +64,16 @@ interface UpdateEventModalProps {
     createdBy: string,
     dto: UpdateEventDTO
   ) => Promise<void>;
+  users: UserWithStatus[];
+  clientContacts: ContactSchema[];
 }
 
 export function UpdateEventForm({
   event,
   createdBy,
   onUpdateEvent,
+  users,
+  clientContacts,
 }: UpdateEventModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
@@ -92,11 +107,11 @@ export function UpdateEventForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="text-white">
-            <Edit />
-            Update Event
+          <Edit />
+          Update Event
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Update Event</DialogTitle>
         </DialogHeader>
@@ -104,9 +119,8 @@ export function UpdateEventForm({
           <form
             id="update-event-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
+            className="space-y-4 max-h-[80vh] overflow-y-auto"
           >
-            {}
             <FormField
               control={form.control}
               name="event_name"
@@ -121,7 +135,6 @@ export function UpdateEventForm({
               )}
             />
 
-            {}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -143,11 +156,7 @@ export function UpdateEventForm({
                   <FormItem>
                     <FormLabel>Participant Plan</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Number of participants"
-                        {...field}
-                      />
+                      <Input type="number" placeholder="Number of participants" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,7 +164,6 @@ export function UpdateEventForm({
               />
             </div>
 
-            {}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -173,9 +181,7 @@ export function UpdateEventForm({
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value
-                              ? format(field.value, "PPP")
-                              : "Pick a date"}
+                            {field.value ? format(field.value, "PPP") : "Pick a date"}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -193,7 +199,6 @@ export function UpdateEventForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="end_date"
@@ -210,9 +215,7 @@ export function UpdateEventForm({
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value
-                              ? format(field.value, "PPP")
-                              : "Pick a date"}
+                            {field.value ? format(field.value, "PPP") : "Pick a date"}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -232,7 +235,6 @@ export function UpdateEventForm({
               />
             </div>
 
-            {}
             <FormField
               control={form.control}
               name="notes"
@@ -240,115 +242,136 @@ export function UpdateEventForm({
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Additional details (optional)"
-                      {...field}
-                    />
+                    <Textarea placeholder="Additional details (optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {}
             <div className="grid grid-cols-2 gap-4">
-              {}
               <FormField
                 control={form.control}
                 name="status"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <FormControl>
-                        <Popover open={openStatus} onOpenChange={setOpenStatus}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={openStatus}
-                              className="w-full justify-between"
-                            >
-                              {field.value
-                                ? field.value
-                                : "Select event status"}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
-                            <Command>
-                              <CommandInput placeholder="Search status..." />
-                              <CommandList>
-                                <CommandEmpty>No status found.</CommandEmpty>
-                                <CommandGroup>
-                                  {EventStatusEnum.options.map((status) => (
-                                    <CommandItem
-                                      key={status}
-                                      value={status}
-                                      onSelect={(currentValue) => {
-                                        field.onChange(
-                                          currentValue === field.value
-                                            ? ""
-                                            : currentValue
-                                        );
-                                        setOpenStatus(false);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === status
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {status}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
-              {}
-              <FormField
-                control={form.control}
-                name="manager_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Manager ID</FormLabel>
+                    <FormLabel>Status</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter manager ID" {...field} />
+                      <Popover open={openStatus} onOpenChange={setOpenStatus}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openStatus}
+                            className="w-full justify-between"
+                          >
+                            {field.value ? (
+                              <span
+                                className={cn(
+                                  "rounded px-2 py-1 text-xs font-semibold",
+                                  eventStatusColorMap[field.value] || "bg-gray-100 text-gray-800"
+                                )}
+                              >
+                                {field.value}
+                              </span>
+                            ) : (
+                              "Select event status"
+                            )}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search status..." />
+                            <CommandList>
+                              <CommandEmpty>No status found.</CommandEmpty>
+                              <CommandGroup>
+                                {EventStatusEnum.options.map((status) => (
+                                  <CommandItem
+                                    key={status}
+                                    value={status}
+                                    onSelect={(currentValue) => {
+                                      field.onChange(
+                                        currentValue === field.value ? "" : currentValue
+                                      );
+                                      setOpenStatus(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === status ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <span
+                                      className={cn(
+                                        "rounded px-2 py-1 text-xs font-semibold",
+                                        eventStatusColorMap[status] || "bg-gray-100 text-gray-800"
+                                      )}
+                                    >
+                                      {status}
+                                    </span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="manager_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Manager</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name || user.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-
-            {}
             <FormField
               control={form.control}
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter client ID" {...field} />
-                  </FormControl>
+                  <FormLabel>Client</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientContacts.map((contact) => (
+                        <SelectItem
+                          key={contact.client?.client_id}
+                          value={contact.client?.client_id || ""}
+                        >
+                          {contact.name || contact.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {}
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
@@ -360,7 +383,7 @@ export function UpdateEventForm({
               <Button
                 type="submit"
                 form="update-event-form"
-                className="text-white"
+                className="bg-green-500 text-white"
               >
                 Update Event
               </Button>

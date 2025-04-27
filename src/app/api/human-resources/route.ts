@@ -24,8 +24,6 @@ export async function GET() {
         : "on work",
     }));
 
-    console.log("test", updatedUsers);
-
     return NextResponse.json(updatedUsers);
   } catch (error: unknown) {
     console.error("Error fetching users:", error);  // Log the actual error
