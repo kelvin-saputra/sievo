@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const cookieStore = await cookies();
     const cookie = cookieStore.get('refreshToken')?.value;
-    const refreshToken = await redisClient.get(`refreshToken:${encryptAES(id)}`);
+    const refreshToken = await redisClient.get(`refreshToken:${await encryptAES(id)}`);
 
     if (!cookie || !refreshToken  || refreshToken !== cookie) {
         return responseFormat(401, "Saat ini sesi anda telah habis, silakan login kembali", null);

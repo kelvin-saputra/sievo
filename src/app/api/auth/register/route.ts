@@ -1,8 +1,8 @@
 import { decryptAES, encryptAES } from "@/lib/aes";
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
+import { verify } from "@/lib/jwt";
 import redisClient from "@/utils/redis";
-import jwt from "jsonwebtoken";
 
 export async function POST(req:Request) {
     const reqBody = await req.json();
@@ -11,7 +11,7 @@ export async function POST(req:Request) {
     if (!encryptedToken) {
         return responseFormat(400, "Registration token is not valid", null);
     }
-    const decryptedToken = decryptAES(encryptedToken);
+    const decryptedToken = await decryptAES(encryptedToken);
     const { email, password, name, phone_number, role, ...userData } = reqBody
 
     if (!email || !password || !name || !phone_number || !role) {
@@ -29,13 +29,13 @@ export async function POST(req:Request) {
     }
     
     try {
-        const decodedToken = jwt.verify(decryptedToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
+        const decodedToken = verify(decryptedToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
         const newUser = await prisma.user.create({
             data: {
                 ...userData,
                 email: email,
-                password: encryptAES(password),
-                phone_number: encryptAES(phone_number),
+                password: await encryptAES(password),
+                phone_number: await encryptAES(phone_number),
                 role: (decodedToken as any).role,
                 name: name,
             }

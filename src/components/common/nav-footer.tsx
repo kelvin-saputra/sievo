@@ -44,6 +44,12 @@ export function NavFooter({
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("authUser")!);
+    try {
+      const userParsed = UserSchema.partial().parse(user)
+      console.log(userParsed)
+    } catch (error) {
+      console.log(error instanceof Error? error.message:error)
+    }
     setUser(UserSchema.partial().parse(user))
   }, [])
 
@@ -97,9 +103,9 @@ export function NavFooter({
                 </DropdownMenuItem>
               {((user?.is_admin === true || user?.role === "EXECUTIVE")) && (
                 <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex w-full cursor-pointer items-center text-white hover:bg-sidebar-accent">
+                  <Link href="/user-management" className="flex w-full cursor-pointer items-center text-white hover:bg-sidebar-accent">
                     <Settings className="mr-2 size-4" />
-                    <span>Settings</span>
+                    <span>User Manager</span>
                   </Link>
                 </DropdownMenuItem>
               )}

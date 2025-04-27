@@ -1,13 +1,15 @@
-import { encryptAESClient } from "@/lib/aes";
+import { encryptAES } from "@/lib/aes";
 import { LoginDTO, RegisterDTO } from "@/models/dto";
 import { UserSchema } from "@/models/schemas"
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 const AUTH_API =  process.env.NEXT_PUBLIC_AUTH_API_URL;
 
 export default function useAuthentication() {
+    const router = useRouter();
     const [user, setUser] = useState<UserSchema | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -44,7 +46,7 @@ export default function useAuthentication() {
             console.log(requestData);
             const parsedRequest = UserSchema.parse(requestData);
             console.log(parsedRequest)
-            const response = await axios.post(`${AUTH_API}/register`, parsedRequest, {params: {token: encryptAESClient(token)}});
+            const response = await axios.post(`${AUTH_API}/register`, parsedRequest, {params: {token: await encryptAES(token)}});
             const {  } = UserSchema.parse(response.data.data);
             toast.success("Registrasi berhasil, Silahkan lakukan login");
         } catch {
@@ -72,6 +74,7 @@ export default function useAuthentication() {
             setUser(null);
             localStorage.removeItem("authUser");
             toast.success("Logout berhasil");
+            router.replace("/auth/login");
         } catch {
             toast.error("Logout gagal");
         }

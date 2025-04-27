@@ -22,14 +22,18 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import Link from "next/link"
 import { LoginDTO } from "@/models/dto"
+import { useRouter, useSearchParams } from "next/navigation"
  
 interface LoginFormProps {
-    onLogin: (dto: LoginDTO) => void;
+    onLogin: (dto: LoginDTO) => Promise<void>;
 }
 
 export function LoginForm({
     onLogin,
 }: LoginFormProps) {
+    const router = useRouter();
+    const params = useSearchParams();
+    const replaceUrl = params.get('from') ?? '/';
     const form = useForm<LoginDTO>({
         resolver: zodResolver(LoginDTO),
         defaultValues: {
@@ -39,9 +43,16 @@ export function LoginForm({
     })
 
     const onSubmit = async (data: LoginDTO) => {
-        console.log(data)
-        onLogin(data);
-        form.reset();
+        try {
+            await onLogin(data);
+            
+            router.replace(replaceUrl);
+            form.reset();
+        } catch (error) {
+            console.log("LOGIN GAGAL", error instanceof Error? error.message:error)
+        } finally{
+            console.log("LOGIN BERHASIL")
+        }
     }
     return (
         <div className={cn("flex flex-col gap-6")}>

@@ -8,8 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import Link from "next/link"
 import { RegisterDTO } from "@/models/dto"
-
-// Create a proper schema that matches the RegisterDTO
+import { useRouter } from "next/navigation"
 
 interface RegisterFormProps {
   onRegister: (data: RegisterDTO) => void
@@ -17,6 +16,7 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
+  const router = useRouter();
   const form = useForm<RegisterDTO>({
     resolver: zodResolver(RegisterDTO),
     defaultValues: {
@@ -29,7 +29,12 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
   })
 
   function onSubmit(data: RegisterDTO) {
-    onRegister(data)
+    try {
+      onRegister(data)
+      router.replace("/auth/login")
+    } catch {
+      
+    }
   }
 
   return (

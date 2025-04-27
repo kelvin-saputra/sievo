@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { sign, verify } from '@/lib/jwt'
 import { encryptAES } from "./aes";
 import redisClient from "@/utils/redis";
 
@@ -6,8 +6,8 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET!
 const REFRESH_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET!
 export async function setSession(userId: string, role: string) {
     try {
-        const accessToken = jwt.sign({ id: userId, role: role }, ACCESS_SECRET, { expiresIn: '15m' });
-        const refreshToken = jwt.sign({ id: userId, role: role }, REFRESH_SECRET, { expiresIn: '1d' });
+        const accessToken = await sign({ id: userId, role: role }, ACCESS_SECRET, { expiresIn: '15m' });
+        const refreshToken = await sign({ id: userId, role: role }, REFRESH_SECRET, { expiresIn: '1d' });
 
         return setCookies(accessToken, refreshToken, userId);
     } catch {
@@ -41,14 +41,14 @@ export async function setCookies(accessToken: string, refreshToken: string, user
         }
     ]
 
-    await redisClient.set(`refreshToken:${encryptAES(userID)}`, refreshToken, 'EX', 1 * 24 * 60 * 60);
+    await redisClient.set(`refreshToken:${await encryptAES(userID)}`, refreshToken, {ex:1 * 24 * 60 * 60});
     return cookiesToSet;
 }
 
 export async function updateAccessToken(refreshToken: string) {
     try {
-        const decodedRefreshToken = jwt.verify(refreshToken, REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ id: (decodedRefreshToken as any).id, role: (decodedRefreshToken as any).role }, ACCESS_SECRET, { expiresIn: '15m' });
+        const decodedRefreshToken = await verify(refreshToken, REFRESH_SECRET);
+        const newAccessToken = await sign({ id: (decodedRefreshToken as any).id, role: (decodedRefreshToken as any).role }, ACCESS_SECRET, { expiresIn: '15m' });
 
         const cookiesToSet = [
             {
@@ -71,8 +71,8 @@ export async function updateAccessToken(refreshToken: string) {
 }
 
 export async function createRegisterToken(role:string, duration:number) {
-    const token = jwt.sign({ role: role }, ACCESS_SECRET, { expiresIn: `${duration}s` })
+    const token = await sign({ role: role }, ACCESS_SECRET, { expiresIn: `${duration}s` })
 
-    await redisClient.set(`registerToken:${encryptAES(token)}`, token, 'EX', duration);
+    await redisClient.set(`registerToken:${await encryptAES(token)}`, token, {ex:duration});
     return token;
 }

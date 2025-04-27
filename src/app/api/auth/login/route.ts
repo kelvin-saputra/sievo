@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         const user = await prisma.user.findFirst({
             where: {
                 email: email,
-                password: encryptAES(password),
+                password: await encryptAES(password),
             }
         });
         if (!user) {

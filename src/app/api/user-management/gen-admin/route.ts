@@ -26,8 +26,8 @@ export async function POST(req: Request) {
             data: {
                 ...userData,
                 email: email,
-                password: encryptAES(password),
-                phone_number: encryptAES(phone_number),
+                password: await encryptAES(password),
+                phone_number: await encryptAES(phone_number),
                 role: role,
                 name: name,
                 is_admin: true || is_admin,
