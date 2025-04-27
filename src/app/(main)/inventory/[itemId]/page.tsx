@@ -2,6 +2,8 @@
 
 import { useParams } from "next/navigation";
 import * as React from "react";
+import { useRouter } from "next/navigation"; 
+
 import {
   Card,
   CardContent
@@ -24,6 +26,7 @@ import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-m
 import { useState } from "react";
 
 const ItemDetail = () => {
+  const router = useRouter();
   const { itemId } = useParams();
 
   const { inventory, loading, fetchInventoryById, handleDeleteInventory, handleUpdateInventory } = useInventory(); 
@@ -54,7 +57,19 @@ const ItemDetail = () => {
           <p className="text-muted-foreground text-xl sm:text-2xl">Item Detail</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
-            <DeleteInventoryModal inventoryId={inventory.inventory_id} onDeleteInventory={(id) => console.log("Deleted Data:", id)} open={open} setOpen={setOpen} />
+            <DeleteInventoryModal 
+              inventoryId={inventory.inventory_id} 
+              onDeleteInventory={async (id) => {
+                try {
+                  await handleDeleteInventory(id);
+                  router.push("/inventory"); // redirect di sini setelah delete sukses
+                } catch (error) {
+                  console.error(error);
+                }
+              }}
+              open={open} 
+              setOpen={setOpen} 
+            />
           </div>
         </div>
       </div>
