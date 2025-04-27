@@ -27,14 +27,17 @@ export function BudgetRadialChart() {
     },
   ]
 
+  const actualColor = "#e07a5f"
+  const projectedColor = "#a8dadc" 
+
   const chartConfig = {
     actual: {
       label: "Actual Budget",
-      color: "hsl(var(--chart-1))",
+      color: actualColor,
     },
     projected: {
       label: "Projected Budget",
-      color: "hsl(var(--chart-2))",
+      color: projectedColor,
     },
   }
 
@@ -43,11 +46,11 @@ export function BudgetRadialChart() {
       <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[250px]">
         <RadialBarChart
           data={chartData}
-          startAngle={0}
-          endAngle={360}
+          startAngle={90}
+          endAngle={-270}
           innerRadius={60}
           outerRadius={120}
-          barSize={30}
+          barSize={20}
           cx="50%"
           cy="50%"
         >
@@ -58,10 +61,10 @@ export function BudgetRadialChart() {
                 if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                   return (
                     <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                      <tspan x={viewBox.cx} y={(viewBox.cy || 0) - 16} className="fill-foreground text-2xl font-bold">
+                      <tspan x={viewBox.cx} y={(viewBox.cy || 0) - 10} className="fill-foreground text-2xl font-bold">
                         {percentUsed}%
                       </tspan>
-                      <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 4} className="fill-muted-foreground">
+                      <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 10} className="fill-muted-foreground text-xs">
                         of budget used
                       </tspan>
                     </text>
@@ -72,22 +75,28 @@ export function BudgetRadialChart() {
           </PolarRadiusAxis>
           <RadialBar
             dataKey="projected"
-            fill="var(--color-projected)"
-            cornerRadius={5}
-            className="opacity-30 stroke-transparent stroke-2"
+            fill={projectedColor}
+            background
+            className="opacity-70 stroke-transparent stroke-2"
           />
-          <RadialBar
-            dataKey="actual"
-            fill="var(--color-actual)"
-            cornerRadius={5}
-            className="stroke-transparent stroke-2"
-          />
+          <RadialBar dataKey="actual" fill={actualColor} className="stroke-transparent stroke-2" />
         </RadialBarChart>
       </ChartContainer>
-      <div className="mt-4 flex items-center justify-center gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          <TrendingUp className="h-4 w-4" /> Budget utilization: {percentUsed}%
+
+      <div className="mt-4 flex justify-center gap-6">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: projectedColor }} />
+          <span className="text-sm">Projected Budget</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: actualColor }} />
+          <span className="text-sm">Actual Budget</span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-2 text-sm">
+        <TrendingUp className="h-4 w-4" />
+        <div className="font-medium leading-none">Budget utilization: {percentUsed}%</div>
       </div>
     </div>
   )

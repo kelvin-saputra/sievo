@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,76 +10,59 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { CheckCircle, AlertCircle, XCircle, Filter } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, AlertCircle, Clock, Filter } from "lucide-react";
+import useBudget from "@/hooks/use-dashboard";
+import { BudgetStatusEnum } from "@/models/enums";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
 
-type Status = "All" | "Approved" | "Error" | "Disabled"
 
-type Event = {
-  id: string
-  name: string
-  status: "Approved" | "Error" | "Disabled"
-  date: string
-  progress: number
-}
+
+type Status = "All" | z.infer<typeof BudgetStatusEnum>;
+
 
 export function EventTable() {
-  const [statusFilter, setStatusFilter] = useState<Status>("All")
+  const [statusFilter, setStatusFilter] = useState<Status>("All");
+  const { budgets, loading, fetchAllEventsBudgets } = useBudget();
+  const router = useRouter();
 
-  const events: Event[] = [
-    {
-      id: "1",
-      name: "Annual Conference",
-      status: "Approved",
-      date: "2025-05-15",
-      progress: 75,
-    },
-    {
-      id: "2",
-      name: "Team Building Workshop",
-      status: "Disabled",
-      date: "2025-06-22",
-      progress: 30,
-    },
-    {
-      id: "3",
-      name: "Product Launch",
-      status: "Error",
-      date: "2025-07-10",
-      progress: 85,
-    },
-    {
-      id: "4",
-      name: "Client Presentation",
-      status: "Error",
-      date: "2025-08-05",
-      progress: 45,
-    },
-  ]
+  useEffect(() => {
+    fetchAllEventsBudgets();
+  }, [fetchAllEventsBudgets]);
 
-  const filteredEvents = statusFilter === "All" ? events : events.filter((event) => event.status === statusFilter)
+  const filteredBudgets = statusFilter === "All" ? budgets : budgets.filter((budget) => budget.status === statusFilter);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: z.infer<typeof BudgetStatusEnum>) => {
     switch (status) {
-      case "Approved":
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case "Error":
-        return <AlertCircle className="h-5 w-5 text-red-500" />
-      case "Disabled":
-        return <XCircle className="h-5 w-5 text-gray-500" />
+      case "APPROVED":
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case "REJECTED":
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case "PENDING":
+        return <Clock className="h-5 w-5 text-yellow-500" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatStatus = (status: z.infer<typeof BudgetStatusEnum>) => {
+    return status.charAt(0) + status.slice(1).toLowerCase();
+  };
+
+  const formatDate = (dateInput: Date | string | undefined) => {
+    if (!dateInput) return "-";
+    const date = new Date(dateInput);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-    })
+    });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -97,9 +80,9 @@ export function EventTable() {
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={statusFilter} onValueChange={(value) => setStatusFilter(value as Status)}>
               <DropdownMenuRadioItem value="All">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Approved">Approved</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Error">Error</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Disabled">Disabled</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="APPROVED">Approved</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="PENDING">Pending</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="REJECTED">Rejected</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -114,21 +97,33 @@ export function EventTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEvents.map((event) => (
-              <TableRow key={event.id}>
-                <TableCell className="font-medium">{event.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(event.status)}
-                    <span>{event.status}</span>
-                  </div>
+            {filteredBudgets.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center py-10 text-gray-500">
+                  Tidak ada anggaran event yang dapat dilihat.
                 </TableCell>
-                <TableCell>{formatDate(event.date)}</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filteredBudgets.map((budget) => (
+                <TableRow
+                  key={budget.budget_id}
+                  className="cursor-pointer hover:bg-gray-100 transition"
+                  onClick={() => router.push(`/events/${budget.event_id}`)}
+                >
+                  <TableCell className="font-medium">{budget.event.event_name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(budget.status)}
+                      <span>{formatStatus(budget.status)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatDate(budget.updated_at)}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
     </div>
-  )
+  );
 }

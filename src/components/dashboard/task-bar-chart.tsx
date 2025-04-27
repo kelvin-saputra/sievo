@@ -38,23 +38,21 @@ export function TaskBarChart() {
     },
   ]
 
-  // Calculate the maximum value for the y-axis scale
   const maxTasks = Math.max(...taskData.map((item) => item.total)) + 5
 
   const chartConfig = {
     completed: {
       label: "Completed",
-      color: "#e07a5f", // Coral/orange color
+      color: "#e07a5f",
     },
     total: {
       label: "Total Tasks",
-      color: "#3d9b8f", // Teal/green color
+      color: "#a8dadc",
     },
   }
 
   return (
     <div className="w-full">
-      <h3 className="mb-4 text-lg font-medium">Task Completion</h3>
       <ChartContainer config={chartConfig} className="h-[300px]">
         <BarChart data={taskData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
