@@ -115,6 +115,7 @@ export function EventTable() {
                     <div className="flex items-center gap-2">
                       {getStatusIcon(budget.status)}
                       <span>{formatStatus(budget.status)}</span>
+                      
                     </div>
                   </TableCell>
                   <TableCell>{formatDate(budget.updated_at)}</TableCell>
