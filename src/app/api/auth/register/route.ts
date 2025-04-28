@@ -4,7 +4,7 @@ import { prisma } from "@/utils/prisma";
 import { verify } from "@/lib/jwt";
 import redisClient from "@/utils/redis";
 
-export async function POST(req:Request) {
+export async function POST(req: Request) {
     const reqBody = await req.json();
     const { searchParams } = new URL(req.url);
     const encryptedToken = searchParams.get("token");
@@ -27,9 +27,9 @@ export async function POST(req:Request) {
     if (checkuser) {
         return responseFormat(400, "Alamat email sudah digunakan, lakukan login", null);
     }
-    
+
     try {
-        const decodedToken = verify(decryptedToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
+        const decodedToken = await verify(decryptedToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
         const newUser = await prisma.user.create({
             data: {
                 ...userData,
@@ -46,8 +46,8 @@ export async function POST(req:Request) {
         }
         newUser.password = "[PASSWORD IS HIDDEN]"
         await redisClient.del(`registerToken:${encryptedToken}`)
-        return responseFormat(201, "Pengguna berhasil dibuat", newUser, undefined, "/login" );
+        return responseFormat(201, "Pengguna berhasil dibuat", newUser, undefined, "/login");
     } catch (error) {
-        return responseFormat(500, "Terjadi kesalahan internal", error instanceof Error ? error.message : String(error));   
+        return responseFormat(500, "Terjadi kesalahan internal", error instanceof Error ? error.message : String(error));
     }
 }

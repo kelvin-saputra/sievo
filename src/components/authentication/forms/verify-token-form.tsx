@@ -1,40 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 const tokenSchema = z.object({
   token: z.string().min(1, { message: "Token registrasi diperlukan" }),
-})
+});
 
-type TokenFormValues = z.infer<typeof tokenSchema>
+type TokenFormValues = z.infer<typeof tokenSchema>;
 
 interface TokenVerificationFormProps {
-  onTokenVerified: (token: string) => void
-  onCheckToken: (token: string) => Promise<boolean>
+  onTokenVerified: (token: string) => void;
+  onCheckToken: (token: string) => Promise<boolean>;
 }
 
-export default function TokenVerificationForm({ onTokenVerified, onCheckToken }: TokenVerificationFormProps) {
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [verificationError, setVerificationError] = useState<string | null>(null)
+export default function TokenVerificationForm({
+  onTokenVerified,
+  onCheckToken,
+}: TokenVerificationFormProps) {
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null
+  );
 
   const form = useForm<TokenFormValues>({
     resolver: zodResolver(tokenSchema),
     defaultValues: {
       token: "",
     },
-  })
+  });
 
   async function onSubmit(values: TokenFormValues) {
-    console.log(values)
-    setIsVerifying(true)
-    setVerificationError(null)
+    setIsVerifying(true);
+    setVerificationError(null);
 
     try {
       const isValid = await onCheckToken(values.token);
@@ -42,12 +59,12 @@ export default function TokenVerificationForm({ onTokenVerified, onCheckToken }:
       if (isValid) {
         onTokenVerified(values.token);
       } else {
-        setVerificationError("Token registrasi tidak valid atau kadaluwarsa")
+        setVerificationError("Token registrasi tidak valid atau kadaluwarsa");
       }
     } catch {
-      setVerificationError("Terjadi kesalahan saat memverifikasi token")
+      setVerificationError("Terjadi kesalahan saat memverifikasi token");
     } finally {
-      setIsVerifying(false)
+      setIsVerifying(false);
     }
   }
 
@@ -55,7 +72,9 @@ export default function TokenVerificationForm({ onTokenVerified, onCheckToken }:
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">Verifikasi Token</CardTitle>
-        <CardDescription>Masukkan token registrasi untuk melanjutkan pendaftaran.</CardDescription>
+        <CardDescription>
+          Masukkan token registrasi untuk melanjutkan pendaftaran.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -67,14 +86,21 @@ export default function TokenVerificationForm({ onTokenVerified, onCheckToken }:
                 <FormItem>
                   <FormLabel>Token Registrasi</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan token registrasi anda" {...field} />
+                    <Input
+                      placeholder="Masukkan token registrasi anda"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {verificationError && <div className="text-sm font-medium text-destructive">{verificationError}</div>}
+            {verificationError && (
+              <div className="text-sm font-medium text-destructive">
+                {verificationError}
+              </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={isVerifying}>
               {isVerifying ? "Memverifikasi..." : "Verifikasi Token"}
@@ -83,5 +109,5 @@ export default function TokenVerificationForm({ onTokenVerified, onCheckToken }:
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

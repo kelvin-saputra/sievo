@@ -33,7 +33,6 @@ export function LoginForm({
 }: LoginFormProps) {
     const router = useRouter();
     const params = useSearchParams();
-    const replaceUrl = params.get('from') ?? '/';
     const form = useForm<LoginDTO>({
         resolver: zodResolver(LoginDTO),
         defaultValues: {
@@ -45,12 +44,12 @@ export function LoginForm({
     const onSubmit = async (data: LoginDTO) => {
         try {
             await onLogin(data);
-            
-            router.replace(replaceUrl);
             form.reset();
-        } catch (error) {
-            console.log("LOGIN GAGAL", error instanceof Error? error.message:error)
+        } catch {
+            console.log("LOGIN GAGAL")
         } finally{
+            const replaceUrl = params.get('from') ?? '/'; 
+            router.replace(replaceUrl);
             console.log("LOGIN BERHASIL")
         }
     }

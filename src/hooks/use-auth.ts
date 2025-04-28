@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-const AUTH_API =  process.env.NEXT_PUBLIC_AUTH_API_URL;
+const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 
 export default function useAuthentication() {
     const router = useRouter();
@@ -19,7 +19,7 @@ export default function useAuthentication() {
             const requestData = {
                 ...data,
             }
-            const {data: dataResponse} = await axios.post(`${AUTH_API}/login`, requestData);
+            const { data: dataResponse } = await axios.post(`${AUTH_API}/login`, requestData);
             const parsedResponse = UserSchema.parse(dataResponse.data);
             setUser(parsedResponse);
             const userAccess = {
@@ -39,15 +39,13 @@ export default function useAuthentication() {
     const handleRegister = useCallback(async (data: RegisterDTO) => {
         setLoading(true);
         try {
-            const {token, ...registerData} = data;
+            const { token, ...registerData } = data;
             const requestData = {
                 ...registerData,
             }
-            console.log(requestData);
             const parsedRequest = UserSchema.parse(requestData);
-            console.log(parsedRequest)
-            const response = await axios.post(`${AUTH_API}/register`, parsedRequest, {params: {token: await encryptAES(token)}});
-            const {  } = UserSchema.parse(response.data.data);
+            const response = await axios.post(`${AUTH_API}/register`, parsedRequest, { params: { token: await encryptAES(token) } });
+            const { } = UserSchema.parse(response.data.data);
             toast.success("Registrasi berhasil, Silahkan lakukan login");
         } catch {
             toast.error("Gagal menambahkan user ke dalam database");
@@ -60,7 +58,7 @@ export default function useAuthentication() {
             const requestData = {
                 id: user?.id,
             }
-            const {  } = await axios.post(`${AUTH_API}/ack`, requestData);
+            const { } = await axios.post(`${AUTH_API}/ack`, requestData);
         } catch {
             toast.error("Sesi anda telah berakhir, silahkan login kembali");
         }
@@ -70,7 +68,7 @@ export default function useAuthentication() {
     const handleLogout = useCallback(async () => {
         setLoading(true);
         try {
-            const {  } = await axios.get(`${AUTH_API}/logout`)
+            const { } = await axios.get(`${AUTH_API}/logout`)
             setUser(null);
             localStorage.removeItem("authUser");
             toast.success("Logout berhasil");
@@ -78,7 +76,7 @@ export default function useAuthentication() {
         } catch {
             toast.error("Logout gagal");
         }
-    }, []);
+    }, [router]);
 
     const handleCheckToken = useCallback(async (token: string) => {
         setLoading(true);
@@ -86,7 +84,7 @@ export default function useAuthentication() {
             const requestData = {
                 token: token
             }
-            const {  } = await axios.post(`${AUTH_API}/check-token`, requestData);
+            const { } = await axios.post(`${AUTH_API}/check-token`, requestData);
             toast.success("Token valid, silahkan lanjutkan registrasi");
             setLoading(false);
             return true;
@@ -99,7 +97,7 @@ export default function useAuthentication() {
 
     return {
         user,
-        loading, 
+        loading,
         handleLogin,
         handleRegister,
         handleAck,

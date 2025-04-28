@@ -4,7 +4,7 @@ import { permission } from '../rbac-client';
 import { verify } from '../jwt';
 
 
-export async function roleMiddleware(req: NextRequest) {
+export async function roleMiddleware(req: NextRequest, res: NextResponse = NextResponse.next()) {
   const { pathname } = req.nextUrl;
   const method = req.method.toUpperCase();
 
@@ -12,7 +12,7 @@ export async function roleMiddleware(req: NextRequest) {
   const perm = permission.find(p => pathname.startsWith(p.path));
 
 // If ALL has access
-  if (!perm) return NextResponse.next();
+  if (!perm) return res;
 
   // Getting the authenticated user and the role of the user
   const token = req.cookies.get("refreshToken")?.value
@@ -23,7 +23,7 @@ export async function roleMiddleware(req: NextRequest) {
   const allowed = perm.methods[method];
 
   if (!allowed) {
-    return NextResponse.next();
+    return res;
   }
 
   // Kalau userRole gak ada atau gak termasuk allowed → redirect 403
@@ -31,7 +31,7 @@ export async function roleMiddleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/403', req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 // Hanya jalankan middleware pada semua path yang ada di permissions

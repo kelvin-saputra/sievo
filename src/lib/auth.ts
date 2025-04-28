@@ -41,7 +41,7 @@ export async function setCookies(accessToken: string, refreshToken: string, user
         }
     ]
 
-    await redisClient.set(`refreshToken:${await encryptAES(userID)}`, refreshToken, {ex:1 * 24 * 60 * 60});
+    await redisClient.set(`refreshToken:${await encryptAES(userID)}`, refreshToken, { ex: 1 * 24 * 60 * 60 });
     return cookiesToSet;
 }
 
@@ -70,9 +70,9 @@ export async function updateAccessToken(refreshToken: string) {
     }
 }
 
-export async function createRegisterToken(role:string, duration:number) {
+export async function createRegisterToken(role: string, duration: number) {
     const token = await sign({ role: role }, ACCESS_SECRET, { expiresIn: `${duration}s` })
 
-    await redisClient.set(`registerToken:${await encryptAES(token)}`, token, {ex:duration});
+    await redisClient.set(`registerToken:${await encryptAES(token)}`, token, { ex: duration });
     return token;
 }
