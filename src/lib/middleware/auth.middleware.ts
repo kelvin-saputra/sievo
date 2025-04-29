@@ -45,21 +45,24 @@ export async function AuthMiddleware(req: NextRequest) {
     return { ok: true }
   }
 
-  // Get the access Token
-  const accessToken = req.cookies.get('accessToken')?.value
-  if (accessToken) {
-    return { ok: true }
-  }
   const refreshToken = req.cookies.get('refreshToken')?.value;
-
   if (!refreshToken) {
     const loginURL = new URL('/auth/login', origin);
     loginURL.searchParams.set('from', pathname);
     return { redirect: NextResponse.redirect(loginURL) };
   }
-
   const decodedToken = await verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
   const cookiesSession = await redisClient.get(`refreshToken:${await encryptAES((decodedToken as any).id)}`)
+  if (!cookiesSession) {
+    const loginURL = new URL('/auth/login', origin)
+    loginURL.searchParams.set('from', pathname)
+    return { redirect: NextResponse.redirect(loginURL) }
+  }
+  // Get the access Token
+  const accessToken = req.cookies.get('accessToken')?.value
+  if (accessToken) {
+    return { ok: true }
+  }
   if (refreshToken !== cookiesSession) {
     // Not logged in yet -> Redirect to login page
     const loginUrl = new URL('/auth/login', origin)
