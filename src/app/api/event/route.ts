@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
 import { responseFormat } from "@/utils/api";
 
-/**
- * ✅ GET semua event (Hanya jika `is_deleted = false`)
- */
 export async function GET() {
   try {
     const events = await prisma.event.findMany({
@@ -23,20 +20,17 @@ export async function GET() {
   }
 }
 
-/**
- * ✅ POST event baru (Menggunakan data yang sudah divalidasi di frontend)
- */
 export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    const { manager_id, client_id, ...eventData } = data; // Destructure IDs separately
-    console.log(eventData);
+    const { manager_id, client_id, ...eventData } = data;
+    console.log(data);
     const event = await prisma.event.create({
       data: {
-        ...eventData, // Spread the rest of the event data
-        manager: { connect: { id: manager_id } }, // Connect manager
-        client: { connect: { client_id: client_id } }, // Connect client
+        ...eventData,
+        manager: { connect: { id: manager_id } },
+        client: { connect: { client_id: client_id } },
       },
     });
 

@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -44,6 +42,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { TaskStatusEnum } from "@/models/enums";
 import { TaskSchema } from "@/models/schemas";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserWithStatus } from "@/hooks/use-hr";
+import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
 interface UpdateTaskModalProps {
   task: TaskSchema;
@@ -52,9 +59,18 @@ interface UpdateTaskModalProps {
     createdBy: string,
     dto: UpdateTaskDTO
   ) => Promise<void>;
+  users: UserWithStatus[];
+  eventStartDate: Date;
+  eventEndDate: Date;
 }
 
-export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
+export function UpdateTaskModal({
+  task,
+  onUpdateTask,
+  users,
+  eventStartDate,
+  eventEndDate,
+}: UpdateTaskModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
@@ -108,7 +124,6 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"
           >
-            {}
             <FormField
               control={form.control}
               name="title"
@@ -123,7 +138,6 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
               )}
             />
 
-            {}
             <FormField
               control={form.control}
               name="description"
@@ -138,22 +152,29 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
               )}
             />
 
-            {}
             <FormField
               control={form.control}
               name="assigned_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assigned To</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter assignee ID" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {}
             <FormField
               control={form.control}
               name="due_date"
@@ -183,6 +204,10 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
+                        disabled={(date) =>
+                          date < new Date(eventStartDate) ||
+                          date > new Date(eventEndDate)
+                        }
                       />
                     </PopoverContent>
                   </Popover>
@@ -191,7 +216,7 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
               )}
             />
 
-            {}
+            {/* STATUS with color */}
             <FormField
               control={form.control}
               name="status"
@@ -208,7 +233,18 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
                             aria-expanded={openStatus}
                             className="w-full justify-between"
                           >
-                            {field.value || "Select task status"}
+                            {field.value ? (
+                              <span
+                                className={cn(
+                                  "rounded px-2 py-1 text-xs font-semibold",
+                                  taskStatusColorMap[field.value]
+                                )}
+                              >
+                                {field.value}
+                              </span>
+                            ) : (
+                              "Select task status"
+                            )}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -239,7 +275,14 @@ export function UpdateTaskModal({ task, onUpdateTask }: UpdateTaskModalProps) {
                                           : "opacity-0"
                                       )}
                                     />
-                                    {status}
+                                    <span
+                                      className={cn(
+                                        "rounded px-2 py-1 text-xs font-semibold",
+                                        taskStatusColorMap[status]
+                                      )}
+                                    >
+                                      {status}
+                                    </span>
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
