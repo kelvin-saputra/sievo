@@ -28,7 +28,6 @@ export function EventCalendar() {
     return new Date(year, month, 1).getDay()
   }
 
-  // Format date to display in tooltip
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -72,27 +71,6 @@ export function EventCalendar() {
     if (isEnd) return "end"
     if (date > event.start && date < event.end) return "middle"
     return null
-  }
-
-  // Get consecutive days for an event in the current month
-  const getEventDaysInMonth = (event: { start: Date; end: Date }, year: number, month: number) => {
-    const result = []
-    const monthStart = new Date(year, month, 1)
-    const monthEnd = new Date(year, month + 1, 0)
-
-    // Adjust start date to beginning of month if before
-    const currentDate = new Date(Math.max(event.start.getTime(), monthStart.getTime()))
-
-    // Adjust end date to end of month if after
-    const endDate = new Date(Math.min(event.end.getTime(), monthEnd.getTime()))
-
-    // Collect all days in the range
-    while (currentDate <= endDate) {
-      result.push(new Date(currentDate))
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-
-    return result
   }
 
   const renderCalendar = () => {
