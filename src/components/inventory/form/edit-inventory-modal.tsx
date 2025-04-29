@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ChevronsUpDown } from "lucide-react";
+import { UserSchema } from "@/models/schemas";
 
 import {
   Dialog,
@@ -45,7 +46,7 @@ import { FileState, MultiImageDropzone } from "../../ui/multi-image-dropzone";
 
 interface EditInventoryModalProps {
   inventory: InventorySchema;
-  onUpdateInventory: (inventoryId: string, data: UpdateInventoryDTO) => Promise<void>;
+  onUpdateInventory: (inventoryId: string, data: UpdateInventoryDTO, user_id: string) => Promise<void>;
   open?: boolean;
   setOpen?: (open: boolean) => void;
 }
@@ -63,6 +64,7 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
   const { edgestore } = useEdgeStore();
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
 
   const form = useForm({
     resolver: zodResolver(InventorySchema),
@@ -72,9 +74,15 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
     },
   });
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser")!);
+    try {
+      const userParsed = UserSchema.partial().parse(user);
+      setUser(userParsed);
+    } catch {}
+  }, []);
+
   const selectedCategory = form.watch("category") ?? "";
-
-
   const itemQty = form.watch("item_qty") ?? 0;
   const reservedQty = form.watch("item_qty_reserved") ?? 0;
   const damagedQty = form.watch("item_qty_damaged") ?? 0;
@@ -92,8 +100,8 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
   }, [fileStates, form]);
 
   const onSubmit = (data: UpdateInventoryDTO) => {
-    // Data already contains updated inventory_photo from the effect
-    onUpdateInventory(inventory.inventory_id, data);
+    const userId = user?.id || "";
+    onUpdateInventory(inventory.inventory_id, data, userId);
     form.reset();
     setFileStates([]);
     setOpen(false);

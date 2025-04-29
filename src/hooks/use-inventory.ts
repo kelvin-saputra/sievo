@@ -48,9 +48,11 @@ export default function useInventory() {
 
   const handleUpdateInventory = async (
     inventoryId: string,
-    data: UpdateInventoryDTO
+    data: UpdateInventoryDTO,
+    user_id: string
   ) => {
     try {
+      console.log(user_id)
       const response = await axios.get(API_URL);
       if (response.status !== 200) {
         toast.error("Failed to fetch existing inventories: " + response.data.message);
@@ -108,7 +110,7 @@ export default function useInventory() {
       const updatedData = InventorySchema.partial().parse({
         ...data,
         inventoryId: inventoryId,
-        updated_by: "550e8400-e29b-41d4-a716-446655440000", 
+        updated_by: user_id, 
         updated_at: new Date(),
       });
   

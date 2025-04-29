@@ -1,10 +1,12 @@
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
+import { checkRole, roleAccess } from "@/lib/rbac-api";
+import { NextRequest } from "next/server";
 
 /**
  * ✅ GET Inventory Item by ID
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop(); 
@@ -16,6 +18,7 @@ export async function GET(req: Request) {
         if (!inventoryItem) {
             return responseFormat(404, "[NOT FOUND] Item not found", null);
         }
+          
 
         return responseFormat(200, "[FOUND] Item successfully retrieved!", inventoryItem);
     } catch (error) {
@@ -27,7 +30,7 @@ export async function GET(req: Request) {
 /**
  * ✅ Soft DELETE Inventory Item by ID (mark as deleted)
  */
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
     try {
         console.log("INI REQUEST", req);
         
@@ -35,9 +38,11 @@ export async function DELETE(req: Request) {
         const id = url.pathname.split("/").pop(); 
         console.log("INI IDNYA", id);
 
-        // Check if ID is provided and valid
         if (!id) {
             return responseFormat(400, "Inventory ID is required.", null);
+        }
+        if (!(await checkRole(roleAccess.ADMINEXECUTIVE, req))) {
+            return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null);
         }
 
         // Perform the soft delete by setting is_deleted flag to true
@@ -59,14 +64,16 @@ export async function DELETE(req: Request) {
 
 /* * ✅ PUT Replace Inventory Item by ID
  */
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop();
         
         const dataBody = await req.json();
         const {  ...inventoryData } = dataBody;
-
+        if (!(await checkRole(roleAccess.ADMINEXECUTIVEINTERNAL, req))) {
+            return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null);
+        }
 
         const updatedInventoryItem = await prisma.inventory.update({
             where: { inventory_id: id },
