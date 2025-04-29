@@ -21,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
+import useHr from "@/hooks/use-hr";
 
 interface EventCardProps {
   event: EventSchema;
@@ -44,11 +46,18 @@ const EventCard = ({
     fetchAllTasks,
   } = useEventTask(event.event_id);
 
+  const { users, fetchAllUsers, loading: usersLoading } = useHr();
+  const [usersFetched, setUsersFetched] = useState(false);
+
   useEffect(() => {
     if (expanded) {
+      if (!usersFetched) {
+        fetchAllUsers();
+        setUsersFetched(true);
+      }
       fetchAllTasks();
     }
-  }, [expanded, fetchAllTasks]);
+  }, [expanded, fetchAllUsers, fetchAllTasks, usersFetched]);
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
@@ -72,7 +81,7 @@ const EventCard = ({
         className={`flex justify-between items-center ${
           eventData.status !== "DONE" ? "bg-green-200" : "bg-gray-200"
         } p-4 rounded-md cursor-pointer`}
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => setExpanded((prev) => !prev)}
       >
         <div className="flex items-center gap-2">
           {expanded ? (
@@ -95,7 +104,15 @@ const EventCard = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" onClick={(e) => e.stopPropagation()}>
-                {eventData.status} <MoreHorizontal className="ml-2 h-4 w-4" />
+                <span
+                  className={`rounded px-2 py-1 text-xs font-semibold ${
+                    eventStatusColorMap[eventData.status] ||
+                    "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {eventData.status}
+                </span>
+                <MoreHorizontal className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -104,7 +121,13 @@ const EventCard = ({
                   key={status}
                   onClick={(e) => handleStatusChange(e, status)}
                 >
-                  {status}
+                  <span
+                    className={`rounded px-2 py-1 text-xs font-semibold ${
+                      eventStatusColorMap[status] || "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {status}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -120,10 +143,14 @@ const EventCard = ({
 
       {expanded && (
         <div className="p-4">
-          {tasksLoading ? (
+          {tasksLoading || usersLoading ? (
             <div>Loading tasks...</div>
           ) : (
-            <DataTable columns={taskColumns} data={tasks} />
+            <DataTable
+              columns={taskColumns(users)}
+              data={tasks}
+              users={users}
+            />
           )}
         </div>
       )}
