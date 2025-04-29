@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import jwt from 'jsonwebtoken';
+import { verify } from '@/lib/jwt'
 import redisClient from "@/utils/redis";
 import { encryptAES } from "@/lib/aes";
 import { responseFormat } from "@/utils/api";
@@ -12,9 +12,9 @@ export async function GET() {
         if (!refreshToken) {
             return responseFormat(400, 'Pengguna belum melakukan login, silakan login terlebih dahulu.', null);
         }
-        const decodedToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
+        const decodedToken = verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
 
-        await redisClient.del(`refreshToken:${encryptAES((decodedToken as any).id)}`)
+        await redisClient.del(`refreshToken:${await encryptAES((decodedToken as any).id)}`)
 
         cookieStore.delete("accessToken");
         cookieStore.delete("refreshToken");

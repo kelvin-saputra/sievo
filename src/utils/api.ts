@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function responseFormat(statusCode: number, message: string, data: unknown, cookiesToSet?: {name:string, value: string, options: any}[]) {
+export function responseFormat(
+    statusCode: number,
+    message: string, 
+    data: unknown, 
+    cookiesToSet?: {name:string, value: string, options: any}[],
+    redirectURL?: string
+) {
     const response = {
         code: statusCode,
         message: message,
@@ -13,15 +19,13 @@ export function responseFormat(statusCode: number, message: string, data: unknow
             nextResponse.cookies.set(name, value, options);
         }
     }
+
+    if (redirectURL) {
+        nextResponse.headers.set('Location', redirectURL);
+    }
     return nextResponse;  
 }
 
 export function requestFormat(data: unknown) {
     return new  NextRequest(JSON.stringify(data));
-}
-
-export function responseFormatWithCookies(statusCode: number, message:string, data:unknown, ) {
-    const res = responseFormat(statusCode, message, data);
-
-    return res;
 }

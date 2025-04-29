@@ -10,16 +10,18 @@ import { UserSchema } from "@/models/schemas"
 import { data } from "@/static/sidebar-menu"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 
-export function NavMain(
-  { user }: {
-    user: UserSchema
-  }
-) {
+export function NavMain() {
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null)
   const pathName = usePathname()
-  const userRole = user.role
-  const userAdmin = user.is_admin
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser")!)
+    setUser(user)
+  }, [])
+  const userRole = user?.role || ""
+  const userAdmin = user?.is_admin
   return (
     <SidebarGroup>
       <SidebarMenu>

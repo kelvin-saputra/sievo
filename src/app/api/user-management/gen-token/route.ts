@@ -1,8 +1,14 @@
 import { createRegisterToken } from "@/lib/auth";
+import { checkRole, roleAccess } from "@/lib/rbac-api";
 import { responseFormat } from "@/utils/api";
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request) {
-    const { searchParams }= new URL(req.url);
+export async function GET(req: NextRequest) {
+    if (!(await checkRole(roleAccess.ADMINEXECUTIVE, req))) {
+        return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null)
+    }
+
+    const { searchParams } = new URL(req.url);
     const role = searchParams.get('role')?.toUpperCase();
     const durationParams = searchParams.get('duration');
     const duration = durationParams !== null ? parseInt(durationParams, 10) : null;

@@ -32,9 +32,9 @@ export const UserSchema = z.object({
     started_at: z.coerce
         .date({ invalid_type_error: "Tanggal mulai tidak valid" })
         .default(() => new Date()),
-    ended_at: z.coerce.date({ invalid_type_error: "Tanggal akhir tidak valid" }),
+    ended_at: z
+        .coerce.date({ invalid_type_error: "Tanggal akhir tidak valid" })
+        .optional(),
 });
-
-
 
 export type UserSchema = z.infer<typeof UserSchema>;

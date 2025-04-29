@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ROLE" AS ENUM ('EXECUTIVE', 'INTERNAL', 'FREELANCE');
+CREATE TYPE "ROLE" AS ENUM ('ADMIN', 'EXECUTIVE', 'INTERNAL', 'FREELANCE');
 
 -- CreateEnum
 CREATE TYPE "TaskStatus" AS ENUM ('PENDING', 'ON_PROGRESS', 'DONE', 'CANCELLED');
@@ -45,7 +45,9 @@ CREATE TABLE "User" (
 CREATE TABLE "Inventory" (
     "inventory_id" TEXT NOT NULL,
     "item_name" TEXT NOT NULL,
-    "item_qty" INTEGER NOT NULL,
+    "item_qty" INTEGER NOT NULL DEFAULT 0,
+    "item_qty_damaged" INTEGER NOT NULL DEFAULT 0,
+    "item_qty_reserved" INTEGER NOT NULL DEFAULT 0,
     "item_price" DOUBLE PRECISION NOT NULL,
     "inventory_photo" TEXT[],
     "category" "InventoryCategory" NOT NULL DEFAULT 'CONSUMABLE',
@@ -229,22 +231,6 @@ CREATE TABLE "Proposal" (
 );
 
 -- CreateTable
-CREATE TABLE "Report" (
-    "report_id" TEXT NOT NULL,
-    "review" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "actualParticipant" INTEGER NOT NULL,
-    "created_by" TEXT NOT NULL,
-    "updated_by" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "event_id" TEXT NOT NULL,
-    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
-
-    CONSTRAINT "Report_pkey" PRIMARY KEY ("report_id")
-);
-
--- CreateTable
 CREATE TABLE "Event" (
     "event_id" TEXT NOT NULL,
     "event_name" TEXT NOT NULL,
@@ -266,6 +252,16 @@ CREATE TABLE "Event" (
 );
 
 -- CreateTable
+CREATE TABLE "UserEvent" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "eventId" TEXT NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_BudgetToBudgetItemCategory" (
     "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL,
@@ -281,12 +277,6 @@ CREATE UNIQUE INDEX "Vendor_contact_id_key" ON "Vendor"("contact_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_contact_id_key" ON "Client"("contact_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Proposal_client_name_key" ON "Proposal"("client_name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Report_event_id_key" ON "Report"("event_id");
 
 -- CreateIndex
 CREATE INDEX "_BudgetToBudgetItemCategory_B_index" ON "_BudgetToBudgetItemCategory"("B");
@@ -343,13 +333,16 @@ ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_inventory_id_fke
 ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_other_item_id_fkey" FOREIGN KEY ("other_item_id") REFERENCES "Purchasing"("other_item_id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Report" ADD CONSTRAINT "Report_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_manager_id_fkey" FOREIGN KEY ("manager_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "Client"("client_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Budget"("budget_id") ON DELETE CASCADE ON UPDATE CASCADE;

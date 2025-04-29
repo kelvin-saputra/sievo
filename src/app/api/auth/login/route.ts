@@ -16,18 +16,18 @@ export async function POST(req: Request) {
         const user = await prisma.user.findFirst({
             where: {
                 email: email,
-                password: encryptAES(password),
+                password: await encryptAES(password),
+                is_active: true,
+                ended_at: undefined,
             }
         });
         if (!user) {
             return responseFormat(404, "Pengguna tidak ditemukan, silakan mendaftar terlebih dahulu", null);
         }
-        console.log("Create Session");
         const cookiesToSet = await setSession(user.id, user.role);
-        console.log("Create Session Finish");
-        user.password="[PASSWORD IS HIDDEN]";
-        return responseFormat(200, "Login Berhasil", user, cookiesToSet);
-    } catch (error) {
-        return responseFormat(500, "Terjadi kesalahan saat login, silakan coba lagi", error instanceof Error ? error.message : null);
+        user.password = "[PASSWORD IS HIDDEN]";
+        return responseFormat(200, "Login Berhasil", user, cookiesToSet, "/");
+    } catch {
+        return responseFormat(500, "Terjadi kesalahan saat login, silakan coba lagi", null);
     }
 }
