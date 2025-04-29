@@ -25,10 +25,19 @@ export async function AuthMiddleware(req: NextRequest) {
     const refreshToken = req.cookies.get('refreshToken')?.value || "";
     if (refreshToken) {
       const decodedToken = await verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
+      const cookiesSession = await redisClient.get(`refreshToken:${await encryptAES((decodedToken as any).id)}`)
+      if (!cookiesSession || (refreshToken !== cookiesSession)) {
+        req.cookies.delete('accessToken')
+        req.cookies.delete('refreshToken')
+        const loginURL = new URL('/auth/login', origin)
+        loginURL.searchParams.set('from', target)
+        return { redirect: NextResponse.redirect(loginURL) }
+      }
       try {
         const requestData = {
           id: (decodedToken as any).id
         }
+
         await axios.post(`${AUTH_API}/ack`, requestData, { headers: { Cookie: cookieHeader } });
       } catch {
       }
@@ -47,6 +56,8 @@ export async function AuthMiddleware(req: NextRequest) {
 
   const refreshToken = req.cookies.get('refreshToken')?.value;
   if (!refreshToken) {
+    req.cookies.delete('accessToken')
+    req.cookies.delete('refreshToken')
     const loginURL = new URL('/auth/login', origin);
     loginURL.searchParams.set('from', pathname);
     return { redirect: NextResponse.redirect(loginURL) };
@@ -54,6 +65,8 @@ export async function AuthMiddleware(req: NextRequest) {
   const decodedToken = await verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
   const cookiesSession = await redisClient.get(`refreshToken:${await encryptAES((decodedToken as any).id)}`)
   if (!cookiesSession) {
+    req.cookies.delete('accessToken')
+    req.cookies.delete('refreshToken')
     const loginURL = new URL('/auth/login', origin)
     loginURL.searchParams.set('from', pathname)
     return { redirect: NextResponse.redirect(loginURL) }
@@ -65,6 +78,8 @@ export async function AuthMiddleware(req: NextRequest) {
   }
   if (refreshToken !== cookiesSession) {
     // Not logged in yet -> Redirect to login page
+    req.cookies.delete('accessToken')
+    req.cookies.delete('refreshToken')
     const loginUrl = new URL('/auth/login', origin)
     loginUrl.searchParams.set('from', pathname)
     return { redirect: NextResponse.redirect(loginUrl) }
