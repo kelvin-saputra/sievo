@@ -17,13 +17,15 @@ export async function POST(req: Request) {
             where: {
                 email: email,
                 password: await encryptAES(password),
+                is_active: true,
+                ended_at: undefined,
             }
         });
         if (!user) {
             return responseFormat(404, "Pengguna tidak ditemukan, silakan mendaftar terlebih dahulu", null);
         }
         const cookiesToSet = await setSession(user.id, user.role);
-        user.password="[PASSWORD IS HIDDEN]";
+        user.password = "[PASSWORD IS HIDDEN]";
         return responseFormat(200, "Login Berhasil", user, cookiesToSet, "/");
     } catch {
         return responseFormat(500, "Terjadi kesalahan saat login, silakan coba lagi", null);
