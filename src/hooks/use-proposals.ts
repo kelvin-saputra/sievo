@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { ProposalSchema } from "@/models/schemas";
 import { useState, useCallback } from "react";
-import { addProposalDTO } from "@/models/dto/proposal.dto";
+import { addProposalDTO, updateProposalDTO } from "@/models/dto/proposal.dto";
 import { ProposalStatusEnum } from "@/models/enums";
 
 const API_URL = process.env.NEXT_PUBLIC_PROPOSAL_API_URL!;
@@ -35,28 +35,37 @@ export default function useProposal() {
 
   const handleAddProposal = async (newProposal: addProposalDTO) => {
     try {
+      
       const proposalData = ProposalSchema.partial().parse({
         ...newProposal,
+        status: newProposal.status ?? "DRAFT", 
         created_by: "ID Anonymous",
         updated_by: "ID Anonymous",
+        created_at: new Date().toISOString(), // ✅ Ensure valid ISO format
+        updated_at: new Date().toISOString(),
       });
-
+  
       const { data: createdProposal } = await axios.post(API_URL, proposalData);
-
+  
       const transformedProposal = {
         ...createdProposal,
-        created_at: new Date(createdProposal.created_at),
-        updated_at: new Date(createdProposal.updated_at),
+        created_at: createdProposal.created_at
+          ? new Date(createdProposal.created_at)
+          : new Date(),
+        updated_at: createdProposal.updated_at
+          ? new Date(createdProposal.updated_at)
+          : new Date(),
       };
-
+  
       const parsedProposal = ProposalSchema.parse(transformedProposal);
       setProposals((prevProposal) => [...prevProposal, parsedProposal]);
       toast.success("Proposal berhasil ditambahkan!");
-    } catch {
+    } catch (error) {
+      console.error("❌ Failed to add proposal:", error); // ✅ Log for debugging
       toast.error("Gagal menambahkan Proposal");
     }
   };
-
+  
   const handleStatusChange = async (proposalId: string, newStatus: ProposalStatusEnum) => {
     try {
       setLoading(true);
@@ -81,8 +90,69 @@ export default function useProposal() {
   };
 
   const handleDeleteProposal = async (proposalId: string) => {
-    return proposalId;
-  }
+    try {
+      setLoading(true);
+      const response = await axios.delete(`/api/proposal/${proposalId}`);
+      const updatedProposal = response.data.data;
+      console.log(updatedProposal.updated_at)
+  
+      setProposals((prevProposals) =>
+        prevProposals.map((proposal) =>
+          proposal.proposal_id === proposalId
+            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at) }
+            : proposal
+        )
+      );
+      await fetchAllProposals();
+      toast.success("Proposal deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete proposal.");
+      console.error("Delete proposal error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProposal = async (
+    proposalId: string,
+    updated_by: string,
+    data: updateProposalDTO
+  ) => {
+    try {
+      const updatedData = ProposalSchema.pick({
+        proposal_name: true,
+        client_name: true,
+        proposal_link: true,
+        updated_by: true,
+        updated_at: true,
+      })
+        .partial()
+        .parse({
+          ...data,
+          updated_by,
+          updated_at: new Date().toISOString(),
+        });
+  
+      const { data: updatedProposal } = await axios.put(
+        `/api/proposal/${proposalId}`,
+        updatedData
+      );
+  
+      const parsedProposal = ProposalSchema.parse(updatedProposal);
+  
+      setProposals((prevProposals) =>
+        prevProposals.map((p) =>
+          p.proposal_id === proposalId ? parsedProposal : p
+        )
+      );
+  
+      toast.success("Proposal berhasil diperbarui!");
+    } catch (error) {
+      console.error("❌ Gagal memperbarui Proposal:", error);
+      toast.error("Gagal memperbarui Proposal.");
+    }
+  };
+  
 
   return {
     proposals,
@@ -91,5 +161,6 @@ export default function useProposal() {
     handleAddProposal,
     handleDeleteProposal,
     handleStatusChange,
+    handleUpdateProposal,
   };
 }
