@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import PageHeader from "@/components/common/page-header";
 import useContact from "@/hooks/use-contact";
 import { AddContactModal } from "@/components/contact/form/add-contact-modal";
@@ -14,11 +15,22 @@ export default function ViewAllContacts() {
     loading,
     fetchAllContacts,
     handleAddContact,
+    handleDeleteContact
   } = useContact();
 
   useEffect(() => {
     fetchAllContacts();
   }, [fetchAllContacts]);
+
+  const handleDelete = async (contactId: string) => {
+    try {
+      await handleDeleteContact(contactId);
+      fetchAllContacts();
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      toast.error("Gagal menghapus Contact. Silakan coba lagi.");
+    }
+  };
 
   // Ensure the data has the correct type
   const typedContacts: ContactWithRole[] = contacts.map(contact => ({
@@ -44,8 +56,7 @@ export default function ViewAllContacts() {
           <ContactTable<ContactWithRole>
             columns={contactColumns}
             data={typedContacts}
-            onUpdate={(updatedContact) => console.log("Updated Contact:", updatedContact)}
-            onDelete={(contactId) => console.log("Deleted Contact ID:", contactId)}
+            onDelete={handleDelete}
           />
         )}
       </div>
