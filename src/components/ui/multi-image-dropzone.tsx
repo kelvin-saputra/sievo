@@ -7,7 +7,6 @@ import { useDropzone, type DropzoneOptions } from 'react-dropzone';
 import { twMerge } from 'tailwind-merge';
 import Image from "next/image";
 
-
 const variants = {
   base: 'relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer min-h-[150px] min-w-[200px] border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out',
   image:
@@ -92,18 +91,35 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
           setCustomError(ERROR_MESSAGES.tooManyFiles(dropzoneOptions.maxFiles));
           return;
         }
-        if (files) {
+        if (files && files.length > 0) {
           const addedFiles = files.map<FileState>((file) => ({
             file,
             key: Math.random().toString(36).slice(2),
             progress: 'PENDING',
           }));
-          void onFilesAdded?.(addedFiles);
-          void onChange?.([...(value ?? []), ...addedFiles]);
+          
+          // Only notify about the new files
+          if (onFilesAdded) {
+            onFilesAdded(addedFiles);
+          }
+          
+          // Update with both existing and new files
+          if (onChange) {
+            onChange([...(value ?? []), ...addedFiles]);
+          }
         }
       },
       ...dropzoneOptions,
     });
+
+    // Function to handle image removal
+    const handleRemoveImage = (index: number) => {
+      if (onChange && value) {
+        // Important: Notify about image removal
+        const newValue = value.filter((_, i) => i !== index);
+        onChange(newValue);
+      }
+    };
 
     // styling
     const dropZoneClassName = React.useMemo(
@@ -166,16 +182,26 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
               </div>
             </div>
           )}
-            {/* Images */}
+          {/* Images */}
           {value?.map(({ file, progress }, index) => (
             <div key={index} className={variants.image + ' aspect-square'}>
-            <Image
-                className="h-full w-full rounded-md object-cover"
-                width={100}
-                height={100}
-                src={imageUrls[index]}
-                alt={typeof file === 'string' ? file : file.name}
-              />
+              {typeof file === 'string' ? (
+                <Image
+                  src={file}
+                  alt={file}
+                  width={100}
+                  height={100}
+                  className="h-full w-full rounded-md object-cover"
+                />
+              ) : (
+                <Image
+                  className="h-full w-full rounded-md object-cover"
+                  width={100}
+                  height={100}
+                  src={URL.createObjectURL(file)}
+                  alt={file.name}
+                />
+              )}
               {/* Progress Bar */}
               {typeof progress === 'number' && (
                 <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
@@ -183,12 +209,12 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 </div>
               )}
               {/* Remove Image Icon */}
-              {imageUrls[index] && !disabled && progress === 'PENDING' && (
+              {imageUrls[index] && !disabled && (
                 <div
                   className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
                   onClick={(e) => {
                     e.stopPropagation();
-                    void onChange?.(value.filter((_, i) => i !== index) ?? []);
+                    handleRemoveImage(index);
                   }}
                 >
                   <div className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-6 hover:w-6 dark:border-gray-400 dark:bg-black">
@@ -202,7 +228,6 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
               )}
             </div>
           ))}
-
         </div>
         {/* Error Text */}
         <div className="mt-1 text-xs text-red-500">
