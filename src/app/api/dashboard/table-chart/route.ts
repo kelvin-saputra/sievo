@@ -6,6 +6,7 @@ export async function GET() {
         const budgets = await prisma.budget.findMany({
             where: {
                 is_deleted: false,
+                is_actual: true,
             },
             select: {
                 budget_id: true,

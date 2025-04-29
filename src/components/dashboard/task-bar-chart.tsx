@@ -1,44 +1,25 @@
-"use client"
+"use client";
 
-import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useEffect } from "react";
+import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import useDashboard from "@/hooks/use-dashboard";
+
 
 export function TaskBarChart() {
-  // Sample data for tasks per event with actual counts
-  const taskData = [
-    {
-      event: "Event 1",
-      completed: 12,
-      total: 15,
-    },
-    {
-      event: "Event 2",
-      completed: 18,
-      total: 25,
-    },
-    {
-      event: "Event 3",
-      completed: 8,
-      total: 12,
-    },
-    {
-      event: "Event 4",
-      completed: 22,
-      total: 30,
-    },
-    {
-      event: "Event 5",
-      completed: 5,
-      total: 15,
-    },
-    {
-      event: "Event 6",
-      completed: 15,
-      total: 20,
-    },
-  ]
+  const { taskCompletionData, loading, fetchTaskCompletion } = useDashboard();
 
-  const maxTasks = Math.max(...taskData.map((item) => item.total)) + 5
+  useEffect(() => {
+    fetchTaskCompletion();
+  }, [fetchTaskCompletion]);
+
+  const chartData = taskCompletionData.map((item) => ({
+    event: item.event_name,
+    completed: item.completed_tasks,
+    total: item.total_tasks,
+  }));
+
+  const maxTasks = chartData.length > 0 ? Math.max(...chartData.map((item) => item.total)) + 5 : 35;
 
   const chartConfig = {
     completed: {
@@ -49,12 +30,20 @@ export function TaskBarChart() {
       label: "Total Tasks",
       color: "#a8dadc",
     },
+  };
+
+  if (loading) {
+    return <div>Loading chart...</div>;
+  }
+
+  if (chartData.length === 0) {
+    return <div>Tidak ada data task untuk ditampilkan.</div>;
   }
 
   return (
     <div className="w-full">
       <ChartContainer config={chartConfig} className="h-[300px]">
-        <BarChart data={taskData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis dataKey="event" tickLine={false} axisLine={false} />
           <YAxis tickLine={false} axisLine={false} domain={[0, maxTasks]} />
@@ -65,5 +54,5 @@ export function TaskBarChart() {
         </BarChart>
       </ChartContainer>
     </div>
-  )
+  );
 }

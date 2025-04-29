@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, Clock, Filter } from "lucide-react";
-import useBudget from "@/hooks/use-dashboard";
+import useDashboard from "@/hooks/use-dashboard";
 import { BudgetStatusEnum } from "@/models/enums";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ type Status = "All" | z.infer<typeof BudgetStatusEnum>;
 
 export function EventTable() {
   const [statusFilter, setStatusFilter] = useState<Status>("All");
-  const { budgets, loading, fetchAllEventsBudgets } = useBudget();
+  const { budgets, loading, fetchAllEventsBudgets } = useDashboard();
   const router = useRouter();
 
   useEffect(() => {
@@ -115,7 +115,6 @@ export function EventTable() {
                     <div className="flex items-center gap-2">
                       {getStatusIcon(budget.status)}
                       <span>{formatStatus(budget.status)}</span>
-                      
                     </div>
                   </TableCell>
                   <TableCell>{formatDate(budget.updated_at)}</TableCell>

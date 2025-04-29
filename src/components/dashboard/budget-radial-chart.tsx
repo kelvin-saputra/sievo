@@ -1,34 +1,45 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "lucide-react"
-import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useState, useEffect } from "react";
+import { TrendingUp } from "lucide-react";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import useDashboard from "@/hooks/use-dashboard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function BudgetRadialChart() {
-  // Sample data for budget comparison
-  const budgetCategories = [
-    { category: "Venue", actual: 15000, projected: 20000, fill: "hsl(var(--chart-1))" },
-    { category: "Catering", actual: 8000, projected: 10000, fill: "hsl(var(--chart-2))" },
-    { category: "Marketing", actual: 5000, projected: 8000, fill: "hsl(var(--chart-3))" },
-    { category: "Equipment", actual: 7000, projected: 7000, fill: "hsl(var(--chart-4))" },
-    { category: "Other", actual: 3000, projected: 5000, fill: "hsl(var(--chart-5))" },
-  ]
+  const { budgetSummary, loading, fetchBudgetSummary } = useDashboard()
+  const [selectedEventId, setSelectedEventId] = useState<"total" | string>("total");
 
-  const totalActual = budgetCategories.reduce((sum, item) => sum + item.actual, 0)
-  const totalProjected = budgetCategories.reduce((sum, item) => sum + item.projected, 0)
-  const percentUsed = Math.round((totalActual / totalProjected) * 100)
+  useEffect(() => {
+    fetchBudgetSummary();
+  }, [fetchBudgetSummary]);
 
-  // Format for radial chart
+  if (loading || !budgetSummary) {
+    return <div>Loading chart...</div>;
+  }
+
+  const selectedEvent = selectedEventId === "total"
+    ? {
+        planned_budget: budgetSummary.planned_budget,
+        actual_budget: budgetSummary.actual_budget,
+      }
+    : budgetSummary.events.find((event) => event.event_id === selectedEventId);
+
+  const totalActual = selectedEvent?.actual_budget || 0;
+  const totalProjected = selectedEvent?.planned_budget || 1; // avoid division by zero
+  const percentUsed = Math.round((totalActual / totalProjected) * 100);
+
   const chartData = [
     {
       name: "Budget",
       actual: totalActual,
       projected: totalProjected,
     },
-  ]
+  ];
 
-  const actualColor = "#e07a5f"
-  const projectedColor = "#a8dadc" 
+  const actualColor = "#e07a5f";
+  const projectedColor = "#a8dadc";
 
   const chartConfig = {
     actual: {
@@ -39,10 +50,28 @@ export function BudgetRadialChart() {
       label: "Projected Budget",
       color: projectedColor,
     },
-  }
+  };
 
   return (
     <div className="flex flex-col">
+      {/* Select event */}
+      <div className="mb-4 flex justify-center">
+        <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+          <SelectTrigger className="w-[250px]">
+            <SelectValue placeholder="Pilih Event" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="total">Total Semua Event</SelectItem>
+            {budgetSummary.events.map((event) => (
+              <SelectItem key={event.event_id} value={event.event_id}>
+                {event.event_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Chart */}
       <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[250px]">
         <RadialBarChart
           data={chartData}
@@ -68,7 +97,7 @@ export function BudgetRadialChart() {
                         of budget used
                       </tspan>
                     </text>
-                  )
+                  );
                 }
               }}
             />
@@ -83,6 +112,7 @@ export function BudgetRadialChart() {
         </RadialBarChart>
       </ChartContainer>
 
+      {/* Legend */}
       <div className="mt-4 flex justify-center gap-6">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full" style={{ backgroundColor: projectedColor }} />
@@ -94,10 +124,11 @@ export function BudgetRadialChart() {
         </div>
       </div>
 
+      {/* Utilization Text */}
       <div className="mt-4 flex items-center justify-center gap-2 text-sm">
         <TrendingUp className="h-4 w-4" />
         <div className="font-medium leading-none">Budget utilization: {percentUsed}%</div>
       </div>
     </div>
-  )
+  );
 }
