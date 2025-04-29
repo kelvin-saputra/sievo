@@ -6,14 +6,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { InventorySchema } from "@/models/schemas/inventory";
 import { useRouter } from "next/navigation"; 
-import { useState } from "react";
 import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
+import useInventory from "@/hooks/use-inventory";
+import { useState } from "react";
 
 const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
   const router = useRouter();
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
+  const {handleDeleteInventory, handleUpdateInventory } = useInventory(); 
+  const [open, setOpen] = useState(false);
+
 
   return (
     <div className="flex space-x-2">
@@ -23,21 +25,20 @@ const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
       >
         Detail
       </Button>
-      <EditInventoryModal
-        inventory={{
-            ...inventory,
-            description: inventory.description ?? undefined,
-            updated_by: inventory.updated_by ?? undefined
-          }}
-        onUpdateInventory={(data) => console.log("Updated Data:", data)}
-        open={openEdit}
-        setOpen={setOpenEdit}
-      />
-      <DeleteInventoryModal
-        inventoryId={inventory.inventory_id}
-        onDeleteInventory={(id) => console.log("Deleted Data:", id)}
-        open={openDelete}
-        setOpen={setOpenDelete}
+      <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
+      <DeleteInventoryModal 
+        inventoryId={inventory.inventory_id} 
+        onDeleteInventory={async (itemId) => {
+          try {
+            await handleDeleteInventory(itemId);
+            console.log(itemId)
+            router.push("/inventory"); 
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+        open={open} 
+        setOpen={setOpen} 
       />
     </div>
   );
@@ -163,6 +164,6 @@ export const inventoryColumns: ColumnDef<InventorySchema, unknown>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <InventoryActions inventory={row.original} />, // ✅ Use the separate component here
+    cell: ({ row }) => <InventoryActions inventory={row.original} />, 
   },
 ];

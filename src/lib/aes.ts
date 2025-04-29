@@ -1,21 +1,41 @@
-import crypto from "crypto";
+async function getKeyAndIv(): Promise<{ key: CryptoKey; iv: Uint8Array }> {
+  const encoder = new TextEncoder()
+  const keyBytes = encoder.encode(process.env.CIPHER_SECRET_KEY || process.env.NEXT_PUBLIC_CIPHER_SECRET_KEY)
+  const ivBytes = encoder.encode(process.env.CIPHER_IV || process.env.NEXT_PUBLIC_CIPHER_IV)
 
-// Pastikan environment variables ada
-if (!process.env.CIPHER_SECRET_KEY || !process.env.CIPHER_IV) {
-    throw new Error("CIPHER_SECRET_KEY and CIPHER_IV must be defined");
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'AES-CBC' },
+    false,
+    ['encrypt', 'decrypt']
+  )
+  return { key, iv: ivBytes.slice(0, 16) }
 }
 
-const SECRET_KEY = Buffer.from(process.env.CIPHER_SECRET_KEY, 'utf8').slice(0, 32);
-const IV = Buffer.from(process.env.CIPHER_IV, 'utf8').slice(0, 16);
-
-export function encryptAES(data: string): string {
-    const cipher = crypto.createCipheriv("aes-256-cbc", SECRET_KEY, IV);
-
-    return cipher.update(data, 'utf8', 'base64') + cipher.final('base64');
+export async function encryptAES(data: string): Promise<string> {
+  const { key, iv } = await getKeyAndIv()
+  const encoder = new TextEncoder()
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-CBC', iv },
+    key,
+    encoder.encode(data)
+  )
+  // ArrayBuffer → Base64
+  const u8 = new Uint8Array(encrypted)
+  let str = ''
+  u8.forEach(b => (str += String.fromCharCode(b)))
+  return btoa(str)
 }
 
-export  function decryptAES(encryptedData: string) {
-    const decipher = crypto.createDecipheriv("aes-256-cbc", SECRET_KEY, IV);
-
-    return decipher.update(encryptedData, 'base64', 'utf8') + decipher.final('utf8');
+export async function decryptAES(encryptedB64: string): Promise<string> {
+  const { key, iv } = await getKeyAndIv()
+  const binary = atob(encryptedB64)
+  const data = new Uint8Array(binary.split('').map(c => c.charCodeAt(0)))
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-CBC', iv },
+    key,
+    data
+  )
+  return new TextDecoder().decode(decrypted)
 }
