@@ -29,6 +29,7 @@ model User {
   ended_at     DateTime?
   task         Task[]
   event        Event[]
+  userEvents   UserEvent[] 
 }
 
 model Inventory {
@@ -205,26 +206,12 @@ model Proposal {
   proposal_name String
   proposal_link String
   status        ProposalStatus @default(DRAFT)
-  client_name   String         @unique
+  client_name   String         
   created_by    String
   updated_by    String?
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
   is_deleted    Boolean        @default(false)
-}
-
-model Report {
-  report_id         String   @id @default(uuid())
-  review            String
-  description       String
-  actualParticipant Int
-  created_by        String
-  updated_by        String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-  event_id          String   @unique
-  event             Event    @relation(fields: [event_id], references: [event_id])
-  is_deleted        Boolean  @default(false)
 }
 
 model Event {
@@ -239,7 +226,6 @@ model Event {
   budget           Budget[]
   manager_id       String
   manager          User        @relation(fields: [manager_id], references: [id])
-  report           Report?
   task             Task[]
   client_id        String
   client           Client      @relation(fields: [client_id], references: [client_id])
@@ -248,6 +234,16 @@ model Event {
   updated_by       String?
   created_at       DateTime    @default(now())
   created_by       String
+  userEvents       UserEvent[] 
+}
+
+model UserEvent {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [event_id])
+  eventId   String
+  assignedAt DateTime @default(now())
 }
 
 enum ROLE {
