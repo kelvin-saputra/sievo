@@ -25,7 +25,6 @@ export default function ViewAllContacts() {
   const handleDelete = async (contactId: string) => {
     try {
       await handleDeleteContact(contactId);
-      toast.success("Contact berhasil dihapus!");
       fetchAllContacts();
     } catch (error) {
       console.error("Error deleting contact:", error);

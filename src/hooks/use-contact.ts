@@ -88,10 +88,7 @@ export default function useContact() {
       );
 
       if (role) {
-        await axios.put(
-          `${API_URL}/${contactId}/role`,
-          { role }
-        );
+        await axios.put(`${API_URL}/${contactId}/role`, { role });
       }
 
       const parsedContact = ContactSchema.parse({
@@ -106,6 +103,7 @@ export default function useContact() {
       if (contact?.contact_id === contactId) {
         setContact(parsedContact);
       }
+
       toast.success("Contact berhasil diperbarui!");
     } catch (error) {
       console.error("Terjadi kesalahan saat memperbarui Contact:", error);
@@ -155,7 +153,6 @@ export default function useContact() {
       setContacts((prevContacts) => [...prevContacts, parsedContact]);
 
       toast.success("Contact berhasil ditambahkan!");
-
     } catch (error) {
       console.error("Terjadi kesalahan saat menambahkan Contact:", error);
       toast.error("Gagal menambahkan Contact.");

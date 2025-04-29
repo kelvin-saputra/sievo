@@ -126,7 +126,6 @@ const ContactDetail = () => {
       );
       
       setIsEditing(false);
-      toast.success("Contact berhasil diperbarui!");
       // Re-fetch the contact to get the latest data
       fetchContactById(contact_id);
     } catch (error) {
@@ -140,7 +139,6 @@ const ContactDetail = () => {
     
     try {
       await handleDeleteContact(contact_id);
-      toast.success("Contact berhasil dihapus!");
       router.push("/contact");
     } catch (error) {
       console.error("Error deleting contact:", error);
