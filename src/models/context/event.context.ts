@@ -1,20 +1,26 @@
 // src/context/event-context.tsx
 import { createContext } from "react";
-import { BudgetItemCategorySchema, BudgetSchema, EventSchema, InventorySchema, TaskSchema, VendorServiceSchema } from "@/models/schemas";
+import { BudgetItemCategorySchema, BudgetSchema, ContactSchema, EventSchema, InventorySchema, TaskSchema, VendorServiceSchema } from "@/models/schemas";
 import { UpdateEventDTO } from "@/models/dto/event.dto";
 import { UpdateTaskDTO, AddTaskDTO, AddBudgetPlanItemDTO, UpdateBudgetPlanItemDTO, AddBudgetItemCategoryDTO, AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, AddPurchaseDTO, UpdatePurchaseDTO, UpdateBudgetItemCategoryDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
 import { BudgetItemPlanResponse } from "../response/item-plan.response";
 import { ActualBudgetItemResponse } from "../response/item-actual.response";
+import { UserWithStatus } from "@/hooks/use-hr";
 
 interface EventContextType {
   event: EventSchema;
   tasks: TaskSchema[];
+  users: UserWithStatus[];
+  client?: ContactSchema | null;
+  manager?: UserWithStatus | null;
+
   // BUDGETTING
   budgetPlan: BudgetSchema | null;
   actualBudget: BudgetSchema | null;
   budgetPlanItems: BudgetItemPlanResponse[];
   actualBudgetItems: ActualBudgetItemResponse[];
+  
   // BUDGET CATEGORIES
   categoriesPlan: BudgetItemCategorySchema[];
   actualCategories: BudgetItemCategorySchema[];
@@ -47,13 +53,13 @@ interface EventContextType {
   ) => Promise<void>;
   handleDeleteTask: (taskId: string) => Promise<void>;
   handleAddTask: (data: AddTaskDTO) => Promise<void>;
-  
+
   // BUDGETTING PLAN
   fetchBudgetPlan: () => Promise<void>;
   fetchAllBudgetPlanItems: () => Promise<void>;
   handleAddBudgetPlanItem: (data: AddBudgetPlanItemDTO) => Promise<void>;
   handleDeleteBudgetPlanItem: (budgetPlanItemId: string) => Promise<void>;
-  handleUpdateBudgetPlanItem: (data:UpdateBudgetPlanItemDTO) => Promise<void>;
+  handleUpdateBudgetPlanItem: (data: UpdateBudgetPlanItemDTO) => Promise<void>;
 
   // BUDGETTING ACTUAL
   fetchActualBudget: () => Promise<void>;
@@ -65,14 +71,14 @@ interface EventContextType {
 
   // BUDGET CATEGORIES PLAN
   fetchCategoriesByBudgetIdPlan: () => Promise<void>;
-  
+
   // BUDGET CATEGORIES ACTUAL
   fetchCategoriesByActualBudgetId: () => Promise<void>;
-  
+
   // BUDGET CATEGORIES
-  handleAddCategory: (is_actual:boolean, data: AddBudgetItemCategoryDTO) => Promise<void>;
+  handleAddCategory: (is_actual: boolean, data: AddBudgetItemCategoryDTO) => Promise<void>;
   handleUpdateCategory: (categoryId: number, data: UpdateBudgetItemCategoryDTO) => Promise<void>;
-  handleDeleteCategory: (categoryId: number, is_actual:boolean) => Promise<void>;
+  handleDeleteCategory: (categoryId: number, is_actual: boolean) => Promise<void>;
 
   // INVENTORY
   fetchAllInventories: () => Promise<void>;
@@ -84,6 +90,8 @@ interface EventContextType {
   handleAddPurchase: (data: AddPurchaseDTO) => void;
   handleUpdatePurchase: (data: UpdatePurchaseDTO) => void;
   handleDeletePurchase: (purchaseId: string) => void;
+  
+  refetchAll: () => void;
 }
 
 const EventContext = createContext<EventContextType | null>(null);

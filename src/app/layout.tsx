@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "@/app/globals.css";
 import { Toaster } from "sonner";
-import Head from 'next/head';
+import Head from "next/head";
 import AuthenticationContext from "@/models/context/auth-context";
 import useAuthentication from "@/hooks/use-auth";
 import Link from "next/link";
@@ -24,16 +24,19 @@ export default function RootLayout({
     handleRegister,
     handleLogout,
     handleAck,
-    handleCheckToken
+    handleCheckToken,
   } = useAuthentication();
 
   return (
     <html lang="en">
-      <Head  >
-        <title title="SIEVO: Sistem Informasi Event Organizer"/>
-        <meta name="description" content="SIEVO: Sistem Informasi Event Organizer PT Matahati Inspira" />
+      <Head>
+        <title title="SIEVO: Sistem Informasi Event Organizer" />
+        <meta
+          name="description"
+          content="SIEVO: Sistem Informasi Event Organizer PT Matahati Inspira"
+        />
         <Link rel="icon" href={"/favicon.ico"} />
-      </Head  >
+      </Head>
       <body className={`${jakartaSans.className} bg-super-white`}>
         <AuthenticationContext.Provider
           value={{
@@ -43,7 +46,7 @@ export default function RootLayout({
             handleRegister,
             handleLogout,
             handleAck,
-            handleCheckToken
+            handleCheckToken,
           }}
         >
           {children}

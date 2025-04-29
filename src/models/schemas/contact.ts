@@ -1,6 +1,20 @@
 import { z } from "zod";
+import { ClientTypeEnum } from "../enums";
 
 export const ContactSchema = z.object({
+    client: z.object({
+        client_id: z
+            .string({ required_error: "ID klien wajib diisi" })
+            .uuid({ message: "ID klien tidak valid" })
+            .optional(),
+        contact_id: z
+            .string({ required_error: "ID kontak wajib diisi" })
+            .uuid({ message: "ID kontak tidak valid" })
+            .default(() => crypto.randomUUID()),
+        is_deleted: z.boolean().default(false),
+        type: ClientTypeEnum.default("INDIVIDUAL"),
+    }).nullable().optional(),
+
     contact_id: z
         .string({ required_error: "ID kontak wajib diisi" })
         .uuid({ message: "ID kontak tidak valid" })
@@ -16,9 +30,7 @@ export const ContactSchema = z.object({
         .string()
         .nonempty({ message: "Nomor handphone wajib diisi" })
         .min(10, { message: "Nomor handphone minimal 10 karakter" }),
-    description: z
-        .string()
-        .optional(),
+    description: z.string().optional(),
     created_by: z
         .string({ required_error: "ID user wajib diisi" })
         .uuid({ message: "ID user tidak valid" }),
@@ -31,25 +43,9 @@ export const ContactSchema = z.object({
         .default(() => new Date()),
     updated_at: z.coerce
         .date({ invalid_type_error: "Tanggal diupdate tidak valid" }),
-    is_deleted: z
-        .boolean()
-        .default(false),
-    role: z.enum(["none", "client", "vendor"]).default("none")
+    is_deleted: z.boolean().default(false),
+    role: z.enum(["none", "client", "vendor"]).default("none"),
 });
 
 export type ContactSchema = z.infer<typeof ContactSchema>;
-
-export type ContactWithRole = {
-    contact_id: string;
-    name: string;
-    email: string;
-    phone_number: string;
-    description: string | null;
-    created_by: string;
-    updated_by: string | null;
-    created_at: Date;
-    updated_at: Date;
-    is_deleted: boolean;
-    role: "none" | "client" | "vendor";
-};
-
+export type ContactWithRole = z.infer<typeof ContactSchema>;

@@ -36,6 +36,7 @@ export default function useContact() {
           };
         });
         setContacts(validatedContacts);
+        console.log("Fetched contacts:", validatedContacts);
       } else {
         console.warn("Expected an array but received:", rawContacts);
         setContacts([]);
