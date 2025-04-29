@@ -27,13 +27,13 @@ import { ContactWithRole } from "./columns";
 interface ContactTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
-  onUpdate: (contact: TData) => void;
-  onDelete: (contactId: string) => void;
+  onDelete?: (contactId: string) => void;
 }
 
 export function ContactTable<TData extends ContactWithRole>({
   columns,
   data,
+  onDelete,
 }: ContactTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -50,6 +50,11 @@ export function ContactTable<TData extends ContactWithRole>({
     state: {
       sorting,
       columnFilters,
+    },
+    meta: {
+      onDelete: (contactId: string) => {
+        if (onDelete) onDelete(contactId);
+      },
     },
   });
 
