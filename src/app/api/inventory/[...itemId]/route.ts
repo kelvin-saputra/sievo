@@ -25,38 +25,63 @@ export async function GET(req: Request) {
 }
 
 /**
- * ✅ DELETE Inventory Item by ID
+ * ✅ Soft DELETE Inventory Item by ID (mark as deleted)
  */
 export async function DELETE(req: Request) {
     try {
+        console.log("INI REQUEST", req);
+        
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop(); 
+        console.log("INI IDNYA", id);
 
-        const deletedInventoryItem = await prisma.inventory.delete({
+        // Check if ID is provided and valid
+        if (!id) {
+            return responseFormat(400, "Inventory ID is required.", null);
+        }
+
+        // Perform the soft delete by setting is_deleted flag to true
+        const updatedInventoryItem = await prisma.inventory.update({
             where: { inventory_id: id },
+            data: {
+                is_deleted: true, // Mark the item as deleted
+            },
         });
 
-        return responseFormat(200, "[DELETED] Item successfully deleted!", deletedInventoryItem);
+        // Return response indicating success
+        return responseFormat(200, "[SOFT DELETED] Item successfully marked as deleted!", updatedInventoryItem);
     } catch (error) {
-        console.error("Error deleting inventory item:", error);
-        return responseFormat(500, "Failed to delete inventory item", null);
+        console.error("Error soft deleting inventory item:", error);
+        return responseFormat(500, "Failed to soft delete inventory item", null);
     }
 }
 
-/**
- * ✅ PUT Replace Inventory Item by ID
+
+/* * ✅ PUT Replace Inventory Item by ID
  */
 export async function PUT(req: Request) {
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop();
+        
         const dataBody = await req.json();
-        const { ...inventoryData } = dataBody;
+        const {  ...inventoryData } = dataBody;
+
 
         const updatedInventoryItem = await prisma.inventory.update({
             where: { inventory_id: id },
             data: {
                 ...inventoryData,
+            },
+        });
+
+        const updatedBy = updatedInventoryItem.updated_by ?? "system";
+        await prisma.inventoryLog.create({
+            data: {
+                inventory_id: updatedInventoryItem.inventory_id,
+                action: "UPDATE",
+                updated_by: updatedBy, 
+                updated_at: new Date(),
             },
         });
 
@@ -66,4 +91,3 @@ export async function PUT(req: Request) {
         return responseFormat(500, "Failed to replace inventory item", null);
     }
 }
-

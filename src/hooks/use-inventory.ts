@@ -6,6 +6,7 @@ import { InventorySchema } from "@/models/schemas";
 import { AddInventoryDTO, UpdateInventoryDTO } from "@/models/dto";
 import { InventoryCategoryEnum } from "@/models/enums";
 
+
 const API_URL = process.env.NEXT_PUBLIC_INVENTORY_API_URL!;
 
 export default function useInventory() {
@@ -19,7 +20,9 @@ export default function useInventory() {
       const response = await axios.get(API_URL);
       const rawInventories = response.data.data;
       if (Array.isArray(rawInventories)) {
-        const validatedInventories = rawInventories.map((ev: unknown) => InventorySchema.parse(ev));
+        const validatedInventories = rawInventories
+          .filter((item: InventorySchema) => !item.is_deleted) 
+          .map((ev: unknown) => InventorySchema.parse(ev));
         setInventorys(validatedInventories);
       } else {
         console.warn("Expected an array but received:", rawInventories);
@@ -30,6 +33,7 @@ export default function useInventory() {
     }
     setLoading(false);
   }, []);
+  
 
   const fetchInventoryById = useCallback(async (id: string) => {
     setLoading(true);
@@ -47,7 +51,6 @@ export default function useInventory() {
     data: UpdateInventoryDTO
   ) => {
     try {
-      // Fetch semua inventaris terlebih dahulu untuk mengecek apakah ada duplikasi
       const response = await axios.get(API_URL);
       if (response.status !== 200) {
         toast.error("Failed to fetch existing inventories: " + response.data.message);
@@ -60,11 +63,41 @@ export default function useInventory() {
         return;
       }
   
-      // Mengecek apakah ada duplikasi nama item yang sedang diupdate
+      const currentInventory = existingInventories.find(
+        (item: InventorySchema) => item.inventory_id === inventoryId
+      );
+  
+      if (!currentInventory) {
+        toast.error("Inventory not found.");
+        return;
+      }
+  
+      if (data.item_qty !== undefined && data.item_qty < currentInventory.item_qty) {
+        toast.error("New quantity cannot be less than the current quantity.");
+        return;
+      }
+  
+      const totalReservedAndDamaged = (data.item_qty_reserved ?? 0) + (data.item_qty_damaged ?? 0);
+      if (data.item_qty !== undefined && data.item_qty < totalReservedAndDamaged) {
+        toast.error("Quantity cannot be less than the sum of reserved and damaged quantities.");
+        return;
+      }
+  
+      if (data.item_qty_reserved !== undefined && data.item_qty !== undefined && data.item_qty_reserved > data.item_qty) {
+        toast.error("Reserved quantity cannot exceed total quantity.");
+        return;
+      }
+  
+      if (data.item_qty_damaged !== undefined && data.item_qty !== undefined && data.item_qty_damaged > data.item_qty) {
+        toast.error("Damaged quantity cannot exceed total quantity.");
+        return;
+      }
+  
       const isDuplicate = existingInventories.some(
         (item: InventorySchema) =>
           item.item_name.toLowerCase() === data.item_name?.toLowerCase() &&
-          item.inventory_id !== inventoryId // Jangan cek duplikasi untuk item yang sedang diupdate
+          item.inventory_id !== inventoryId &&
+          !item.is_deleted // Exclude soft-deleted items
       );
   
       if (isDuplicate) {
@@ -72,22 +105,18 @@ export default function useInventory() {
         return;
       }
   
-      // Persiapkan data untuk request PUT
       const updatedData = InventorySchema.partial().parse({
         ...data,
         inventoryId: inventoryId,
-        updated_by: "550e8400-e29b-41d4-a716-446655440000", // Gunakan ID yang sesuai dari login
+        updated_by: "550e8400-e29b-41d4-a716-446655440000", 
         updated_at: new Date(),
       });
   
-      // Kirim request PUT untuk update inventory
       const { data: updatedInventory } = await axios.put(
         `${API_URL}/${inventoryId}`,
         updatedData
       );
       const parsedInventory = InventorySchema.parse(updatedInventory.data);
-  
-      // Update state inventories setelah data berhasil diperbarui
       setInventorys((prevInventorys) =>
         prevInventorys.map((ev) =>
           ev.inventory_id === inventoryId ? parsedInventory : ev
@@ -107,15 +136,28 @@ export default function useInventory() {
 
   const handleDeleteInventory = async (inventoryId: string) => {
     try {
-      await axios.delete(`${API_URL}/${inventoryId}`);
-      setInventorys((prevInventorys) =>
-        prevInventorys.filter((ev) => ev.inventory_id !== inventoryId)
-      );
-      toast.success("Inventory berhasil dihapus!");
-    } catch {
+      console.log("Attempting to delete inventory with ID:", inventoryId);
+  
+      const response = await axios.delete(`${API_URL}/${inventoryId}`);
+  
+      if (response.status === 200) {
+          setInventorys((prevInventorys) =>
+          prevInventorys.filter((ev) => ev.inventory_id !== inventoryId)
+        );
+
+        toast.success("Inventory berhasil dihapus!");
+      } else {
+        console.error("Failed to delete inventory:", response);
+        toast.error("Gagal menghapus Inventory.");
+      }
+
+    } catch (error) {
+      console.error("Error deleting inventory:", error);
       toast.error("Gagal menghapus Inventory.");
     }
   };
+  
+  
 
   const handleCategoryChange = async (
     inventoryId: string,
@@ -155,7 +197,9 @@ export default function useInventory() {
       }
 
       const isDuplicate = existingInventories.some(
-        (item: InventorySchema) => item.item_name.toLowerCase() === newInventory.item_name.toLowerCase()
+        (item: InventorySchema) => 
+          item.item_name.toLowerCase() === newInventory.item_name.toLowerCase() &&
+          !item.is_deleted // Exclude soft-deleted items
       );
 
       if (isDuplicate) {
@@ -178,6 +222,7 @@ export default function useInventory() {
       toast.error("Gagal menambahkan Inventory.");
     }
   };
+
 
   return {
     inventory,

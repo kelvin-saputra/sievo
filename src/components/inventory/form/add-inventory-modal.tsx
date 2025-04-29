@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 
 import {
   Dialog,
@@ -49,7 +49,6 @@ interface AddInventoryModalProps {
 
 export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
   const [open, setOpen] = useState(false);
-  // const [_file, setFile] = React.useState<File>();
   const { edgestore } = useEdgeStore();
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -207,7 +206,6 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
                                   value={cat}
                                   onSelect={() => field.onChange(cat)}
                                 >
-                                  <Check className="mr-2 h-4 w-4" />
                                   {cat}
                                 </CommandItem>
                               ))}
