@@ -76,6 +76,22 @@ export default function useContact() {
     data: UpdateContactDTO
   ) => {
     try {
+      // Get the current user role from localStorage
+      const userData = localStorage.getItem("authUser");
+      let userRole = "";
+      
+      if (userData) {
+        const user = JSON.parse(userData);
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      // Check if user has permission to update contacts
+      // Only ADMIN, EMPLOYEE, and EXECUTIVE can edit
+      if (!["ADMIN", "EMPLOYEE", "EXECUTIVE"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+        return;
+      }
+
       const { role, ...contactData } = data;
 
       const updatedData = ContactSchema.partial().parse({
@@ -114,6 +130,22 @@ export default function useContact() {
 
   const handleDeleteContact = async (contactId: string) => {
     try {
+      // Get the current user role from localStorage
+      const userData = localStorage.getItem("authUser");
+      let userRole = "";
+      
+      if (userData) {
+        const user = JSON.parse(userData);
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      // Check if user has permission to delete contacts
+      // Only ADMIN and EXECUTIVE can delete
+      if (!["ADMIN", "EXECUTIVE"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+        return;
+      }
+
       await axios.delete(`${API_URL}/${contactId}`);
 
       setContacts((prevContacts) =>
