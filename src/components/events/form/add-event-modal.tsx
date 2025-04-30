@@ -42,18 +42,33 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { EventStatusEnum } from "@/models/enums";
+import { ContactSchema } from "@/models/schemas/contact";
+import { UserWithStatus } from "@/hooks/use-hr";
+import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
 
 interface AddEventModalProps {
   onAddEvent: (dto: AddEventDTO) => void;
+  users: UserWithStatus[];
+  clientContacts: ContactSchema[];
 }
 
-export function AddEventModal({ onAddEvent }: AddEventModalProps) {
+export function AddEventModal({
+  onAddEvent,
+  users,
+  clientContacts,
+}: AddEventModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
-  // Fixing error Controlled-Uncontrolled
   const form = useForm<AddEventDTO>({
     resolver: zodResolver(AddEventDTO),
     defaultValues: {
@@ -81,7 +96,7 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
       <DialogTrigger asChild>
         <Button className="bg-blue-500 text-white">+ Add Event</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Event</DialogTitle>
         </DialogHeader>
@@ -89,7 +104,7 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
           <form
             id="add-event-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
+            className="space-y-4 max-h-[80vh] overflow-y-auto"
           >
             {}
             <FormField
@@ -231,9 +246,7 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
               )}
             />
 
-            {}
             <div className="grid grid-cols-2 gap-4">
-              {}
               <FormField
                 control={form.control}
                 name="status"
@@ -250,11 +263,19 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
                               aria-expanded={openStatus}
                               className="w-full justify-between"
                             >
-                              {field.value
-                                ? EventStatusEnum.options.find(
-                                    (status) => status === field.value
-                                  )
-                                : "Select event status"}
+                              {field.value ? (
+                                <span
+                                  className={cn(
+                                    "rounded px-2 py-1 text-xs font-semibold",
+                                    eventStatusColorMap[field.value] ||
+                                      "bg-gray-100 text-gray-800"
+                                  )}
+                                >
+                                  {field.value}
+                                </span>
+                              ) : (
+                                "Select event status"
+                              )}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
@@ -285,7 +306,15 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
                                             : "opacity-0"
                                         )}
                                       />
-                                      {status}
+                                      <span
+                                        className={cn(
+                                          "rounded px-2 py-1 text-xs font-semibold",
+                                          eventStatusColorMap[status] ||
+                                            "bg-gray-100 text-gray-800"
+                                        )}
+                                      >
+                                        {status}
+                                      </span>
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -299,39 +328,56 @@ export function AddEventModal({ onAddEvent }: AddEventModalProps) {
                   );
                 }}
               />
-
-              {}
-              <FormField
-                control={form.control}
-                name="manager_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Manager ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter manager ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
-            {}
             <FormField
               control={form.control}
-              name="client_id"
+              name="manager_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter client ID" {...field} />
-                  </FormControl>
+                  <FormLabel>Manager</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select manager" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {}
+            <FormField
+              control={form.control}
+              name="client_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientContacts.map((contact) => (
+                        <SelectItem
+                          key={contact.client?.client_id}
+                          value={contact.client?.client_id || ""}
+                        >
+                          {contact.name || contact.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex justify-end space-x-2">
               <Button
                 variant="secondary"

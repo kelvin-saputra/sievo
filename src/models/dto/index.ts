@@ -5,3 +5,4 @@ export * from "./category.dto";
 export * from "./purchasing.dto";
 export * from "./contact.dto";
 export * from "./inventory.dto";
+export * from "./auth.dto";

@@ -11,18 +11,35 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TaskSchema } from "@/models/schemas";
+import { Badge } from "@/components/ui/badge";
+import { UserWithStatus } from "@/hooks/use-hr";
+import { cn } from "@/utils/shadUtils";
+import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
+
+// Helper to compact UUID
+function compactId(id: string, front = 6, back = 4) {
+  if (!id || id.length <= front + back + 3) return id;
+  return `${id.slice(0, front)}...${id.slice(-back)}`;
+}
 
 interface EventTaskDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventData: TaskSchema;
+  users: UserWithStatus[];
 }
 
 export function EventTaskDetailModal({
   isOpen,
   onClose,
   eventData,
+  users,
 }: EventTaskDetailModalProps) {
+  const assignee =
+    users.find((u) => u.id === eventData.assigned_id)?.name ||
+    users.find((u) => u.id === eventData.assigned_id)?.email ||
+    "Unassigned";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -33,50 +50,99 @@ export function EventTaskDetailModal({
           <DialogTitle>{eventData.title}</DialogTitle>
           <DialogDescription>Detail tugas dari event ini.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          <p>
-            <strong>Task ID:</strong> {eventData.task_id}
-          </p>
-          <p>
-            <strong>Judul:</strong> {eventData.title}
-          </p>
-          <p>
-            <strong>Deskripsi:</strong>{" "}
-            {eventData.description || "Tidak ada deskripsi"}
-          </p>
-          <p>
-            <strong>Assigned To:</strong>{" "}
-            {eventData.assigned_id || "Unassigned"}
-          </p>
-          <p>
-            <strong>Tanggal Jatuh Tempo:</strong>{" "}
-            {eventData.due_date
-              ? new Date(eventData.due_date).toLocaleDateString()
-              : "N/A"}
-          </p>
-          <p>
-            <strong>Status:</strong> {eventData.status}
-          </p>
-          <p>
-            <strong>Dibuat Oleh:</strong> {eventData.created_by}
-          </p>
-          <p>
-            <strong>Diperbarui Oleh:</strong> {eventData.updated_by}
-          </p>
-          <p>
-            <strong>Tanggal Dibuat:</strong>{" "}
-            {new Date(eventData.created_at).toLocaleString()}
-          </p>
-          <p>
-            <strong>Tanggal Diperbarui:</strong>{" "}
-            {eventData.updated_at
-              ? new Date(eventData.updated_at).toLocaleString()
-              : "N/A"}
-          </p>
-          <p>
-            <strong>ID Event:</strong> {eventData.event_id}
-          </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 bg-gray-50 rounded-md p-4 border">
+          <div>
+            <div className="text-xs text-gray-500">Task ID</div>
+            <div
+              className="font-mono text-xs bg-gray-100 rounded px-2 py-1 cursor-pointer w-fit"
+              title={eventData.task_id}
+            >
+              {compactId(eventData.task_id)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">Status</div>
+            <Badge
+              className={cn(
+                "text-xs font-semibold",
+                taskStatusColorMap[eventData.status]
+              )}
+            >
+              {eventData.status}
+            </Badge>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">Judul</div>
+            <div className="break-words">{eventData.title}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">Assigned To</div>
+            <div>{assignee}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">Jatuh Tempo</div>
+            <div>
+              {eventData.due_date ? (
+                new Date(eventData.due_date).toLocaleDateString()
+              ) : (
+                <span className="italic text-gray-400">N/A</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">ID Event</div>
+            <div
+              className="font-mono text-xs bg-gray-100 rounded px-2 py-1 cursor-pointer w-fit"
+              title={eventData.event_id}
+            >
+              {compactId(eventData.event_id)}
+            </div>
+          </div>
         </div>
+
+        <div className="my-4">
+          <div className="text-xs text-gray-500 mb-1">Deskripsi</div>
+          <div className="whitespace-pre-line break-words bg-gray-100 rounded p-3 border min-h-[44px]">
+            {eventData.description || (
+              <span className="italic text-gray-400">Tidak ada deskripsi</span>
+            )}
+          </div>
+        </div>
+
+        <div className="border-t mt-6 pt-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            <div>
+              <div className="text-xs text-gray-500">Dibuat Oleh</div>
+              <div>{eventData.created_by}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Diperbarui Oleh</div>
+              <div>{eventData.updated_by}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Tanggal Dibuat</div>
+              <div>
+                {eventData.created_at ? (
+                  new Date(eventData.created_at).toLocaleString()
+                ) : (
+                  <span className="italic text-gray-400">N/A</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Tanggal Diperbarui</div>
+              <div>
+                {eventData.updated_at ? (
+                  new Date(eventData.updated_at).toLocaleString()
+                ) : (
+                  <span className="italic text-gray-400">N/A</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <DialogFooter>
           <Button
             onClick={(e) => {
