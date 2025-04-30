@@ -100,7 +100,7 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
   }, [fileStates, form]);
 
   const onSubmit = (data: UpdateInventoryDTO) => {
-    const userId = user?.id || "";
+    const userId = user?.email || "";
     onUpdateInventory(inventory.inventory_id, data, userId);
     form.reset();
     setFileStates([]);

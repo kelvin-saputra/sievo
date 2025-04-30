@@ -248,7 +248,7 @@ const ContactDetail = () => {
   const formatDate = (dateString: string | Date) => {
     try {
       return new Date(dateString).toLocaleString();
-    } catch (error) {
+    } catch {
       return "Invalid date";
     }
   };

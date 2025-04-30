@@ -42,6 +42,7 @@ import { InventorySchema } from "@/models/schemas/inventory";
 import { AddInventoryDTO } from "@/models/dto";
 import { useEdgeStore } from "@/lib/edgestore";
 import { FileState, MultiImageDropzone } from "../../ui/multi-image-dropzone";
+import { UserSchema } from "@/models/schemas";
 
 interface AddInventoryModalProps {
   onAddInventory: (data: AddInventoryDTO) => void;
@@ -52,7 +53,16 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
   const { edgestore } = useEdgeStore();
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-
+  const [user, setUser] = useState<Partial<UserSchema> | null>();
+  
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser")!);
+    try {
+      const userParsed = UserSchema.partial().parse(user);
+      setUser(userParsed);
+    } catch {}
+  }, []);
+  
   const form = useForm({
     resolver: zodResolver(InventorySchema),
     defaultValues: {
@@ -63,8 +73,8 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
       category: InventoryCategoryEnum.enum.CONSUMABLE,
       is_avail: true,
       description: "",
-      created_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID
-      updated_by: "550e8400-e29b-41d4-a716-446655440000", // Dummy UUID (optional)
+      created_by: "",
+      updated_by: "",
       created_at: new Date(), // ISO date format
       updated_at: new Date(), // ISO date format    
     },
@@ -73,7 +83,8 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
   console.log(form.formState.errors); 
 
   const onSubmit = (data: AddInventoryDTO) => {
-    console.log("Form submitted:", data);
+    data.created_by = user?.email || "";
+    data.updated_by = user?.email || "";
     onAddInventory(data);
     form.reset();
     setOpen(false);
@@ -97,7 +108,6 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
       })
     );
 
-    console.log("Uploaded URLs:", uploadedUrls);
     form.setValue("inventory_photo", uploadedUrls);
     setIsUploading(false);
   }
