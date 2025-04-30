@@ -23,13 +23,13 @@ import {
 import useContact from "@/hooks/use-contact";
 import PageHeader from "@/components/common/page-header";
 import { z } from "zod";
+import { UserSchema } from "@/models/schemas";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Nama kontak minimal 2 karakter" }),
   email: z.string().email({ message: "Email tidak valid" }),
   phone_number: z.string().min(10, { message: "Nomor handphone minimal 10 karakter" }),
   description: z.string().optional()
-  // Removed role from validation schema since it cannot be changed
 });
 
 const ContactDetail = () => {
@@ -39,8 +39,11 @@ const ContactDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
+  const [createdByUser, setCreatedByUser] = useState<string>("Unknown");
+  const [updatedByUser, setUpdatedByUser] = useState<string>("Unknown");
+  const [userRole, setUserRole] = useState<string>("");
   
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -49,11 +52,33 @@ const ContactDetail = () => {
     role: "none" as "none" | "client" | "vendor"
   });
 
+  // Check if user has permission to edit contacts
+  const canEdit = ["ADMIN", "EMPLOYEE", "EXECUTIVE"].includes(userRole);
+  
+  // Check if user has permission to delete contacts
+  const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
+
   useEffect(() => {
     if (typeof contact_id === "string") {
       fetchContactById(contact_id);
     }
   }, [contact_id, fetchContactById]);
+
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem("authUser");
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        const userParsed = UserSchema.partial().parse(parsedUser);
+        setUser(userParsed);
+        
+        // Set user role for permission checks
+        setUserRole((parsedUser.role || "").toUpperCase());
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+  }, []);
 
   useEffect(() => {
     if (contact) {
@@ -64,6 +89,35 @@ const ContactDetail = () => {
         description: contact.description || "",
         role: contact.role || "none"
       });
+      
+      // Attempt to get user details for created_by and updated_by
+      try {
+        // Get users from localStorage if available
+        const usersData = localStorage.getItem("users");
+        if (usersData) {
+          const users = JSON.parse(usersData);
+          
+          // Find created_by user
+          if (contact.created_by) {
+            const createdByUserData = users.find((u: any) => u.id === contact.created_by);
+            setCreatedByUser(createdByUserData ? createdByUserData.name : contact.created_by);
+          }
+          
+          // Find updated_by user
+          if (contact.updated_by) {
+            const updatedByUserData = users.find((u: any) => u.id === contact.updated_by);
+            setUpdatedByUser(updatedByUserData ? updatedByUserData.name : contact.updated_by);
+          }
+        } else {
+          // Fallback to showing IDs if user mapping is not available
+          setCreatedByUser(contact.created_by || "Unknown");
+          setUpdatedByUser(contact.updated_by || "Unknown");
+        }
+      } catch (error) {
+        console.error("Error mapping user IDs to names:", error);
+        setCreatedByUser(contact.created_by || "Unknown");
+        setUpdatedByUser(contact.updated_by || "Unknown");
+      }
     }
   }, [contact]);
 
@@ -97,7 +151,20 @@ const ContactDetail = () => {
     }
   };
 
+  const handleEdit = () => {
+    if (!canEdit) {
+      toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+      return;
+    }
+    setIsEditing(true);
+  };
+
   const handleSave = async () => {
+    if (!canEdit) {
+      toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+      return;
+    }
+
     if (!validateForm()) {
       toast.error("Ada kesalahan dalam pengisian form");
       return;
@@ -109,12 +176,12 @@ const ContactDetail = () => {
     }
 
     try {
-      // Use the current user ID or a default one
-      const currentUserId = "550e8400-e29b-41d4-a716-446655440000"; // Should be replaced with actual user ID
+      // Use the current user ID from localStorage if available
+      const userId = user?.id || "550e8400-e29b-41d4-a716-446655440000";
       
       await handleUpdateContact(
         contact_id,
-        currentUserId,
+        userId,
         {
           name: formData.name,
           email: formData.email,
@@ -134,7 +201,20 @@ const ContactDetail = () => {
     }
   };
 
+  const handleDeleteClick = () => {
+    if (!canDelete) {
+      toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleDelete = async () => {
+    if (!canDelete) {
+      toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+      return;
+    }
+    
     if (!contact_id || typeof contact_id !== "string") return;
     
     try {
@@ -163,6 +243,15 @@ const ContactDetail = () => {
   };
 
   const roleBadge = getRoleBadgeStyle();
+
+  // Format date for display
+  const formatDate = (dateString: string | Date) => {
+    try {
+      return new Date(dateString).toLocaleString();
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
@@ -243,32 +332,42 @@ const ContactDetail = () => {
             </div>
           </div>
           <div className="flex justify-start">
-            <Button 
-              onClick={isEditing ? handleSave : () => setIsEditing(true)} 
-              className="bg-indigo-900 hover:bg-indigo-800"
-            >
-              {isEditing ? "Save" : "Edit"}
-            </Button>
-            {isEditing && (
+            {isEditing ? (
+              <>
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-indigo-900 hover:bg-indigo-800"
+                >
+                  Save
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setIsEditing(false);
+                    // Reset form data to original contact data
+                    if (contact) {
+                      setFormData({
+                        name: contact.name,
+                        email: contact.email,
+                        phone_number: contact.phone_number,
+                        description: contact.description || "",
+                        role: contact.role || "none"
+                      });
+                    }
+                    setFormErrors({});
+                  }} 
+                  variant="outline"
+                  className="ml-2"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
               <Button 
-                onClick={() => {
-                  setIsEditing(false);
-                  // Reset form data to original contact data
-                  if (contact) {
-                    setFormData({
-                      name: contact.name,
-                      email: contact.email,
-                      phone_number: contact.phone_number,
-                      description: contact.description || "",
-                      role: contact.role || "none"
-                    });
-                  }
-                  setFormErrors({});
-                }} 
-                variant="outline"
-                className="ml-2"
+                onClick={handleEdit} 
+                className={`bg-indigo-900 hover:bg-indigo-800 ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!canEdit}
               >
-                Cancel
+                Edit
               </Button>
             )}
           </div>
@@ -288,15 +387,15 @@ const ContactDetail = () => {
             <div className="relative border-l-2 border-muted pl-6 pb-6 space-y-8">
               <div className="relative">
                 <div className="space-y-1">
-                  <p className="font-medium">Created by {contact.created_by || "Unknown"}</p>
-                  <p className="text-sm text-muted-foreground">{new Date(contact.created_at).toLocaleString()}</p>
+                  <p className="font-medium">Created by {createdByUser}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(contact.created_at)}</p>
                 </div>
               </div>
               {contact.updated_by && (
                 <div className="relative">
                   <div className="space-y-1">
-                    <p className="font-medium">Last Updated by {contact.updated_by}</p>
-                    <p className="text-sm text-muted-foreground">{new Date(contact.updated_at).toLocaleString()}</p>
+                    <p className="font-medium">Last Updated by {updatedByUser}</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(contact.updated_at)}</p>
                   </div>
                 </div>
               )}
@@ -308,7 +407,14 @@ const ContactDetail = () => {
       <div className="flex justify-end mt-8">
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive">Delete</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteClick}
+              className={!canDelete ? 'opacity-50 cursor-not-allowed' : ''}
+              disabled={!canDelete}
+            >
+              Delete
+            </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
