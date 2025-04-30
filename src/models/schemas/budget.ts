@@ -8,11 +8,9 @@ export const BudgetSchema = z.object({
         .default(() => crypto.randomUUID()),
     status: BudgetStatusEnum.default("PENDING"),
     created_by: z
-        .string({required_error: "ID user wajib diisi"})
-        .uuid({ message: "ID user tidak valid" }),
+        .string({required_error: "ID user wajib diisi"}),
     updated_by: z
         .string()
-        .uuid({ message: "ID user tidak valid" })
         .optional(),
     created_at: z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })

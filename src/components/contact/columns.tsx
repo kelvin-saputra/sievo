@@ -6,6 +6,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 export interface Contact {
   contact_id: string;
@@ -23,7 +34,6 @@ export interface Contact {
 export type ContactWithRole = Contact & {
   role: "none" | "client" | "vendor";
 };
-
 
 export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
   {
@@ -130,23 +140,52 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: function ActionCell({ row }) {
+    cell: function ActionCell({ row, table }) {
       const router = useRouter();
+      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+      const meta = table.options.meta as { onDelete?: (contactId: string) => void };
+
+      const handleDelete = () => {
+        if (meta.onDelete) {
+          meta.onDelete(row.original.contact_id);
+        }
+        setShowDeleteDialog(false);
+      };
+
       return (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/contact/${row.original.contact_id}`)}
-          >
-            Detail
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => console.log("Delete", row.original.contact_id)}
-          >
-            Delete
-          </Button>
-        </div>
+        <>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/contact/${row.original.contact_id}`)}
+            >
+              Detail
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              Delete
+            </Button>
+          </div>
+
+          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+              <AlertDialogDescription>
+                Apakah Anda yakin ingin menghapus kontak &quot;{row.original.name}&quot;? Tindakan ini tidak dapat dibatalkan.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       );
     },
   },

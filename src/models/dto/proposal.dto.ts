@@ -13,10 +13,10 @@ export const addProposalDTO = ProposalSchema.pick({
 });
 
 export const updateProposalDTO = ProposalSchema.pick({
-    status : true,
     client_name : true,
-    updated_at : true,
-    updated_by : true,
+    proposal_name : true,
+    proposal_link : true,
+
 })
 
 export type addProposalDTO = z.infer<typeof addProposalDTO>;
