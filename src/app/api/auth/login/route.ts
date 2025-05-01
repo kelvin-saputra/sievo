@@ -15,7 +15,10 @@ export async function POST(req: Request) {
     try {
         const user = await prisma.user.findFirst({
             where: {
-                email: email,
+                email: {
+                    equals: email,
+                    mode: 'insensitive',
+                },
                 password: await encryptAES(password),
                 is_active: true,
                 ended_at: undefined,
