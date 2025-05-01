@@ -144,17 +144,17 @@ const ItemDetail = () => {
             <div className="flex justify-between font-bold"><p>Total Quantity</p><p>{inventory.item_qty}</p></div>
             <Separator />
             {inventory.category === "NON_CONSUMABLE" && (
-              <div>
+              <>
                 <div className="flex justify-between">
-                  <p>Available Quantity</p>
+                  <p>Available</p>
                   <p>{inventory.item_qty - (inventory.item_qty_reserved ?? 0) - (inventory.item_qty_damaged ?? 0)}</p>
                 </div>
                 <Separator />
-                <div className="flex justify-between"><p>Reserved Quantity</p><p>{inventory.item_qty_reserved}</p></div>
+                <div className="flex justify-between"><p>Reserved</p><p>{inventory.item_qty_reserved}</p></div>
                 <Separator />
-                <div className="flex justify-between"><p>Damaged Quantity</p><p>{inventory.item_qty_damaged}</p></div>
+                <div className="flex justify-between"><p>Damaged</p><p>{inventory.item_qty_damaged}</p></div>
                 <Separator />
-              </div>
+              </>
             )}
             <div className="flex justify-between"><p>Price</p><p>{inventory.item_price}</p></div>
             <Separator />
