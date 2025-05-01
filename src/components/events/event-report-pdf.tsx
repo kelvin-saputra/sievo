@@ -439,74 +439,100 @@ export function EventReportPDF({
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Servis Vendor</Text>
-          {vendorServices.length ? (
-            vendorServices.map((v: any) => (
-              <View key={v.service_id}>
-                <View style={styles.vendorRow}>
-                  <Text style={[styles.vendorCell, styles.vendorName]}>
-                    {v.service_name}
-                  </Text>
-                  <Text style={styles.vendorCell}>
-                    {v.category.replace(/_/g, " ")}
-                  </Text>
-                  <Text style={styles.vendorCell}>ID: {v.vendor_id}</Text>
-                  <Text style={styles.vendorCell}>
-                    Rp{v.price.toLocaleString("id-ID")}
-                  </Text>
-                  {v.rating !== undefined && (
-                    <Text style={styles.vendorRating}>{v.rating}</Text>
-                  )}
-                </View>
-                {v.description && (
-                  <Text style={styles.vendorDesc}>{v.description}</Text>
-                )}
-              </View>
-            ))
-          ) : (
-            <Text style={styles.emptyNotice}>Tidak ada layanan vendor.</Text>
-          )}
+          {(() => {
+            const vendorItems = actualBudgetItems.filter(
+              (item: any) => item.vendor_service
+            );
+
+            return vendorItems.length ? (
+              vendorItems.map((item: any) => {
+                const v = item.vendor_service;
+                return (
+                  <View key={item.actual_budget_item_id}>
+                    <View style={styles.vendorRow}>
+                      <Text style={[styles.vendorCell, styles.vendorName]}>
+                        {v.service_name}
+                      </Text>
+                      <Text style={styles.vendorCell}>
+                        {v.category?.replace(/_/g, " ") || "-"}
+                      </Text>
+                      <Text style={styles.vendorCell}>ID: {v.vendor_id}</Text>
+                      <Text style={styles.vendorCell}>
+                        Rp{item.item_subtotal.toLocaleString("id-ID")}
+                      </Text>
+                      {v.rating !== undefined && (
+                        <Text style={styles.vendorRating}>{v.rating}</Text>
+                      )}
+                    </View>
+                    {v.description && (
+                      <Text style={styles.vendorDesc}>{v.description}</Text>
+                    )}
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={styles.emptyNotice}>
+                Tidak ada layanan vendor yang digunakan.
+              </Text>
+            );
+          })()}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Inventaris yang Terpakai</Text>
-          {inventories.length ? (
-            inventories.map((inv: any) => (
-              <View key={inv.inventory_id}>
-                <View style={styles.inventoryRow}>
-                  <Text style={[styles.inventoryCell, styles.inventoryName]}>
-                    {inv.item_name}
-                  </Text>
-                  <Text style={styles.inventoryCell}>
-                    {inv.category.replace(/_/g, " ")}
-                  </Text>
-                  <Text style={styles.inventoryCell}>
-                    Jumlah: {inv.item_qty}
-                  </Text>
-                  <Text style={styles.inventoryCell}>
-                    Rp{inv.item_price.toLocaleString("id-ID")}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.inventoryCell,
-                      styles.inventoryStatus,
-                      {
-                        color: inv.is_avail
-                          ? COLORS.success
-                          : COLORS.destructive,
-                      },
-                    ]}
-                  >
-                    {inv.is_avail ? "Tersedia" : "Tidak Tersedia"}
-                  </Text>
-                </View>
-                {inv.description && (
-                  <Text style={styles.inventoryDesc}>{inv.description}</Text>
-                )}
-              </View>
-            ))
-          ) : (
-            <Text style={styles.emptyNotice}>Tidak ada inventaris.</Text>
-          )}
+          {(() => {
+            const inventoryItems = actualBudgetItems.filter(
+              (item: any) => item.inventory
+            );
+
+            return inventoryItems.length ? (
+              inventoryItems.map((item: any) => {
+                const inv = item.inventory;
+                return (
+                  <View key={item.actual_budget_item_id}>
+                    <View style={styles.inventoryRow}>
+                      <Text
+                        style={[styles.inventoryCell, styles.inventoryName]}
+                      >
+                        {inv.item_name}
+                      </Text>
+                      <Text style={styles.inventoryCell}>
+                        {inv.category?.replace(/_/g, " ") || "-"}
+                      </Text>
+                      <Text style={styles.inventoryCell}>
+                        Jumlah: {item.item_qty}
+                      </Text>
+                      <Text style={styles.inventoryCell}>
+                        Rp{inv.item_price.toLocaleString("id-ID")}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.inventoryCell,
+                          styles.inventoryStatus,
+                          {
+                            color: inv.is_avail
+                              ? COLORS.success
+                              : COLORS.destructive,
+                          },
+                        ]}
+                      >
+                        {inv.is_avail ? "Tersedia" : "Tidak Tersedia"}
+                      </Text>
+                    </View>
+                    {inv.description && (
+                      <Text style={styles.inventoryDesc}>
+                        {inv.description}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={styles.emptyNotice}>
+                Tidak ada inventaris yang digunakan.
+              </Text>
+            );
+          })()}
         </View>
       </Page>
     </Document>
