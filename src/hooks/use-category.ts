@@ -18,9 +18,7 @@ export default function useCategory(eventId: string, budgetPlanId: string, actua
             const { data: rawCategories } = await axios.get(`${BUDGET_CATEGORY_API}`, { params: requestData });
             const validatedCategories = rawCategories.data.map((cat: any) => BudgetItemCategorySchema.parse(cat));
             setCategoriesPlan(validatedCategories);
-            console.log("Categories Plan", validatedCategories);
         } catch {
-            console.log("Error");
         }
         setLoading(false);
     }, [eventId]);
@@ -28,13 +26,10 @@ export default function useCategory(eventId: string, budgetPlanId: string, actua
     const fetchCategoriesByActualBudgetId = useCallback(async () => {
         setLoading(true);
         try {
-            console.log("masuk ke dalam  hook")
             const requestData = { event_id: eventId, is_actual: true };
             const { data: rawCategories } = await axios.get(`${BUDGET_CATEGORY_API}`, { params: requestData });
             const validatedCategories = rawCategories.data.map((cat: any) => BudgetItemCategorySchema.parse(cat));
-            console.log("Validated Categories", validatedCategories);
             setActualCategories(validatedCategories);
-            console.log("Actual Categories", validatedCategories);
         } catch (error) {
             console.log("Error", error instanceof Error ? error.message : error);
         }
@@ -43,7 +38,6 @@ export default function useCategory(eventId: string, budgetPlanId: string, actua
 
     const handleAddCategory = async (is_actual: boolean, data: AddBudgetItemCategoryDTO) => {
         setLoading(true);
-        console.log("Masuk Ke dalam add category");
         try {
             console.log(budgetPlanId, actualBudgetId);
             const requestData = is_actual ? { ...data, budget_id: actualBudgetId } : { ...data, budget_id: budgetPlanId };

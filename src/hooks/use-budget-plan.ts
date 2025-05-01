@@ -20,7 +20,6 @@ export default function useBudgetPlan(event_id:string) {
             const { data: rawBudgetPlan } = await axios.get(`${BUDGET_API}`, {params: {event_id:event_id, is_actual:false}});
             setBudgetPlan(() => rawBudgetPlan.data);
         } catch {
-            toast.error("Gagal mengambil data budget plan.");
         }
         setLoading(false);
     }, [event_id]);
@@ -39,7 +38,6 @@ export default function useBudgetPlan(event_id:string) {
             setBudgetPlanItems(validatedBudgets);
         } catch (error) {
             console.log(error instanceof Error ? error.message : error);
-            toast.error("Gagal mengambil data budget plan.");
         }
         setLoading(false);
     }, [event_id, budgetPlan?.budget_id]);

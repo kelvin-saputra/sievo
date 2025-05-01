@@ -26,7 +26,6 @@ export default function ProfilePage() {
     ProfileContext,
     "Profile Context"
   );
-  console.log("User data:", user);
 
   // Initialize form after user data is available
   const form = useForm<UpdateUserProfileDTO>({
@@ -73,7 +72,6 @@ export default function ProfilePage() {
   }, [isEditingName]);
 
   const onSubmit = (data: UpdateUserProfileDTO) => {
-    console.log("Saving user data:", data);
     if (handleUpdateProfile) {
       handleUpdateProfile(data);
     }
@@ -174,8 +172,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <Badge className="mt-5 bg-green-100 text-green-800 hover:bg-green-200 px-4 py-1 rounded-full">
-                  {currentValues.role}
+                <Badge className={`mt-5 ${currentValues.is_active===true?"bg-green-100 text-green-800 hover:bg-green-200":"bg-red-100 text-red-800 hover:bg-red-200"} px-4 py-1 rounded-full`}>
+                  {currentValues.is_active===true? "ACTIVE":"INACTIVE"}
                 </Badge>
               </div>
 
