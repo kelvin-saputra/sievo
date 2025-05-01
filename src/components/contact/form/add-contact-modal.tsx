@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { ContactSchema } from "@/models/schemas/contact";
 import { AddContactDTO } from "@/models/dto";
+import { UserSchema } from "@/models/schemas";
 
 interface AddContactModalProps {
   onAddContact: (data: AddContactDTO) => void;
@@ -39,6 +40,20 @@ interface AddContactModalProps {
 
 export function AddContactModal({ onAddContact }: AddContactModalProps) {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
+
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem("authUser");
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        const userParsed = UserSchema.partial().parse(parsedUser);
+        setUser(userParsed);
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+  }, []);
 
   const form = useForm<AddContactDTO>({
     resolver: zodResolver(ContactSchema),
@@ -47,8 +62,8 @@ export function AddContactModal({ onAddContact }: AddContactModalProps) {
       email: "",
       phone_number: "",
       description: "",
-      created_by: "550e8400-e29b-41d4-a716-446655440000", 
-      updated_by: "550e8400-e29b-41d4-a716-446655440000", 
+      created_by: "550e8400-e29b-41d4-a716-446655440000", // Default value, will be updated
+      updated_by: "550e8400-e29b-41d4-a716-446655440000", // Default value, will be updated
       created_at: new Date(),
       updated_at: new Date(),
       is_deleted: false,
@@ -56,11 +71,22 @@ export function AddContactModal({ onAddContact }: AddContactModalProps) {
     },
   });
   
-  console.log(form.formState.errors);
+  // Update created_by and updated_by fields when user data is loaded
+  useEffect(() => {
+    if (user && user.id) {
+      form.setValue("created_by", user.id);
+      form.setValue("updated_by", user.id);
+    }
+  }, [user, form]);
 
   const onSubmit = (data: AddContactDTO) => {
+    // Ensure the current user ID is set correctly
+    if (user && user.id) {
+      data.created_by = user.id;
+      data.updated_by = user.id;
+    }
+    
     console.log("Form submitted:", data);
-    console.log("datanya", data);
     onAddContact(data);
     form.reset();
     setOpen(false);

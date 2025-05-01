@@ -32,11 +32,9 @@ export const ContactSchema = z.object({
         .min(10, { message: "Nomor handphone minimal 10 karakter" }),
     description: z.string().optional(),
     created_by: z
-        .string({ required_error: "ID user wajib diisi" })
-        .uuid({ message: "ID user tidak valid" }),
+        .string({ required_error: "ID user wajib diisi" }),
     updated_by: z
         .string()
-        .uuid({ message: "ID user tidak valid" })
         .nullable(),
     created_at: z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })
