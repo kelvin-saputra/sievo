@@ -10,6 +10,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import {Trash2 } from "lucide-react"
+
+
 interface DeleteInventoryModalProps {
   inventoryId: string;
   onDeleteInventory: (id: string) => void;
@@ -31,7 +34,9 @@ export function DeleteInventoryModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-danger text-white">Delete Inventory</Button>
+        <Button variant="destructive" size="icon" className="p-1 h-8 w-8" onClick={handleDeleteClick}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
