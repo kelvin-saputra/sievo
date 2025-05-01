@@ -1,19 +1,14 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { TaskSchema } from "@/models/schemas";
+import { UserWithStatus } from "@/hooks/use-hr"; // <-- import your user type
+import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
-const statusColors: Record<TaskSchema["status"], string> = {
-  PENDING: "bg-yellow-500 text-white",
-  ON_PROGRESS: "bg-blue-500 text-white",
-  DONE: "bg-green-500 text-white",
-  CANCELLED: "bg-gray-500 text-white",
-};
-
-export const taskColumns: ColumnDef<TaskSchema>[] = [
+export const taskColumns = (
+  users: UserWithStatus[]
+): ColumnDef<TaskSchema>[] => [
   {
     accessorKey: "title",
     header: ({ column }) => (
@@ -39,7 +34,11 @@ export const taskColumns: ColumnDef<TaskSchema>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => row.original.assigned_id || "Unassigned",
+    cell: ({ row }) => {
+      const assignedId = row.original.assigned_id;
+      const user = users.find((u) => u.id === assignedId);
+      return user?.name || user?.email || "Unassigned";
+    },
   },
   {
     accessorKey: "due_date",
@@ -71,7 +70,7 @@ export const taskColumns: ColumnDef<TaskSchema>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <Badge className={statusColors[row.original.status]}>
+      <Badge className={taskStatusColorMap[row.original.status]}>
         {row.original.status}
       </Badge>
     ),

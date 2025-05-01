@@ -18,6 +18,8 @@ export const AddInventoryDTO = InventorySchema.pick({
 export const UpdateInventoryDTO = InventorySchema.pick({
     item_name: true,
     item_qty: true,
+    item_qty_damaged: true,
+    item_qty_reserved: true,
     item_price: true,
     inventory_photo: true,
     category: true,

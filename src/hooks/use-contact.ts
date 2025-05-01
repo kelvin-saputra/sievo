@@ -36,6 +36,7 @@ export default function useContact() {
           };
         });
         setContacts(validatedContacts);
+        console.log("Fetched contacts:", validatedContacts);
       } else {
         console.warn("Expected an array but received:", rawContacts);
         setContacts([]);
@@ -75,6 +76,22 @@ export default function useContact() {
     data: UpdateContactDTO
   ) => {
     try {
+      // Get the current user role from localStorage
+      const userData = localStorage.getItem("authUser");
+      let userRole = "";
+      
+      if (userData) {
+        const user = JSON.parse(userData);
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      // Check if user has permission to update contacts
+      // Only ADMIN, EMPLOYEE, and EXECUTIVE can edit
+      if (!["ADMIN", "EMPLOYEE", "EXECUTIVE"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+        return;
+      }
+
       const { role, ...contactData } = data;
 
       const updatedData = ContactSchema.partial().parse({
@@ -88,10 +105,7 @@ export default function useContact() {
       );
 
       if (role) {
-        await axios.put(
-          `${API_URL}/${contactId}/role`,
-          { role }
-        );
+        await axios.put(`${API_URL}/${contactId}/role`, { role });
       }
 
       const parsedContact = ContactSchema.parse({
@@ -106,6 +120,7 @@ export default function useContact() {
       if (contact?.contact_id === contactId) {
         setContact(parsedContact);
       }
+
       toast.success("Contact berhasil diperbarui!");
     } catch (error) {
       console.error("Terjadi kesalahan saat memperbarui Contact:", error);
@@ -115,6 +130,22 @@ export default function useContact() {
 
   const handleDeleteContact = async (contactId: string) => {
     try {
+      // Get the current user role from localStorage
+      const userData = localStorage.getItem("authUser");
+      let userRole = "";
+      
+      if (userData) {
+        const user = JSON.parse(userData);
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      // Check if user has permission to delete contacts
+      // Only ADMIN and EXECUTIVE can delete
+      if (!["ADMIN", "EXECUTIVE"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+        return;
+      }
+
       await axios.delete(`${API_URL}/${contactId}`);
 
       setContacts((prevContacts) =>
@@ -155,7 +186,6 @@ export default function useContact() {
       setContacts((prevContacts) => [...prevContacts, parsedContact]);
 
       toast.success("Contact berhasil ditambahkan!");
-
     } catch (error) {
       console.error("Terjadi kesalahan saat menambahkan Contact:", error);
       toast.error("Gagal menambahkan Contact.");
