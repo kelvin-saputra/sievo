@@ -41,35 +41,60 @@ export async function PUT(
   context: { params: Promise<{ event_id: string; task_id: string }> }
 ) {
   const { params } = context;
-  try {
-    const data = await req.json();
 
-    const existingTask = await prisma.task.findFirst({
+  try {
+    const raw = await req.json();
+    const { assigned_id, ...updateData } = raw;
+
+    const ids = await params;
+    const task = await prisma.task.findFirst({
       where: {
-        task_id: (await params).task_id,
-        event_id: (await params).event_id,
+        task_id: ids.task_id,
+        event_id: ids.event_id,
         is_deleted: false,
       },
     });
 
-    if (!existingTask) {
+    if (!task) {
       return NextResponse.json(
         { error: "Tugas tidak ditemukan atau sudah dihapus" },
         { status: 404 }
       );
     }
 
+    const prismaData: any = {
+      ...updateData,
+      updated_at: new Date(),
+    };
+
+    if (assigned_id) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: assigned_id },
+        select: { id: true },
+      });
+
+      if (!userExists) {
+        return NextResponse.json(
+          { error: `User ${assigned_id} tidak ditemukan` },
+          { status: 400 }
+        );
+      }
+
+      prismaData.assigned = { connect: { id: assigned_id } };
+    }
+
     const updatedTask = await prisma.task.update({
-      where: { task_id: (await params).task_id },
-      data: { ...data, updated_at: new Date() },
+      where: { task_id: ids.task_id },
+      data: prismaData,
     });
 
     return NextResponse.json(updatedTask);
-  } catch (error: unknown) {
+  } catch (error) {
     return NextResponse.json(
       {
         error: "Gagal memperbarui tugas",
-        details: error instanceof Error ? error.message : null,
+        details:
+          error instanceof Error ? error.message : "Unknown server error",
       },
       { status: 500 }
     );

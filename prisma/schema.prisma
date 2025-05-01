@@ -29,7 +29,7 @@ model User {
   ended_at     DateTime?
   task         Task[]
   event        Event[]
-  userEvents   UserEvent[]
+  userEvents   UserEvent[] 
 }
 
 model Inventory {
@@ -254,6 +254,7 @@ enum ROLE {
   EXECUTIVE
   INTERNAL
   FREELANCE
+  ADMIN
 }
 
 enum TaskStatus {

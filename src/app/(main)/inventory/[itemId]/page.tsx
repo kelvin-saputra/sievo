@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import * as React from "react";
 import { useRouter } from "next/navigation"; 
-import { UserSchema } from "@/models/schemas";
 
 import {
   Card,
@@ -29,7 +28,6 @@ import { useEffect, useState } from "react";
 const ItemDetail = () => {
   const router = useRouter();
   const { itemId } = useParams();
-  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
 
   const { inventory, loading, fetchInventoryById, handleDeleteInventory, handleUpdateInventory } = useInventory(); 
   const [open, setOpen] = useState(false);
@@ -58,14 +56,6 @@ const ItemDetail = () => {
       fetchInventoryLogs();
     }
   }, [inventory]);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("authUser")!);
-    try {
-      const userParsed = UserSchema.partial().parse(user);
-      setUser(userParsed);
-    } catch {}
-  }, []);
 
   if (loading) {
     return <div>Loading...</div>;

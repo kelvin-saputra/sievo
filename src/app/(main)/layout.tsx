@@ -23,13 +23,11 @@ export default function RootLayout({
       <SidebarProvider>
         <SidebarApp onLogout={handleLogout} />
         <SidebarInset className="flex flex-col">
-          <header className="flex h-11 items-center gap-2 border-b px-4 fixed w-screen bg-super-white">
+          <header className="flex h-11 items-center gap-2 border-b px-4 fixed w-screen bg-super-white z-1 shadow">
             <SidebarTrigger className="-ml-1" />
             <BreadcrumbApp />
           </header>
-          <main className="mt-16">
-            {children}
-          </main>
+          <main className="mt-11">{children}</main>
           <footer className="bg-background">
             <Footer />
           </footer>
