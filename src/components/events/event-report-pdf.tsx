@@ -166,8 +166,6 @@ export function EventReportPDF({
   budgetPlanItems = [],
   actualBudgetItems = [],
   categoriesPlan = [],
-  inventories = [],
-  vendorServices = [],
   client,
   manager,
 }: any) {
