@@ -19,18 +19,16 @@ export default function Page() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
-        <Button
-          variant={"default"}
-          className="mb-4"
-          onClick={() => setIsGenerateModalOpen(true)}
-        >
+        <div>
+          <Button variant={"default"} className="mb-4" onClick={() => setIsGenerateModalOpen(true)}>
+            <Plus className="mr-2" /> Generate Token
+          </Button>
           <GenerateTokenModal
             open={isGenerateModalOpen}
             onOpenChange={setIsGenerateModalOpen}
             onGenerateToken={handleGenerateToken}
-          />{" "}
-          <Plus /> Generate Token
-        </Button>
+          />
+        </div>
       </div>
       <div className="border rounded-lg">
         <DataTable columns={columns} data={users} />
