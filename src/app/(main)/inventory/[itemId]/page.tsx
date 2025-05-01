@@ -24,10 +24,13 @@ import useInventory from "@/hooks/use-inventory";
 import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
 import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { useEffect, useState } from "react";
+import { UserSchema } from "@/models/schemas";
+
 
 const ItemDetail = () => {
   const router = useRouter();
   const { itemId } = useParams();
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
 
   const { inventory, loading, fetchInventoryById, handleDeleteInventory, handleUpdateInventory } = useInventory(); 
   const [open, setOpen] = useState(false);
@@ -40,6 +43,14 @@ const ItemDetail = () => {
       fetchInventoryById(itemId);
     }
   }, [itemId, fetchInventoryById]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser")!);
+    try {
+      const userParsed = UserSchema.partial().parse(user);
+      setUser(userParsed);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (inventory?.inventory_id) {
@@ -73,7 +84,10 @@ const ItemDetail = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full">
           <p className="text-muted-foreground text-xl sm:text-2xl">Item Detail</p>
           <div className="flex gap-4 mt-4 md:mt-0">
+          {["ADMIN","EXECUTIVE","INTERNAL"].includes((user?.role)||"") && (
             <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
+          )}
+          {["ADMIN","EXECUTIVE"].includes((user?.role)||"") && (
             <DeleteInventoryModal 
               inventoryId={inventory.inventory_id} 
               onDeleteInventory={async (itemId) => {
@@ -87,6 +101,7 @@ const ItemDetail = () => {
               open={open} 
               setOpen={setOpen} 
             />
+          )}
           </div>
         </div>
       </div>
