@@ -15,11 +15,9 @@ export const ReportSchema = z.object({
         .number()
         .positive({ message: "Jumlah peserta tidak valid" }),
     created_by: z
-        .string()
-        .uuid({ message: "ID user tidak valid" }),
+        .string(),
     updated_by: z
         .string()
-        .uuid({ message: "ID user tidak valid" })
         .optional(),
     created_at : z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })

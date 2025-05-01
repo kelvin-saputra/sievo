@@ -73,8 +73,6 @@ export function EventCalendar() {
     return null
   }
 
- 
-
   const renderCalendar = () => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()

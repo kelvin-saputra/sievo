@@ -1,10 +1,11 @@
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
+import { NextRequest } from "next/server";
 
 /**
  * ✅ POST Add Inventory Item
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const dataBody = await req.json();
         const { ...inventoryData } = dataBody;
@@ -13,6 +14,7 @@ export async function POST(req: Request) {
                 ...inventoryData,
             }
         });
+          
         return responseFormat(201, "[CREATED] Item has been created", inventoryItem);
     } catch (error) {
         console.log(error)
@@ -32,4 +34,3 @@ export async function GET() {
         return responseFormat(500, "Failed to retrieve all inventory item", null);
     }
 }
-
