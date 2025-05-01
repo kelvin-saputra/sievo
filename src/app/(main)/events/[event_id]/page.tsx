@@ -148,6 +148,7 @@ export default function EventDetailPage() {
             {event.notes || "Tidak ada keterangan"}
           </div>
         </div>
+
         <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700 space-y-2">
           <div className="flex justify-between">
             <span className="text-gray-500">Dibuat oleh</span>
@@ -178,7 +179,7 @@ export default function EventDetailPage() {
 
       <div className="flex flex-col h-full bg-blue-50 p-4 rounded-lg border-2">
         <div className="flex gap-2">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500">Status</p>
 
             {["ADMIN", "EXECUTIVE", "EMPLOYEE"].includes(userRole || "") ? (
@@ -186,18 +187,19 @@ export default function EventDetailPage() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="cursor-pointer w-full flex items-center justify-between"
+                    className="cursor-pointer w-full flex items-center justify-between gap-2"
                   >
                     <span
                       className={
-                        "rounded px-2 py-1 text-xs font-semibold " +
+                        "rounded px-2 py-1 text-xs font-semibold truncate max-w-[130px] " +
                         (eventStatusColorMap[event.status] ||
                           "bg-gray-100 text-gray-800")
                       }
+                      title={event.status}
                     >
                       {event.status}
                     </span>
-                    <MoreHorizontal className="ml-2 h-4 w-4" />
+                    <MoreHorizontal className="h-4 w-4 shrink-0" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -222,10 +224,11 @@ export default function EventDetailPage() {
             ) : (
               <div
                 className={
-                  "rounded px-2 py-1 text-xs font-semibold border inline-block " +
+                  "rounded px-2 py-1 text-xs font-semibold border inline-block truncate max-w-[130px] " +
                   (eventStatusColorMap[event.status] ||
                     "bg-gray-100 text-gray-800")
                 }
+                title={event.status}
               >
                 {event.status}
               </div>
