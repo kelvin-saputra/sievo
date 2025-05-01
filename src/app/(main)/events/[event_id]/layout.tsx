@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useParams } from "next/navigation";
 import PageHeader from "@/components/common/page-header";
 import NavigationTabs from "@/components/events/navigation-tabs";
@@ -20,6 +20,7 @@ import useVendorService from "@/hooks/use-vendor-service";
 import useInventory from "@/hooks/use-inventory";
 import useHr from "@/hooks/use-hr";
 import useContact from "@/hooks/use-contact";
+import { getUserRoleFromStorage } from "@/utils/authUtils";
 
 export default function EventLayout({
   children,
@@ -27,6 +28,7 @@ export default function EventLayout({
   children: React.ReactNode;
 }) {
   const { event_id } = useParams();
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const {
     event,
@@ -91,6 +93,7 @@ export default function EventLayout({
   const { inventories, fetchAllInventories } = useInventory();
   const { fetchAllUsers, users } = useHr();
   const { fetchAllContacts, contacts } = useContact();
+
   const clientContacts = useMemo(
     () => contacts.filter((c) => c.role === "client"),
     [contacts]
@@ -141,6 +144,7 @@ export default function EventLayout({
 
   useEffect(() => {
     refetchAll();
+    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {
@@ -230,20 +234,25 @@ export default function EventLayout({
           <NavigationTabs eventStatus={event.status} />
         </div>
         <div className="flex gap-2 px-6 justify-end">
-          <UpdateEventForm
-            event={event}
-            createdBy={event.created_by}
-            onUpdateEvent={handleUpdateEvent}
-            users={users}
-            clientContacts={clientContacts}
-          />
-          <Button
-            variant="destructive"
-            onClick={() => event && handleDeleteEvent(event.event_id)}
-          >
-            <Trash />
-            Delete Event
-          </Button>
+          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+            <UpdateEventForm
+              event={event}
+              createdBy={event.created_by}
+              onUpdateEvent={handleUpdateEvent}
+              users={users}
+              clientContacts={clientContacts}
+            />
+          )}
+
+          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+            <Button
+              variant="destructive"
+              onClick={() => event && handleDeleteEvent(event.event_id)}
+            >
+              <Trash />
+              Delete Event
+            </Button>
+          )}
         </div>
         <div className="p-6 bg-white rounded-lg shadow-md">{children}</div>
       </div>

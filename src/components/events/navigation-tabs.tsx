@@ -31,15 +31,11 @@ export default function NavigationTabs({
     router.push(`/events/${event_id}/${path ? `${path}` : ""}`);
   };
 
-  const filteredTabs = tabs.filter(
-    (tab) => tab.name !== "Report" || eventStatus === "DONE"
-  );
-
   return (
     <div className="relative flex gap-4">
       <NavigationMenu className="max-w-full w-full justify-start">
         <NavigationMenuList className="space-x-2">
-          {filteredTabs.map((tab) => {
+          {tabs.map((tab) => {
             const isActive =
               pathname ===
               `/events/${event_id}${tab.path ? `/${tab.path}` : ""}`;
@@ -53,7 +49,6 @@ export default function NavigationTabs({
                       : "text-muted-foreground"
                   )}
                   onClick={() => handleNavigation(tab.path)}
-                  disabled={tab.name === "Report" && eventStatus !== "DONE"}
                 >
                   {tab.name}
                   <ChevronDownIcon
