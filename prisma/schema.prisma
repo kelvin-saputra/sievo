@@ -29,7 +29,7 @@ model User {
   ended_at     DateTime?
   task         Task[]
   event        Event[]
-  userEvents   UserEvent[] 
+  userEvents   UserEvent[]
 }
 
 model Inventory {
@@ -52,7 +52,6 @@ model Inventory {
   is_deleted         Boolean            @default(false)
   inventory_log      InventoryLog[]
 }
-
 
 model InventoryLog {
   inventory_log_id String    @id @default(uuid())
@@ -250,10 +249,10 @@ model UserEvent {
 }
 
 enum ROLE {
+  ADMIN 
   EXECUTIVE
   INTERNAL
   FREELANCE
-  ADMIN
 }
 
 enum TaskStatus {
