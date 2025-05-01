@@ -34,7 +34,7 @@ export function DeleteInventoryModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="icon" className="p-1 h-8 w-8" onClick={handleDeleteClick}>
+        <Button variant="destructive" size="icon" className="p-1 h-8 w-8">
           <Trash2 className="h-4 w-4" />
         </Button>
       </DialogTrigger>
