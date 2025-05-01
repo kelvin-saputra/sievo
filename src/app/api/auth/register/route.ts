@@ -20,7 +20,10 @@ export async function POST(req: Request) {
 
     const checkuser = await prisma.user.findFirst({
         where: {
-            email: reqBody.email
+            email: {
+                equals: reqBody.email,
+                mode: 'insensitive',
+            }
         }
     })
 

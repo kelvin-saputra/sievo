@@ -9,7 +9,7 @@ interface UserContextType {
 
     fetchAllUsers: () => Promise<void>;
     handleDeleteUser: (data: DeleteUserDTO) => Promise<void>;
-    handleGenerateToken: (data: GenerateTokenDTO) => Promise<void>;
+    handleGenerateToken: (data: GenerateTokenDTO) => Promise<string>;
 }
 
 const UserContext = createContext<UserContextType | null>(null);

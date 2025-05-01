@@ -35,9 +35,8 @@ export default function useUserManagement() {
         try {
             await axios.delete(`${USER_MANAGEMENT_API}`, { data });
             toast.success("User deleted successfully");
-            fetchAllUsers(); // Refresh the user list after deletion
-        } catch (error) {
-            console.error("Error deleting user:", error); // Log the actual error
+            fetchAllUsers();
+        } catch {
             toast.error("Failed to delete user");
         } finally {
             setLoading(false);
@@ -45,15 +44,14 @@ export default function useUserManagement() {
     }, [fetchAllUsers]);
 
     const handleGenerateToken = useCallback(async (data: GenerateTokenDTO) => {
-
         setLoading(true);
         try {
             const { data: response } = await axios.get(`${USER_MANAGEMENT_API}/gen-token`, { params: { ...data } });
             toast.success("Token generated successfully");
             return response.data;
-        } catch (error) {
-            console.error("Error generating token:", error); // Log the actual error
+        } catch {
             toast.error("Failed to generate token");
+            return null
         } finally {
             setLoading(false);
         }
