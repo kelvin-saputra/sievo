@@ -231,7 +231,7 @@ export default function EventLayout({
           ]}
         />
         <div className="flex items-center justify-between border-b -mt-2 mb-4 pb-2">
-          <NavigationTabs eventStatus={event.status} />
+          <NavigationTabs />
         </div>
         <div className="flex gap-2 px-6 justify-end">
           {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (

@@ -18,11 +18,7 @@ const tabs = [
   { name: "Report", path: "report" },
 ];
 
-export default function NavigationTabs({
-  eventStatus,
-}: {
-  eventStatus: string;
-}) {
+export default function NavigationTabs() {
   const { event_id } = useParams();
   const router = useRouter();
   const pathname = usePathname();
