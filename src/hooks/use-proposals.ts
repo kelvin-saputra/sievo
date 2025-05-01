@@ -182,6 +182,7 @@ export default function useProposal() {
       }
 
       if (userData) {
+        
         const user = JSON.parse(userData);
         userEmail = user.email || "";
       }
