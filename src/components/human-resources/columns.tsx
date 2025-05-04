@@ -87,14 +87,18 @@ const AssignmentCell = ({ row }: { row: any }) => {
   return (
     <>
       <Button
-        variant="default"
+        variant={user.status === "inactive" ? "ghost" : "default"}  // If inactive, make it a ghost button (greyed out)
         size="sm"
+        disabled={user.status === "inactive"}  // Disable the button if inactive
         onClick={() => {
-          if (events.length === 0) {
-            fetchAllEvents()
+          if (user.status !== "inactive") {  // Only open the modal if not inactive
+            if (events.length === 0) {
+              fetchAllEvents()
+            }
+            setIsModalOpen(true)
           }
-          setIsModalOpen(true)
         }}
+        className={user.status === "inactive" ? "bg-gray-100 text-gray-600" : ""}  // Apply grey color to the button if inactive
       >
         Assign to
       </Button>
@@ -118,6 +122,8 @@ const AssignmentCell = ({ row }: { row: any }) => {
     </>
   )
 }
+
+
 
 export const hrColumns: ColumnDef<User>[] = [
   {
@@ -152,12 +158,12 @@ export const hrColumns: ColumnDef<User>[] = [
     header: "Status",
     cell: ({ row }: { row: any }) => {
       const status = (row.getValue("status") as string).toLowerCase()
-      let colorClass = "bg-gray-100 text-gray-800" // Default color
+      let colorClass = "bg-gray-100 text-gray-800"
 
       if (status === "unassigned") {
-        colorClass = "bg-green-100 text-green-800"
-      } else if (status === "assigned") {
         colorClass = "bg-yellow-100 text-yellow-800"
+      } else if (status === "assigned") {
+        colorClass = "bg-green-100 text-green-800"
       } else if (status === "inactive") {
         colorClass = "bg-gray-100 text-gray-800"
       }
