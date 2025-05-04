@@ -113,10 +113,10 @@ const ItemDetail = () => {
               {Array.isArray(inventory.inventory_photo) && inventory.inventory_photo.length > 0 ? (
                 inventory.inventory_photo.map((photo, index) => (
                   <CarouselItem key={index}>
-                    <Card className="justify-center">
-                      <CardContent className="flex aspect-square items-center justify-center p-0">
-                        <AspectRatio ratio={1 / 1}>
-                          <Image src={photo} alt={`Inventory Image ${index + 1}`} width={300} height={300} className="rounded-md object-cover" />
+                    <Card className="justify-center items-center">
+                      <CardContent className="flex aspect-square p-0">
+                        <AspectRatio ratio={1 / 1} className="w-full h-full flex justify-center items-center">
+                          <Image src={photo} alt={`Inventory Image ${index + 1}`} width={300} height={300} className="object-cover" />
                         </AspectRatio>
                       </CardContent>
                     </Card>
@@ -143,15 +143,19 @@ const ItemDetail = () => {
             <Separator />
             <div className="flex justify-between font-bold"><p>Total Quantity</p><p>{inventory.item_qty}</p></div>
             <Separator />
-            <div className="flex justify-between">
-              <p>Available Quantity</p>
-              <p>{inventory.item_qty - (inventory.item_qty_reserved ?? 0) - (inventory.item_qty_damaged ?? 0)}</p>
-            </div>
-            <Separator />
-            <div className="flex justify-between"><p>Reserved Quantity</p><p>{inventory.item_qty_reserved}</p></div>
-            <Separator />
-            <div className="flex justify-between"><p>Damaged Quantity</p><p>{inventory.item_qty_damaged}</p></div>
-            <Separator />
+            {inventory.category === "NON_CONSUMABLE" && (
+              <>
+                <div className="flex justify-between">
+                  <p>Available</p>
+                  <p>{inventory.item_qty - (inventory.item_qty_reserved ?? 0) - (inventory.item_qty_damaged ?? 0)}</p>
+                </div>
+                <Separator />
+                <div className="flex justify-between"><p>Reserved</p><p>{inventory.item_qty_reserved}</p></div>
+                <Separator />
+                <div className="flex justify-between"><p>Damaged</p><p>{inventory.item_qty_damaged}</p></div>
+                <Separator />
+              </>
+            )}
             <div className="flex justify-between"><p>Price</p><p>{inventory.item_price}</p></div>
             <Separator />
             <div className="flex justify-between"><p>Status</p><Badge variant={inventory.is_avail ? "default" : "destructive"}>{inventory.is_avail ? "Available" : "Unavailable"}</Badge></div>
