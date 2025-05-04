@@ -1,83 +1,91 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Pencil } from "lucide-react";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
-import { useSafeContext } from "@/hooks/use-safe-context";
-import ProfileContext from "@/models/context/profile-context";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import type { UpdateUserProfileDTO } from "@/models/dto/user.dto";
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Pencil } from "lucide-react"
+import { Avatar, AvatarFallback } from "@radix-ui/react-avatar"
+import { useSafeContext } from "@/hooks/use-safe-context"
+import ProfileContext from "@/models/context/profile-context"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import type { UpdateUserProfileDTO } from "@/models/dto/user.dto"
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditing, setIsEditing] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
 
-  const { user, handleUpdateProfile } = useSafeContext(
-    ProfileContext,
-    "Profile Context"
-  );
+  const { user, handleUpdateProfile } = useSafeContext(ProfileContext, "Profile Context")
 
   // Initialize form after user data is available
   const form = useForm<UpdateUserProfileDTO>({
     defaultValues: {
-      id: user?.id || "",
-      name: user?.name || "",
-      phone_number: user?.phone_number || "",
-      email: user?.email || "",
+      id: user?.id,
+      name: user?.name,
+      phone_number: user?.phone_number,
+      email: user?.email,
       role: user?.role,
       started_at: user?.started_at,
       ended_at: user?.ended_at,
       is_active: user?.is_active || false,
     },
-  });
+  })
 
   // Update form values when user data changes
   useEffect(() => {
     if (user) {
       form.reset({
-        id: user.id || "",
-        name: user.name || "",
-        phone_number: user.phone_number || "",
-        email: user.email || "",
+        id: user.id,
+        name: user.name,
+        phone_number: user.phone_number,
+        email: user.email,
         role: user.role,
         started_at: user.started_at,
         ended_at: user.ended_at,
         is_active: user.is_active || false,
-      });
+      })
     }
-  }, [user, form]);
+  }, [user, form])
 
   // Get form methods
-  const { register, handleSubmit, watch, setValue } = form;
-  const currentValues = watch();
+  const { register, handleSubmit, watch, setValue } = form
+  const currentValues = watch()
 
   // Focus the name input when editing name
   useEffect(() => {
     if (isEditingName) {
-      const nameInput = document.getElementById("name");
+      const nameInput = document.getElementById("name")
       if (nameInput) {
-        nameInput.focus();
+        nameInput.focus()
       }
     }
-  }, [isEditingName]);
+  }, [isEditingName])
 
   const onSubmit = (data: UpdateUserProfileDTO) => {
-    if (handleUpdateProfile) {
-      handleUpdateProfile(data);
+    const emailRegex = /^\S+@\S+\.\S+$/
+
+    if (!data.email) {
+      form.setError("email", { message: "Email wajib diisi!" })
+      return
+    } else if (!emailRegex.test(data.email)) {
+      form.setError("email", {
+        message: "Format email tidak valid!",
+      })
+      return
     }
-    setIsEditing(false);
-    setIsEditingName(false);
-  };
+
+    if (!data.phone_number) {
+      form.setError("phone_number", {
+        message: "Nomor telepon wajib diisi!",
+      })
+      return
+    }
+    handleUpdateProfile(data)
+
+    setIsEditing(false)
+    setIsEditingName(false)
+  }
 
   const handleCancel = () => {
     form.reset({
@@ -89,43 +97,35 @@ export default function ProfilePage() {
       started_at: user?.started_at,
       ended_at: user?.ended_at,
       is_active: user?.is_active || false,
-    });
-    setIsEditing(false);
-    setIsEditingName(false);
-  };
+    })
+    setIsEditing(false)
+    setIsEditingName(false)
+  }
 
   const toggleNameEdit = () => {
-    setIsEditingName(!isEditingName);
+    setIsEditingName(!isEditingName)
     if (!isEditing) {
-      setIsEditing(true);
+      setIsEditing(true)
     }
-  };
+  }
 
   const getUserInitials = (name: string) => {
-    if (!name) return "";
+    if (!name) return ""
 
-    const nameParts = name.split(" ");
+    const nameParts = name.split(" ")
     return nameParts.length > 1
       ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
-      : `${nameParts[0][0]}`.toUpperCase();
-  };
+      : `${nameParts[0][0]}`.toUpperCase()
+  }
 
   const formatDateToIndonesian = (date: Date | string | undefined) => {
-    if (!date) return "";
+    if (!date) return ""
 
     // Convert to Date object if it's a string
-    const dateObj = typeof date === "string" ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date
 
     // Array of day names in Indonesian
-    const days = [
-      "Minggu",
-      "Senin",
-      "Selasa",
-      "Rabu",
-      "Kamis",
-      "Jumat",
-      "Sabtu",
-    ];
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
 
     // Array of month names in Indonesian
     const months = [
@@ -141,17 +141,17 @@ export default function ProfilePage() {
       "Oktober",
       "November",
       "Desember",
-    ];
+    ]
 
-    const day = days[dateObj.getDay()];
-    const dateNum = dateObj.getDate();
-    const month = months[dateObj.getMonth()];
-    const year = dateObj.getFullYear();
+    const day = days[dateObj.getDay()]
+    const dateNum = dateObj.getDate()
+    const month = months[dateObj.getMonth()]
+    const year = dateObj.getFullYear()
 
     return `${day}, ${dateNum} ${month} ${year}` === "Kamis, 1 Januari 1970"
       ? "Anda Masih Aktif"
-      : `${day}, ${dateNum} ${month} ${year}`;
-  };
+      : `${day}, ${dateNum} ${month} ${year}`
+  }
   return (
     <div className="container mx-auto py-10 max-w-3xl">
       {user && (
@@ -172,8 +172,10 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <Badge className={`mt-5 ${currentValues.is_active===true?"bg-green-100 text-green-800 hover:bg-green-200":"bg-red-100 text-red-800 hover:bg-red-200"} px-4 py-1 rounded-full`}>
-                  {currentValues.is_active===true? "ACTIVE":"INACTIVE"}
+                <Badge
+                  className={`mt-5 ${currentValues.is_active === true ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-red-100 text-red-800 hover:bg-red-200"} px-4 py-1 rounded-full`}
+                >
+                  {currentValues.is_active === true ? "ACTIVE" : "INACTIVE"}
                 </Badge>
               </div>
 
@@ -187,22 +189,20 @@ export default function ProfilePage() {
                           required: true,
                           onBlur: (e) => {
                             if (!e.target.value.trim()) {
-                              setValue("name", "Nama Saya");
+                              setValue("name", user?.name)
                             }
-                            setIsEditingName(false);
+                            setIsEditingName(false)
                           },
                         })}
                         className="text-2xl font-bold h-auto py-1 px-2"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            setIsEditingName(false);
+                            setIsEditingName(false)
                           }
                         }}
                       />
                     ) : (
-                      <h1 className="text-4xl font-bold">
-                        {currentValues.name}
-                      </h1>
+                      <h1 className="text-4xl font-bold">{currentValues.name}</h1>
                     )}
                     {isEditing && (
                       <button
@@ -214,10 +214,7 @@ export default function ProfilePage() {
                       </button>
                     )}
                   </div>
-                  <Badge
-                    variant={"default"}
-                    className="mt-2 px-4 py-1 rounded-full"
-                  >
+                  <Badge variant={"default"} className="mt-2 px-4 py-1 rounded-full">
                     {currentValues.role}
                   </Badge>
                 </div>
@@ -237,6 +234,7 @@ export default function ProfilePage() {
                             className={!isEditing ? "bg-gray-50" : ""}
                           />
                         </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
                       </FormItem>
                     )}
                   />
@@ -248,12 +246,9 @@ export default function ProfilePage() {
                       <FormItem className="space-y-2">
                         <FormLabel>Nomor Telepon</FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!isEditing}
-                            className={!isEditing ? "bg-gray-50" : ""}
-                          />
+                          <Input {...field} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                         </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
                       </FormItem>
                     )}
                   />
@@ -261,33 +256,21 @@ export default function ProfilePage() {
                   <FormItem className="space-y-2">
                     <FormLabel>Mulai Kerja</FormLabel>
                     <FormControl>
-                      <Input
-                        value={formatDateToIndonesian(user.started_at)}
-                        disabled={true}
-                        className="bg-gray-50"
-                      />
+                      <Input value={formatDateToIndonesian(user.started_at)} disabled={true} className="bg-gray-50" />
                     </FormControl>
                   </FormItem>
 
                   <FormItem className="space-y-2">
                     <FormLabel>Akhir Kerja</FormLabel>
                     <FormControl>
-                      <Input
-                        value={formatDateToIndonesian(user.ended_at)}
-                        disabled={true}
-                        className="bg-gray-50"
-                      />
+                      <Input value={formatDateToIndonesian(user.ended_at)} disabled={true} className="bg-gray-50" />
                     </FormControl>
                   </FormItem>
 
                   <div className="flex justify-end gap-2 pt-4">
                     {isEditing ? (
                       <>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCancel}
-                        >
+                        <Button type="button" variant="outline" onClick={handleCancel}>
                           Cancel
                         </Button>
                         <Button type="submit" variant="default">
@@ -295,11 +278,7 @@ export default function ProfilePage() {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        type="button"
-                        variant="default"
-                        onClick={() => setIsEditing(true)}
-                      >
+                      <Button type="button" variant="default" onClick={() => setIsEditing(true)}>
                         Edit
                       </Button>
                     )}
@@ -311,5 +290,5 @@ export default function ProfilePage() {
         </Form>
       )}
     </div>
-  );
+  )
 }

@@ -7,7 +7,10 @@ import PageHeader from "@/components/common/page-header";
 import useContact from "@/hooks/use-contact";
 import { AddContactModal } from "@/components/contact/form/add-contact-modal";
 import { ContactTable } from "../../../components/contact/data-table";
-import { contactColumns, ContactWithRole } from "../../../components/contact/columns";
+import {
+  contactColumns,
+  ContactWithRole,
+} from "../../../components/contact/columns";
 
 export default function ViewAllContacts() {
   const {
@@ -15,7 +18,7 @@ export default function ViewAllContacts() {
     loading,
     fetchAllContacts,
     handleAddContact,
-    handleDeleteContact
+    handleDeleteContact,
   } = useContact();
 
   useEffect(() => {
@@ -32,11 +35,12 @@ export default function ViewAllContacts() {
     }
   };
 
-  // Ensure the data has the correct type
-  const typedContacts: ContactWithRole[] = contacts.map(contact => ({
+  const typedContacts: ContactWithRole[] = contacts.map((contact) => ({
     ...contact,
+    created_by: contact.created_by ?? "", // fallback jika null
     role: contact.role ?? "none",
   }));
+  
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">

@@ -31,8 +31,10 @@ export default function useAuthentication() {
             }
             localStorage.setItem("authUser", JSON.stringify(userAccess))
             toast.success("Login berhasil");
+            return true;
         } catch {
             toast.success("Terjadi kesalahan saat melakukan login");
+            return false;
         }
     }, [])
 

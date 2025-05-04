@@ -56,7 +56,10 @@ export function GenerateTokenModal({ open, onOpenChange, onGenerateToken }: Gene
 
   const onSubmit = async (values: FormValues) => {
     const durationInSeconds = values.duration * (timeUnitToSecond[values.timeUnit] || 1)
-
+    if (values.role === "") {
+      form.setError("role", {message: "Role pengguna wajib dipilih!"});
+      return;
+    }
     const data: GenerateTokenDTO = {
       role: RoleEnum.parse(values.role),
       duration: durationInSeconds,
