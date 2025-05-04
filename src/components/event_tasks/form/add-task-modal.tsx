@@ -56,16 +56,9 @@ import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 interface AddTaskModalProps {
   onAddTask: (dto: AddTaskDTO) => void;
   users: UserWithStatus[];
-  eventStartDate: Date;
-  eventEndDate: Date;
 }
 
-export function AddTaskModal({
-  onAddTask,
-  users,
-  eventStartDate,
-  eventEndDate,
-}: AddTaskModalProps) {
+export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
@@ -189,10 +182,6 @@ export function AddTaskModal({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        disabled={(date) =>
-                          date < new Date(eventStartDate) ||
-                          date > new Date(eventEndDate)
-                        }
                       />
                     </PopoverContent>
                   </Popover>
