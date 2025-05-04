@@ -25,7 +25,7 @@ import { LoginDTO } from "@/models/dto"
 import { useRouter, useSearchParams } from "next/navigation"
  
 interface LoginFormProps {
-    onLogin: (dto: LoginDTO) => Promise<void>;
+    onLogin: (dto: LoginDTO) => Promise<boolean>;
 }
 
 export function LoginForm({
@@ -43,13 +43,16 @@ export function LoginForm({
 
     const onSubmit = async (data: LoginDTO) => {
         try {
-            await onLogin(data);
+            const isSuccess = await onLogin(data);
+            if (isSuccess) {
+                const replaceUrl = params.get('from') ?? '/'; 
+                router.replace(replaceUrl);
+            }
+            form.setError("root", {message: "Email atau password yang anda masukkan salah!"})
             form.reset();
         } catch {
             console.log("LOGIN GAGAL")
         } finally{
-            const replaceUrl = params.get('from') ?? '/'; 
-            router.replace(replaceUrl);
             console.log("LOGIN BERHASIL")
         }
     }

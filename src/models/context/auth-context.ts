@@ -7,7 +7,7 @@ interface AuthenticationContextType {
     user: UserSchema | null;
     loading: boolean;
 
-    handleLogin: (data: LoginDTO) => Promise<void>;
+    handleLogin: (data: LoginDTO) => Promise<boolean>;
     handleRegister: (data: RegisterDTO) => Promise<void>;
     handleLogout: () => Promise<void>;
     handleAck: () => Promise<void>;
