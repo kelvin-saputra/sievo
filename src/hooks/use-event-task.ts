@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { TaskSchema } from "@/models/schemas";
 import { AddTaskDTO, UpdateTaskDTO } from "@/models/dto";
+import { getCurrentUserName } from "@/utils/authUtils"; // ⬅️ Import user name util
 
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
 
@@ -47,12 +50,17 @@ export default function useEventTask(eventId: string) {
     data: UpdateTaskDTO
   ) => {
     try {
+      const userName = getCurrentUserName();
+      if (!userName) {
+        toast.error("User belum login, tidak bisa memperbarui task.");
+        return;
+      }
+
       const updatedData = TaskSchema.partial().parse({
         ...data,
-        taskId: taskId,
-        created_by: created_by,
-        // TODO: Replace with logged-in user ID
-        updated_by: "ID Anonymous",
+        taskId,
+        created_by,
+        updated_by: userName,
       });
 
       const { data: updatedTask } = await axios.put(
@@ -86,11 +94,16 @@ export default function useEventTask(eventId: string) {
 
   const handleAddTask = async (newTask: AddTaskDTO) => {
     try {
+      const userName = getCurrentUserName();
+      if (!userName) {
+        toast.error("User belum login, tidak bisa menambahkan task.");
+        return;
+      }
+
       const taskData = TaskSchema.partial().parse({
         ...newTask,
-        // TODO: Replace with logged-in user ID
-        created_by: "ID Anonymous",
-        updated_by: "ID Anonymous",
+        created_by: userName,
+        updated_by: userName,
       });
 
       const { data: createdTask } = await axios.post(

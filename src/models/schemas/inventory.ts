@@ -11,7 +11,15 @@ export const InventorySchema = z.object({
         .min(3, { message: "Nama inventory minimal 3 karakter" }),
     item_qty: z
         .number()
-        .min(1, { message: "Jumlah item minimal 1" }),
+        .min(0, { message: "Jumlah quantity minimal 0" }),
+    item_qty_damaged: z
+        .number()
+        .min(0, { message: "Jumlah rusak minimal 0" })
+        .optional(),
+    item_qty_reserved: z
+        .number()
+        .min(0, { message: "Jumlah reserved minimal 0" })
+        .optional(),
     item_price: z
         .number()
         .min(0, { message: "Harga item minimal 0" }),
@@ -26,19 +34,19 @@ export const InventorySchema = z.object({
         .string()
         .optional(),
     created_by: z
-        .string({required_error: "ID user wajib diisi"})
-        .uuid({ message: "ID user tidak valid" }),
+        .string({ required_error: "ID user wajib diisi" }),
     updated_by: z
         .string()
-        .uuid({ message: "ID user tidak valid" })
         .optional(),
     created_at: z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })
         .default(() => new Date()),
     updated_at: z.coerce
         .date({ invalid_type_error: "Tanggal diupdate tidak valid" })
+        .default(() => new Date()),
+    is_deleted: z
+        .boolean()
+        .default(false),
 });
-
-
 
 export type InventorySchema = z.infer<typeof InventorySchema>;

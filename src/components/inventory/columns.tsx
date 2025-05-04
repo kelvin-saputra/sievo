@@ -1,44 +1,63 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { InventorySchema } from "@/models/schemas/inventory";
 import { useRouter } from "next/navigation"; 
-import { useState } from "react";
 import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
+import useInventory from "@/hooks/use-inventory";
+import { useState, useEffect } from "react";
+import { UserSchema } from "@/models/schemas";
+
 
 const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
   const router = useRouter();
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
+  const {handleDeleteInventory, handleUpdateInventory } = useInventory(); 
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser")!);
+    try {
+      const userParsed = UserSchema.partial().parse(user);
+      setUser(userParsed);
+    } catch {}
+  }, []);
+
 
   return (
     <div className="flex space-x-2">
       <Button
         variant="outline"
+        size="icon"
+        className="p-1 h-8 w-8"
         onClick={() => router.push(`/inventory/${inventory.inventory_id}`)}
       >
-        Detail
+        <SquareArrowOutUpRight className="h-4 w-4" />
       </Button>
-      <EditInventoryModal
-        inventory={{
-            ...inventory,
-            description: inventory.description ?? undefined,
-            updated_by: inventory.updated_by ?? undefined
+      {["ADMIN","EXECUTIVE","INTERNAL"].includes((user?.role)||"") && (
+        <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
+      )}
+
+      {["ADMIN","EXECUTIVE"].includes((user?.role)||"") && (
+        <DeleteInventoryModal 
+          inventoryId={inventory.inventory_id} 
+          onDeleteInventory={async (itemId) => {
+            try {
+              await handleDeleteInventory(itemId);
+              console.log(itemId)
+              router.push("/inventory"); 
+            } catch (error) {
+              console.error(error);
+            }
           }}
-        onUpdateInventory={(data) => console.log("Updated Data:", data)}
-        open={openEdit}
-        setOpen={setOpenEdit}
-      />
-      <DeleteInventoryModal
-        inventoryId={inventory.inventory_id}
-        onDeleteInventory={(id) => console.log("Deleted Data:", id)}
-        open={openDelete}
-        setOpen={setOpenDelete}
-      />
+          open={open} 
+          setOpen={setOpen} 
+        />
+      )}
     </div>
   );
 };
@@ -95,7 +114,7 @@ export const inventoryColumns: ColumnDef<InventorySchema, unknown>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Quantity <ArrowUpDown className="ml-2 h-4 w-4" />
+       Total Quantity <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
   },
@@ -163,6 +182,6 @@ export const inventoryColumns: ColumnDef<InventorySchema, unknown>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <InventoryActions inventory={row.original} />, // ✅ Use the separate component here
+    cell: ({ row }) => <InventoryActions inventory={row.original} />, 
   },
 ];

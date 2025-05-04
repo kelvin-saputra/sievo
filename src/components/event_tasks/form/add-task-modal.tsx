@@ -43,12 +43,22 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { TaskStatusEnum } from "@/models/enums";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserWithStatus } from "@/hooks/use-hr";
+import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
 interface AddTaskModalProps {
   onAddTask: (dto: AddTaskDTO) => void;
+  users: UserWithStatus[];
 }
 
-export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
+export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
@@ -125,12 +135,18 @@ export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assigned To</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter assignee ID (optional)"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -191,7 +207,18 @@ export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
                             aria-expanded={openStatus}
                             className="w-full justify-between"
                           >
-                            {field.value ? field.value : "Select task status"}
+                            {field.value ? (
+                              <span
+                                className={cn(
+                                  "rounded px-2 py-1 text-xs font-semibold",
+                                  taskStatusColorMap[field.value]
+                                )}
+                              >
+                                {field.value}
+                              </span>
+                            ) : (
+                              "Select task status"
+                            )}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -222,7 +249,14 @@ export function AddTaskModal({ onAddTask }: AddTaskModalProps) {
                                           : "opacity-0"
                                       )}
                                     />
-                                    {status}
+                                    <span
+                                      className={cn(
+                                        "rounded px-2 py-1 text-xs font-semibold",
+                                        taskStatusColorMap[status]
+                                      )}
+                                    >
+                                      {status}
+                                    </span>
                                   </CommandItem>
                                 ))}
                               </CommandGroup>

@@ -9,7 +9,9 @@ import { AddTaskModal } from "@/components/event_tasks/form/add-task-modal";
 
 export default function EventPrepPage() {
   const {
+    event,
     tasks,
+    users,
     loading: tasksLoading,
     handleDeleteTask,
     handleAddTask,
@@ -23,14 +25,21 @@ export default function EventPrepPage() {
   return (
     <div>
       <div className="mb-4">
-        <AddTaskModal onAddTask={handleAddTask} />
+        <AddTaskModal
+          onAddTask={handleAddTask}
+          users={Array.isArray(users) ? users : []}
+        />
       </div>
       <DataTable
         columns={getPrepColumns({
           onDeleteTask: handleDeleteTask,
           onUpdateTask: handleUpdateTask,
+          users,
+          eventStartDate: event.start_date,
+          eventEndDate: event.end_date,
         })}
         data={tasks}
+        users={Array.isArray(users) ? users : []}
       />
     </div>
   );

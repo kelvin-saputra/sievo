@@ -6,7 +6,6 @@ import { responseFormat } from "@/utils/api";
  */
 export async function GET() {
   try {
-    console.log("Api GET Contact");
     const contacts = await prisma.contact.findMany({
       where: { is_deleted: false },
       include: {
@@ -15,7 +14,6 @@ export async function GET() {
       }
     });
     
-    console.log("Api GET Contact 2");
     if (contacts.length === 0) {
       return responseFormat(404, "[NOT FOUND] No contact found", null);
     }
@@ -84,7 +82,6 @@ export async function POST(req: Request) {
       role: role || "none"
     };
     
-    console.log(contactWithRole);
     if (!contactWithRole) {
       return responseFormat(404, "[NOT FOUND] Item is not created", null);
     }

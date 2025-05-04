@@ -21,17 +21,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
+import useHr from "@/hooks/use-hr";
 
 interface EventCardProps {
   event: EventSchema;
-  onStatusUpdate: (eventId: string, status: EventStatusEnum) => void;
-  onDeleteEvent: (eventId: string) => void;
+  onStatusUpdate?: (eventId: string, status: EventStatusEnum) => void;
+  onDeleteEvent?: (eventId: string) => void;
+  userRole: string | null;
 }
 
 const EventCard = ({
   event,
   onStatusUpdate,
   onDeleteEvent,
+  userRole,
 }: EventCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [eventData, setEventData] = useState(event);
@@ -44,15 +48,23 @@ const EventCard = ({
     fetchAllTasks,
   } = useEventTask(event.event_id);
 
+  const { users, fetchAllUsers, loading: usersLoading } = useHr();
+  const [usersFetched, setUsersFetched] = useState(false);
+
   useEffect(() => {
     if (expanded) {
+      if (!usersFetched) {
+        fetchAllUsers();
+        setUsersFetched(true);
+      }
       fetchAllTasks();
     }
-  }, [expanded, fetchAllTasks]);
+  }, [expanded, fetchAllUsers, fetchAllTasks, usersFetched]);
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
-    onStatusUpdate(eventData.event_id, status);
+    if (userRole === "FREELANCE") return;
+    onStatusUpdate?.(eventData.event_id, status);
     setEventData((prev) => ({ ...prev, status }));
   };
 
@@ -72,7 +84,7 @@ const EventCard = ({
         className={`flex justify-between items-center ${
           eventData.status !== "DONE" ? "bg-green-200" : "bg-gray-200"
         } p-4 rounded-md cursor-pointer`}
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => setExpanded((prev) => !prev)}
       >
         <div className="flex items-center gap-2">
           {expanded ? (
@@ -94,25 +106,50 @@ const EventCard = ({
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" onClick={(e) => e.stopPropagation()}>
-                {eventData.status} <MoreHorizontal className="ml-2 h-4 w-4" />
+              <Button
+                variant="outline"
+                onClick={(e) => e.stopPropagation()}
+                disabled={userRole === "FREELANCE"}
+              >
+                <span
+                  className={`rounded px-2 py-1 text-xs font-semibold ${
+                    eventStatusColorMap[eventData.status] ||
+                    "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {eventData.status}
+                </span>
+                <MoreHorizontal className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {EventStatusEnum.options.map((status) => (
-                <DropdownMenuItem
-                  key={status}
-                  onClick={(e) => handleStatusChange(e, status)}
-                >
-                  {status}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
+            {userRole !== "FREELANCE" && (
+              <DropdownMenuContent align="end">
+                {EventStatusEnum.options.map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={(e) => handleStatusChange(e, status)}
+                  >
+                    <span
+                      className={`rounded px-2 py-1 text-xs font-semibold ${
+                        eventStatusColorMap[status] ||
+                        "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
           <Button variant="secondary" onClick={handleViewDetails}>
             View Details
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={userRole === "FREELANCE"}
+          >
             Delete
           </Button>
         </div>
@@ -120,10 +157,14 @@ const EventCard = ({
 
       {expanded && (
         <div className="p-4">
-          {tasksLoading ? (
+          {tasksLoading || usersLoading ? (
             <div>Loading tasks...</div>
           ) : (
-            <DataTable columns={taskColumns} data={tasks} />
+            <DataTable
+              columns={taskColumns(users)}
+              data={tasks}
+              users={users}
+            />
           )}
         </div>
       )}
@@ -142,7 +183,9 @@ const EventCard = ({
               variant="destructive"
               onClick={() => {
                 setConfirmOpen(false);
-                onDeleteEvent(eventData.event_id);
+                if (userRole !== "FREELANCE") {
+                  onDeleteEvent?.(eventData.event_id);
+                }
               }}
             >
               Hapus

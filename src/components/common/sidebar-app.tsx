@@ -12,9 +12,12 @@ import {
 import { NavMain } from "@/components/common/nav-main"
 import { NavFooter } from "@/components/common/nav-footer"
 import { NavHeader } from "@/components/common/nav-header"
-import { userData } from "@/static/user"
 
-export function SidebarApp({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface SidebarAppProps extends React.ComponentProps<typeof Sidebar> {
+  onLogout: () => Promise<void>;
+}
+
+export function SidebarApp({ onLogout, ...props }: SidebarAppProps) {
   return (
     <>
         <Sidebar collapsible="icon" {...props} >
@@ -22,10 +25,10 @@ export function SidebarApp({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavHeader />
         </SidebarHeader>
         <SidebarContent>
-          <NavMain user={userData} />
+          <NavMain />
         </SidebarContent>
         <SidebarFooter>
-          <NavFooter user={userData} />
+          <NavFooter onLogout={onLogout} />
         </SidebarFooter>
         </Sidebar>
     </>
