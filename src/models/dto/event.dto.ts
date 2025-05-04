@@ -11,7 +11,16 @@ export const AddEventDTO = EventSchema.pick({
   status: true,
   manager_id: true,
   client_id: true,
-});
+}).refine(
+  (data) =>
+    !data.start_date ||
+    !data.end_date ||
+    new Date(data.start_date) <= new Date(data.end_date),
+  {
+    message: "Start Date must be before or equal to End Date",
+    path: ["end_date"],
+  }
+);
 
 export const UpdateEventDTO = EventSchema.pick({
   event_name: true,

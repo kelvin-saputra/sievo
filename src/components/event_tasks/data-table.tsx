@@ -19,15 +19,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventTaskDetailModal } from "@/components/event_tasks/event-task-detail-dialog";
+import { UserWithStatus } from "@/hooks/use-hr";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  users: UserWithStatus[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  users,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [selectedTask, setSelectedTask] = React.useState<TData | null>(null);
@@ -122,6 +125,7 @@ export function DataTable<TData, TValue>({
           isOpen={dialogOpen}
           onClose={() => setDialogOpen(false)}
           eventData={selectedTask as any}
+          users={users}
         />
       )}
     </div>
