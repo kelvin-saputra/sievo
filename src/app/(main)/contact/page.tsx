@@ -37,8 +37,10 @@ export default function ViewAllContacts() {
 
   const typedContacts: ContactWithRole[] = contacts.map((contact) => ({
     ...contact,
+    created_by: contact.created_by ?? "", // fallback jika null
     role: contact.role ?? "none",
   }));
+  
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
