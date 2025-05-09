@@ -40,8 +40,6 @@ const ContactDetail = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [user, setUser] = useState<Partial<UserSchema> | null>(null);
-  const [createdByUser, setCreatedByUser] = useState<string>("Unknown");
-  const [updatedByUser, setUpdatedByUser] = useState<string>("Unknown");
   const [userRole, setUserRole] = useState<string>("");
   
   const [formData, setFormData] = useState({
@@ -52,10 +50,7 @@ const ContactDetail = () => {
     role: "none" as "none" | "client" | "vendor"
   });
 
-  // Check if user has permission to edit contacts
-  const canEdit = ["ADMIN", "EMPLOYEE", "EXECUTIVE"].includes(userRole);
-  
-  // Check if user has permission to delete contacts
+  const canEdit = ["ADMIN", "INTERNAL", "EXECUTIVE"].includes(userRole);
   const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
 
   useEffect(() => {
@@ -71,8 +66,6 @@ const ContactDetail = () => {
         const parsedUser = JSON.parse(userData);
         const userParsed = UserSchema.partial().parse(parsedUser);
         setUser(userParsed);
-        
-        // Set user role for permission checks
         setUserRole((parsedUser.role || "").toUpperCase());
       }
     } catch (error) {
@@ -89,43 +82,12 @@ const ContactDetail = () => {
         description: contact.description || "",
         role: contact.role || "none"
       });
-      
-      // Attempt to get user details for created_by and updated_by
-      try {
-        // Get users from localStorage if available
-        const usersData = localStorage.getItem("users");
-        if (usersData) {
-          const users = JSON.parse(usersData);
-          
-          // Find created_by user
-          if (contact.created_by) {
-            const createdByUserData = users.find((u: any) => u.id === contact.created_by);
-            setCreatedByUser(createdByUserData ? createdByUserData.name : contact.created_by);
-          }
-          
-          // Find updated_by user
-          if (contact.updated_by) {
-            const updatedByUserData = users.find((u: any) => u.id === contact.updated_by);
-            setUpdatedByUser(updatedByUserData ? updatedByUserData.name : contact.updated_by);
-          }
-        } else {
-          // Fallback to showing IDs if user mapping is not available
-          setCreatedByUser(contact.created_by || "Unknown");
-          setUpdatedByUser(contact.updated_by || "Unknown");
-        }
-      } catch (error) {
-        console.error("Error mapping user IDs to names:", error);
-        setCreatedByUser(contact.created_by || "Unknown");
-        setUpdatedByUser(contact.updated_by || "Unknown");
-      }
     }
   }, [contact]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error for this field when user types
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -133,7 +95,6 @@ const ContactDetail = () => {
 
   const validateForm = () => {
     try {
-      // Extract only the fields that can be edited from formData
       const { name, email, phone_number, description } = formData;
       contactFormSchema.parse({ name, email, phone_number, description });
       return true;
@@ -176,7 +137,6 @@ const ContactDetail = () => {
     }
 
     try {
-      // Use the current user ID from localStorage if available
       const userId = user?.id || "550e8400-e29b-41d4-a716-446655440000";
       
       await handleUpdateContact(
@@ -187,13 +147,11 @@ const ContactDetail = () => {
           email: formData.email,
           phone_number: formData.phone_number,
           description: formData.description,
-          // Role is not included in the update
           updated_at: new Date()
         }
       );
       
       setIsEditing(false);
-      // Re-fetch the contact to get the latest data
       fetchContactById(contact_id);
     } catch (error) {
       console.error("Error updating contact:", error);
@@ -230,7 +188,6 @@ const ContactDetail = () => {
   if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
   if (!contact) return <div className="text-center py-12">Contact not found.</div>;
 
-  // Get role display text and badge styling
   const getRoleBadgeStyle = () => {
     switch (formData.role) {
       case "client":
@@ -244,7 +201,6 @@ const ContactDetail = () => {
 
   const roleBadge = getRoleBadgeStyle();
 
-  // Format date for display
   const formatDate = (dateString: string | Date) => {
     try {
       return new Date(dateString).toLocaleString();
@@ -253,11 +209,17 @@ const ContactDetail = () => {
     }
   };
 
+  const getCreatedByEmail = () => {
+    return contact.created_by_email || contact.created_by || "Unknown";
+  };
+
+  const getUpdatedByEmail = () => {
+    return contact.updated_by_email || contact.updated_by || "Unknown";
+  };
+
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
-      <PageHeader
-        title="Contact Detail"
-      />
+      <PageHeader title="Contact Detail" />
       <div className="grid md:grid-cols-[300px_1fr] gap-8">
         <div className="flex flex-col items-center">
           <div className="relative w-64 h-64 rounded-full border-4 border-muted bg-background mb-6">
@@ -273,46 +235,24 @@ const ContactDetail = () => {
 
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Name</label>
-              <Input 
-                name="name"
-                value={formData.name} 
-                onChange={handleChange}
-                disabled={!isEditing} 
-                className="w-full" 
-              />
-              {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Email</label>
-              <Input 
-                name="email"
-                value={formData.email} 
-                onChange={handleChange}
-                disabled={!isEditing} 
-                className="w-full" 
-              />
-              {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Phone Number</label>
-              <Input 
-                name="phone_number"
-                value={formData.phone_number} 
-                onChange={handleChange}
-                disabled={!isEditing} 
-                className="w-full" 
-              />
-              {formErrors.phone_number && <p className="text-red-500 text-xs mt-1">{formErrors.phone_number}</p>}
-            </div>
+            {["name", "email", "phone_number"].map((field) => (
+              <div className="space-y-2" key={field}>
+                <label className="block text-sm font-medium">
+                  {field === "name" ? "Name" : field === "email" ? "Email" : "Phone Number"}
+                </label>
+                <Input 
+                  name={field}
+                  value={(formData as any)[field]} 
+                  onChange={handleChange}
+                  disabled={!isEditing} 
+                  className="w-full" 
+                />
+                {formErrors[field] && <p className="text-red-500 text-xs mt-1">{formErrors[field]}</p>}
+              </div>
+            ))}
             <div className="space-y-2">
               <label className="block text-sm font-medium">Role</label>
-              <Input 
-                value={roleBadge.text} 
-                disabled 
-                className="w-full" 
-              />
+              <Input value={roleBadge.text} disabled className="w-full" />
               {isEditing && (
                 <p className="text-xs text-muted-foreground italic mt-1">
                   Role tidak dapat diubah setelah kontak dibuat
@@ -334,16 +274,12 @@ const ContactDetail = () => {
           <div className="flex justify-start">
             {isEditing ? (
               <>
-                <Button 
-                  onClick={handleSave} 
-                  className="bg-indigo-900 hover:bg-indigo-800"
-                >
+                <Button onClick={handleSave} className="bg-indigo-900 hover:bg-indigo-800">
                   Save
                 </Button>
                 <Button 
                   onClick={() => {
                     setIsEditing(false);
-                    // Reset form data to original contact data
                     if (contact) {
                       setFormData({
                         name: contact.name,
@@ -387,14 +323,14 @@ const ContactDetail = () => {
             <div className="relative border-l-2 border-muted pl-6 pb-6 space-y-8">
               <div className="relative">
                 <div className="space-y-1">
-                  <p className="font-medium">Created by {createdByUser}</p>
+                  <p className="font-medium">Created by {getCreatedByEmail()}</p>
                   <p className="text-sm text-muted-foreground">{formatDate(contact.created_at)}</p>
                 </div>
               </div>
               {contact.updated_by && (
                 <div className="relative">
                   <div className="space-y-1">
-                    <p className="font-medium">Last Updated by {updatedByUser}</p>
+                    <p className="font-medium">Last Updated by {getUpdatedByEmail()}</p>
                     <p className="text-sm text-muted-foreground">{formatDate(contact.updated_at)}</p>
                   </div>
                 </div>
@@ -404,34 +340,31 @@ const ContactDetail = () => {
         </Tabs>
       </div>
 
-      <div className="flex justify-end mt-8">
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteClick}
-              className={!canDelete ? 'opacity-50 cursor-not-allowed' : ''}
-              disabled={!canDelete}
-            >
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
-              <AlertDialogDescription>
-                Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Batal</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                Hapus
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      {canDelete && (
+        <div className="flex justify-end mt-8">
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" onClick={handleDeleteClick}>
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Hapus
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </div>
   );
 };
