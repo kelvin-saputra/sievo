@@ -34,6 +34,21 @@ export default function useHr() {
     setLoading(false);
   }, []);
 
+  const fetchUserById = useCallback(async (userId: string): Promise<UserWithStatus | null> => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API_URL}/${userId}`);
+      return data as UserWithStatus;
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+      toast.error("Failed to fetch user.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
   const fetchAllEvents = useCallback(async () => {
     setLoading(true);
     try {
@@ -57,7 +72,7 @@ export default function useHr() {
           event_ids,
         });
 
-        
+
         if (response.status === 200 && response.data.success === false) {
           setUserToReassign(user_id);
           setConfirmationModalOpen(true);
@@ -68,11 +83,11 @@ export default function useHr() {
         if (response.status === 201) {
           window.location.reload();
           if (response.data.success === false) {
-              setUserToReassign(user_id);
-              setConfirmationModalOpen(true);
-              setAssigning(false);
-              return;
-            }
+            setUserToReassign(user_id);
+            setConfirmationModalOpen(true);
+            setAssigning(false);
+            return;
+          }
           toast.success("User successfully assigned to events");
         } else {
           toast.error("Failed to assign user to events.");
@@ -110,13 +125,14 @@ export default function useHr() {
       toast.error("Error confirming assignment.");
     }
   };
-  
+
   const handleCancelAssignment = () => {
     setConfirmationModalOpen(false);
   };
 
   return {
     fetchAllUsers,
+    fetchUserById,
     fetchAllEvents,
     assignUserToEvents,
     users,

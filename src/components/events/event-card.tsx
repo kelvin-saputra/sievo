@@ -63,7 +63,6 @@ const EventCard = ({
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
-    if (userRole === "FREELANCE") return;
     onStatusUpdate?.(eventData.event_id, status);
     setEventData((prev) => ({ ...prev, status }));
   };
@@ -99,7 +98,7 @@ const EventCard = ({
             <p className="text-gray-600 text-sm">
               {eventData.location} (
               {new Date(eventData.start_date).toLocaleDateString()} -{" "}
-              {new Date(eventData.end_date).toLocaleDateString()})
+              {new Date(eventData.end_date).toLocaleDateString()} )
             </p>
           </div>
         </div>
@@ -122,6 +121,7 @@ const EventCard = ({
                 <MoreHorizontal className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
+
             {userRole !== "FREELANCE" && (
               <DropdownMenuContent align="end">
                 {EventStatusEnum.options.map((status) => (
@@ -142,16 +142,16 @@ const EventCard = ({
               </DropdownMenuContent>
             )}
           </DropdownMenu>
+
           <Button variant="secondary" onClick={handleViewDetails}>
             View Details
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={userRole === "FREELANCE"}
-          >
-            Delete
-          </Button>
+
+          {userRole !== "FREELANCE" && (
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 
@@ -183,9 +183,7 @@ const EventCard = ({
               variant="destructive"
               onClick={() => {
                 setConfirmOpen(false);
-                if (userRole !== "FREELANCE") {
-                  onDeleteEvent?.(eventData.event_id);
-                }
+                onDeleteEvent?.(eventData.event_id);
               }}
             >
               Hapus
