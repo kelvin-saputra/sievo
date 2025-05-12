@@ -50,15 +50,19 @@ import {
   SelectContent,
   SelectValue,
 } from "@/components/ui/select";
-import { UserWithStatus } from "@/hooks/use-hr";
 import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
 interface AddTaskModalProps {
   onAddTask: (dto: AddTaskDTO) => void;
-  users: UserWithStatus[];
+  users: any[];
+  currentEventId: string;
 }
 
-export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
+export function AddTaskModal({
+  onAddTask,
+  users,
+  currentEventId,
+}: AddTaskModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
@@ -140,11 +144,17 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
                       <SelectValue placeholder="Select assignee" />
                     </SelectTrigger>
                     <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name || user.email}
-                        </SelectItem>
-                      ))}
+                      {(users as any[])
+                        .filter((user) =>
+                          user.userEvents?.some(
+                            (event: any) => event.eventId === currentEventId
+                          )
+                        )
+                        .map((user: any) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name || user.email}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
