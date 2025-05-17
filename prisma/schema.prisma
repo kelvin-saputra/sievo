@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
@@ -84,6 +78,7 @@ model Contact {
   name         String
   email        String
   phone_number String
+  address      String
   description  String?
   created_by   String
   updated_by   String?
@@ -97,8 +92,9 @@ model Contact {
 model Vendor {
   vendor_id         String          @id @default(uuid())
   contact_id        String          @unique
-  rating            Float?          @default(0) //TODO: Derived from Vendor Service
-  bankAccountDetail String //TODO: MultiValued 
+  rating            Float?          @default(0)
+  bankAccountDetail String?
+  type              VendorType      @default(OTHERS)
   contact           Contact         @relation(fields: [contact_id], references: [contact_id])
   vendor_service    VendorService[]
   is_deleted        Boolean         @default(false)
@@ -185,7 +181,8 @@ model BudgetItemCategory {
   category_name      String
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[]
+  budget_id          String
+  budget             Budget             @relation(fields: [budget_id], references: [budget_id])
   is_deleted         Boolean            @default(false)
 }
 
@@ -246,6 +243,8 @@ model UserEvent {
   event     Event    @relation(fields: [eventId], references: [event_id])
   eventId   String
   assignedAt DateTime @default(now())
+  updated_by String
+  is_deleted Boolean
 }
 
 enum ROLE {
@@ -310,5 +309,22 @@ enum VendorServiceCategory {
 
 enum ClientType {
   INDIVIDUAL
-  ORGANIZATION
+  CORPORATE
+  GOVERNMENT
+  EDUCATIONAL_INSTITUTION
+  COMMUNITIES_AND_ORGANIZATION
+  COMMERCIAL_BRAND_AND_AGENCY
+}
+
+enum VendorType {
+  DOCUMENTATION
+  SOUND_SYSTEM_AND_LIGHTING
+  TALENT_AND_ENTERTAINMENT
+  PRODUCTION_AND_DECORATION
+  TOOLS_AND_LOGISTIC
+  FOOD_AND_BEVERAGES
+  DIGITAL_AND_TECHNICAL
+  ACCOMODATION_AND_TRANSPORTATION
+  MEDICAL_AND_SECURITY
+  OTHERS
 }

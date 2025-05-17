@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { ContactSchema, VendorServiceSchema } from "../schemas";
 
-export const VendorSchema = z.object({
+export const VendorWithService = z.object({
     vendor_id: z
         .string({ required_error: "ID vendor wajib diisi" })
         .uuid({ message: "ID vendor tidak valid" })
@@ -15,11 +16,13 @@ export const VendorSchema = z.object({
         .default(0)
         .optional(),
     bankAccountDetail: z
-        .string()
+        .string({ required_error: "Detail rekening bank wajib diisi" })
         .optional()
-        .nullable()
+        .nullable(),
+    contact: ContactSchema,
+    vendor_service: z.array(VendorServiceSchema)
 });
 
 
 
-export type VendorSchema = z.infer<typeof VendorSchema>;
+export type VendorWithService = z.infer<typeof VendorWithService>;
