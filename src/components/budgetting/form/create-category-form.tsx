@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -42,7 +43,6 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
   })
   const onSubmit = async (data: AddBudgetItemCategoryDTO) => {
     try {
-        console.log(data);
         onAddBudgetItemCategory(is_actual, data);
         form.reset();
         setOpen(false);
@@ -56,12 +56,13 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
       <DialogTrigger asChild>
         <Button>
             <Plus />
-            Add Budget Category
+            Budget Category
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Budget Category</DialogTitle>
+          <DialogDescription>Fill all the field to add budget category</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -75,9 +76,9 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
               name="category_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Kategori</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nama Kategori" {...field} />
+                    <Input placeholder="Enter Budget Category Name..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

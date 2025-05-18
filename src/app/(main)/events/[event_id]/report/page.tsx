@@ -1,27 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { PDFViewer } from "@react-pdf/renderer";
 import { EventReportPDF } from "@/components/events/event-report-pdf";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventReportPage() {
   const ctx = useSafeContext(EventContext, "EventContext");
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
-
-  const allowedRoles = ["ADMIN", "EXECUTIVE", "INTERNAL"];
 
   if (!ctx.event) {
-    return <p className="text-red-600">No event data available.</p>;
+    return (<p className="text-red-600">No event data available.</p>);
   }
 
-  if (!allowedRoles.includes(userRole || "")) {
+  if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
     return (
       <div className="max-w-2xl mx-auto mt-16 p-8 bg-red-50 border border-red-300 rounded text-center">
         <h2 className="text-xl font-semibold mb-2 text-red-800">

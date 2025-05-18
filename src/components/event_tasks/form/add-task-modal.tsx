@@ -83,7 +83,7 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Task</Button>
+        <Button variant={"default"}>+ Add Task</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -282,7 +282,7 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
               <Button
                 type="submit"
                 form="add-task-form"
-                className="bg-green-500 text-white"
+                variant={"default"}
               >
                 Add Task
               </Button>

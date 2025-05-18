@@ -22,12 +22,18 @@ export function NavHeader() {
   return (
     <SidebarGroup>
       <SidebarMenu>
+        {state !== "expanded" && (
+          <SidebarMenuItem>
+            <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar">
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
         <SidebarMenuItem key={"SI EVO"}>
           <SidebarMenuButton
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar"
             tooltip={"SIEVO"}
           >
-              <Image src={"/sidebar-logo.png"} alt={"Side Bar Logo"} width={50} height={47}/>
+              <Image src={"/sidebar-logo.png"} alt={"Side Bar Logo"} width={72} height={72}/>
               <div className="grid flex-1 text-left text-sm leading-tight">
                   <p className="text-xl font-extrabold ml-4 mt-1">SIEVO</p>
               </div>

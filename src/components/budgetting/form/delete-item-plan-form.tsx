@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
 import { Trash } from "lucide-react"
 
 interface DeletePlanItemModalProps {
@@ -22,14 +23,14 @@ export function DeleteBudgetPlanItemModal({onDeleteItemPlan, budgetItemId}: Dele
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md p-1">
+        <Button variant={"ghost"} className="text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md p-1">
           <Trash size={16} />
-        </button>
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl">
-            Apakah Anda yakin ingin menghapus Item Planning?
+            Apakah Anda yakin ingin menghapus Item Perencanaan Anggaran?
           </AlertDialogTitle>
           <AlertDialogDescription>
             Item yang dihapus tidak dapat dikembalikan.
@@ -37,12 +38,12 @@ export function DeleteBudgetPlanItemModal({onDeleteItemPlan, budgetItemId}: Dele
         </AlertDialogHeader>
         <AlertDialogFooter>
           
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogAction className="bg-destructive hover:bg-destructive/80"
             onClick={() => {onDeleteItemPlan(budgetItemId);}}
           >
-            Delete
+            Hapus
           </AlertDialogAction>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

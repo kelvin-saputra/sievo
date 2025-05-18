@@ -161,15 +161,32 @@ const styles = StyleSheet.create({
 
 export function EventReportPDF({
   event,
+  budgetPlanData,
+  budgetActualData,
   users = [],
   tasks = [],
-  budgetPlanItems = [],
-  actualBudgetItems = [],
-  categoriesPlan = [],
   client,
   manager,
 }: any) {
-  const progressCount: Record<TaskStatus, number> = {
+  const allCategories = [...budgetActualData?.categories, ...budgetPlanData?.categories]
+  const categoriesPlan = Array.from(
+    new Map(
+      allCategories.map(cat => [cat.category_name, cat])
+    ).values()
+  )
+  const budgetPlanItems = budgetPlanData.categories.flatMap((category: { budget_plan_item: any[]; category_name: any; }) =>
+    category.budget_plan_item.map((item: any) => ({
+      ...item,
+      category_name: category.category_name
+    }))
+  )
+  const actualBudgetItems = budgetActualData.categories.flatMap((category: {actual_budget_item: any; category_name: any;}) => 
+    category.actual_budget_item.map((item: any) => ({
+      ...item,
+      category_name: category.category_name
+    })))
+
+    const progressCount: Record<TaskStatus, number> = {
     PENDING: 0,
     ON_PROGRESS: 0,
     DONE: 0,
@@ -191,10 +208,10 @@ export function EventReportPDF({
 
   const categoryComparisons = categoriesPlan.map((cat: any) => {
     const planned = budgetPlanItems
-      .filter((i: any) => i.category_id === cat.category_id)
+      .filter((i: any) => i.category_name === cat.category_name)
       .reduce((s: number, i: any) => s + i.item_subtotal, 0);
     const actual = actualBudgetItems
-      .filter((i: any) => i.category_id === cat.category_id)
+      .filter((i: any) => i.category_name === cat.category_name)
       .reduce((s: number, i: any) => s + i.item_subtotal, 0);
     return { ...cat, planned, actual, diff: actual - planned };
   });
@@ -335,7 +352,7 @@ export function EventReportPDF({
               budgetPlanItems.map((it: any) => (
                 <View key={it.budget_item_id} style={styles.tableRow}>
                   <Text style={styles.cell1}>
-                    {it.category?.category_name || "-"}
+                    {it.category_name || "-"}
                   </Text>
                   <Text style={styles.cell2}>{getBudgetItemName(it)}</Text>
                   <Text style={styles.cell3}>{it.item_qty}</Text>
@@ -370,7 +387,7 @@ export function EventReportPDF({
               actualBudgetItems.map((it: any) => (
                 <View key={it.actual_budget_item_id} style={styles.tableRow}>
                   <Text style={styles.cell1}>
-                    {it.category?.category_name || "-"}
+                    {it.category_name || "-"}
                   </Text>
                   <Text style={styles.cell2}>{getBudgetItemName(it)}</Text>
                   <Text style={styles.cell3}>{it.item_qty}</Text>
@@ -438,9 +455,16 @@ export function EventReportPDF({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Servis Vendor</Text>
           {(() => {
-            const vendorItems = actualBudgetItems.filter(
-              (item: any) => item.vendor_service
-            );
+            const vendorItems = Array.from(
+              new Map(
+                actualBudgetItems.filter(
+                  (item: any) => item.vendor_service
+                ).map((item: any) => [item.service_id, item])
+              ).values()
+            )
+            // const vendorItems = actualBudgetItems.filter(
+            //   (item: any) => item.vendor_service
+            // );
 
             return vendorItems.length ? (
               vendorItems.map((item: any) => {
@@ -479,10 +503,13 @@ export function EventReportPDF({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Inventaris yang Terpakai</Text>
           {(() => {
-            const inventoryItems = actualBudgetItems.filter(
-              (item: any) => item.inventory
-            );
-
+            const inventoryItems = Array.from(
+              new Map(
+                actualBudgetItems.filter(
+                  (item: any) => item.inventory
+                ).map((item: any) => [item.inventory_id, item])
+              ).values()
+            )
             return inventoryItems.length ? (
               inventoryItems.map((item: any) => {
                 const inv = item.inventory;

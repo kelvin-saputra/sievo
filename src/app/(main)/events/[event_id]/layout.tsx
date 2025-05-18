@@ -1,26 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import PageHeader from "@/components/common/page-header";
 import NavigationTabs from "@/components/events/navigation-tabs";
 import { Button } from "@/components/ui/button";
 import EventContext from "@/models/context/event.context";
-import EventDetailSkeleton from "@/components/events/event-detail-skeleton";
 import { UpdateEventForm } from "@/components/events/form/update-event-form";
 import { Trash } from "lucide-react";
 
 import useEvent from "@/hooks/use-event";
 import useEventTask from "@/hooks/use-event-task";
-import useBudgetPlan from "@/hooks/use-budget-plan";
-import useActualBudget from "@/hooks/use-budget-actual";
-import useCategory from "@/hooks/use-category";
 import usePurchasing from "@/hooks/use-purchase";
-import useVendorService from "@/hooks/use-vendor-service";
 import useInventory from "@/hooks/use-inventory";
 import useHr from "@/hooks/use-hr";
 import useContact from "@/hooks/use-contact";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import useBudget from "@/hooks/use-budget";
+import Loading from "@/components/ui/loading";
+import useVendor from "@/hooks/use-vendor";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventLayout({
   children,
@@ -28,8 +26,6 @@ export default function EventLayout({
   children: React.ReactNode;
 }) {
   const { event_id } = useParams();
-  const [userRole, setUserRole] = useState<string | null>(null);
-
   const {
     event,
     fetchEventById,
@@ -50,46 +46,27 @@ export default function EventLayout({
   } = useEventTask(event_id as string);
 
   const {
-    budgetPlan,
-    budgetPlanItems,
-    loading: budgetPlanLoading,
-    fetchBudgetPlan,
-    fetchAllBudgetPlanItems,
+    budgetPlanData,
+    budgetActualData,
+    loading: budgetLoading,
+    fetchBudgetDataPlan,
+    handleUpdateBudgetPlanStatus,
     handleAddBudgetPlanItem,
     handleUpdateBudgetPlanItem,
     handleDeleteBudgetPlanItem,
-  } = useBudgetPlan(event_id as string);
-
-  const {
-    actualBudget,
-    actualBudgetItems,
-    loading: actualBudgetLoading,
-    fetchActualBudget,
-    fetchAllActualBudgetItems,
+    fetchBudgetDataActual,
+    handleImportBudgetData,
     handleAddActualBudgetItem,
     handleUpdateActualBudgetItem,
     handleDeleteActualBudgetItem,
-    handleImportBudgetData,
-  } = useActualBudget(event_id as string);
-
-  const {
-    categoriesPlan,
-    actualCategories,
-    loading: budgetCategoriesLoadingPlan,
-    fetchCategoriesByBudgetIdPlan,
-    fetchCategoriesByActualBudgetId,
     handleAddCategory,
     handleUpdateCategory,
-    handleDeleteCategory,
-  } = useCategory(
-    event_id as string,
-    budgetPlan?.budget_id as string,
-    actualBudget?.budget_id as string
-  );
+    handleDeleteCategory
+  } = useBudget(event_id as string);
 
   const { handleAddPurchase, handleUpdatePurchase, handleDeletePurchase } =
     usePurchasing();
-  const { vendorServices, fetchAllVendorServices } = useVendorService();
+  const { vendorServices, fetchAllVendorServices } = useVendor("");
   const { inventories, fetchAllInventories } = useInventory();
   const { fetchAllUsers, users } = useHr();
   const { fetchAllContacts, contacts } = useContact();
@@ -119,32 +96,23 @@ export default function EventLayout({
     if (event_id) {
       fetchEventById(event_id as string);
       fetchAllTasks();
-      fetchBudgetPlan();
-      fetchActualBudget();
-      fetchAllBudgetPlanItems();
-      fetchAllActualBudgetItems();
-      fetchCategoriesByBudgetIdPlan();
-      fetchCategoriesByActualBudgetId();
       fetchAllVendorServices();
       fetchAllInventories();
+      fetchBudgetDataPlan();
+      fetchBudgetDataActual();
     }
   }, [
     event_id,
     fetchEventById,
     fetchAllTasks,
-    fetchBudgetPlan,
-    fetchActualBudget,
-    fetchAllBudgetPlanItems,
-    fetchAllActualBudgetItems,
-    fetchCategoriesByBudgetIdPlan,
-    fetchCategoriesByActualBudgetId,
     fetchAllVendorServices,
     fetchAllInventories,
+    fetchBudgetDataPlan,
+    fetchBudgetDataActual,
   ]);
 
   useEffect(() => {
     refetchAll();
-    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {
@@ -152,22 +120,26 @@ export default function EventLayout({
     fetchAllContacts();
   }, [fetchAllUsers, fetchAllContacts]);
 
-  if (
-    eventLoading ||
-    budgetPlanLoading ||
-    budgetCategoriesLoadingPlan ||
-    taskLoading
-  ) {
-    return <EventDetailSkeleton />;
+  if ( eventLoading ) {
+    return <Loading message="Fetching event data..." />
+  } else if (taskLoading) {
+    return <Loading message="Fetching task data..."/>
+  } else if (budgetLoading) {
+    return <Loading message="Fetching budget data..."/>
   }
 
   if (!event) {
-    return <p className="text-red-500 text-lg">Event not found.</p>;
+    return (
+      <div className=" max-w-2xl mx-auto my-16 p-8 bg-red-50 border border-red-300 rounded text-center">
+        <h2 className="text-xl font-semibold mb-2 text-red-800">
+          Event Not Found!
+        </h2>
+        <p className='text-red-700'>
+          The event you are searching for is not available or doesn&apos;t exist. Please check the event ID or try searching again.
+        </p>
+      </div>
+    );
   }
-  if (!tasks) {
-    return <p className="text-red-500 text-lg">Task not found.</p>;
-  }
-
   return (
     <EventContext.Provider
       value={{
@@ -175,21 +147,15 @@ export default function EventLayout({
         client,
         users,
         manager,
+        budgetPlanData,
+        budgetActualData,
         tasks,
-        budgetPlan,
-        actualBudget,
-        budgetPlanItems,
-        actualBudgetItems,
-        categoriesPlan,
-        actualCategories,
         inventories,
         vendorServices,
         loading:
           eventLoading ||
           taskLoading ||
-          budgetPlanLoading ||
-          budgetCategoriesLoadingPlan ||
-          actualBudgetLoading,
+          budgetLoading,
         handleUpdateEvent,
         handleDeleteEvent,
         handleStatusChange,
@@ -198,19 +164,16 @@ export default function EventLayout({
         handleUpdateTask,
         handleDeleteTask,
         handleAddTask,
-        fetchBudgetPlan,
-        fetchAllBudgetPlanItems,
+        fetchBudgetDataPlan,
+        fetchBudgetDataActual,
+        handleUpdateBudgetPlanStatus,
         handleAddBudgetPlanItem,
         handleDeleteBudgetPlanItem,
         handleUpdateBudgetPlanItem,
-        fetchActualBudget,
-        fetchAllActualBudgetItems,
         handleAddActualBudgetItem,
         handleDeleteActualBudgetItem,
         handleUpdateActualBudgetItem,
         handleImportBudgetData,
-        fetchCategoriesByBudgetIdPlan,
-        fetchCategoriesByActualBudgetId,
         handleAddCategory,
         handleUpdateCategory,
         handleDeleteCategory,
@@ -222,7 +185,7 @@ export default function EventLayout({
         refetchAll,
       }}
     >
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 w-full mx-auto">
         <PageHeader
           title={event.event_name}
           breadcrumbs={[
@@ -234,7 +197,7 @@ export default function EventLayout({
           <NavigationTabs />
         </div>
         <div className="flex gap-2 px-6 justify-end">
-          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
             <UpdateEventForm
               event={event}
               createdBy={event.created_by}
@@ -244,7 +207,7 @@ export default function EventLayout({
             />
           )}
 
-          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+          {checkRoleClient(ADMINEXECUTIVE) && !["IMPLEMENTATION", "REPORTING", "DONE"].includes(event.status) && (
             <Button
               variant="destructive"
               onClick={() => event && handleDeleteEvent(event.event_id)}

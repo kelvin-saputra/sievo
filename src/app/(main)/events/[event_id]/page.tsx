@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { EventStatusEnum } from "@/models/enums";
@@ -13,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 const taskStatusLabel: Record<string, string> = {
   PENDING: "Belum Dikerjakan",
@@ -30,14 +29,8 @@ const taskStatusColorMap: Record<string, string> = {
 };
 
 export default function EventDetailPage() {
-  const { event, tasks, budgetPlanItems, client, manager, handleStatusChange } =
+  const { event, tasks, budgetPlanData, budgetActualData, client, manager, handleStatusChange } =
     useSafeContext(EventContext, "EventContext");
-
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
 
   const clientName = client?.name || "-";
   const managerName = manager?.name || "-";
@@ -60,12 +53,20 @@ export default function EventDetailPage() {
       ? "Hari terakhir"
       : "Sudah lewat";
 
-  const plannedBudget = Array.isArray(budgetPlanItems)
-    ? budgetPlanItems.reduce(
-        (sum, item) => sum + (Number(item.item_subtotal) || 0),
-        0
-      )
-    : 0;
+
+  const totalBudgetPlan = budgetPlanData?.categories?.reduce((sumCat, category) => {
+    const subTotal = category?.budget_plan_item
+      .filter(item => !item?.is_deleted)
+      .reduce((sumItem, item) => sumItem + (item?.item_subtotal ?? 0), 0);
+    return sumCat + (subTotal ?? 0);
+  }, 0) ?? 0;
+
+  const totalBudgetActual = budgetActualData?.categories?.reduce((sumCat, category) => {
+    const subTotal = category?.actual_budget_item
+      .filter(item => !item?.is_deleted)
+      .reduce((sumItem, item) => sumItem + (item?.item_subtotal ?? 0), 0);
+    return sumCat + (subTotal ?? 0);
+  }, 0) ?? 0;
 
   const taskStatusCount = {
     PENDING: 0,
@@ -182,7 +183,7 @@ export default function EventDetailPage() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500">Status</p>
 
-            {["ADMIN", "EXECUTIVE", "EMPLOYEE"].includes(userRole || "") ? (
+            {(checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status)) ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -245,7 +246,13 @@ export default function EventDetailPage() {
           <div className="p-4 border rounded-lg bg-blue-100">
             <p className="text-sm text-gray-500">Total Anggaran Rencana</p>
             <p className="text-2xl font-bold">
-              Rp{plannedBudget.toLocaleString("id-ID")}
+              Rp{totalBudgetPlan.toLocaleString("id-ID")}
+            </p>
+          </div>
+          <div className="p-4 border rounded-lg bg-blue-100">
+            <p className="text-sm text-gray-500">Total Realisasi Anggaran</p>
+            <p className="text-2xl font-bold">
+              Rp{totalBudgetActual.toLocaleString("id-ID")}
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-blue-100">

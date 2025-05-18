@@ -3,28 +3,29 @@
 import type * as React from "react"
 import { useEffect, useState } from "react"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { toast } from "sonner"
 import { AddBudgetPlanItemDTO } from "@/models/dto"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { BudgetSchema, InventorySchema, VendorServiceSchema } from "@/models/schemas"
+import { InventorySchema, VendorServiceSchema } from "@/models/schemas"
 import type { AddPurchaseDTO } from "@/models/dto/purchasing.dto"
 import { v4 } from "uuid"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus } from "lucide-react"
+import { BudgetWithCategoryBudgetPlan } from "@/models/response/budget-with-category-budget-plan"
+import { VendorWithService } from "@/models/response/vendor-with-service"
 
 interface AddBudgetPlanItemProps {
-  onAddBudgetItemPlan: (dto: AddBudgetPlanItemDTO) => void
-  onAddPurchasing: (dto: AddPurchaseDTO) => void
-  categoryId: number
+  onAddBudgetItemPlan: (dto: AddBudgetPlanItemDTO) => Promise<void>
+  onAddPurchasing: (dto: AddPurchaseDTO) => Promise<void>
+  categoryId: number | undefined
   inventories: InventorySchema[]
-  vendorServices: VendorServiceSchema[]
-  budgetPlan: BudgetSchema | null
+  vendorServices: VendorWithService[]
+  budgetPlan: BudgetWithCategoryBudgetPlan | null
 }
 
 export function AddBudgetItemPlanForm({
@@ -36,6 +37,8 @@ export function AddBudgetItemPlanForm({
   budgetPlan,
 }: AddBudgetPlanItemProps) {
   const [open, setOpen] = useState(false)
+  const [selectedVendorService, setSelectedVendorService] = useState<VendorServiceSchema[]>([])
+  const [selectedInventory, setSelectedInventory] = useState<InventorySchema | null>(null)
   
   const form = useForm<AddBudgetPlanItemDTO>({
     resolver: zodResolver(AddBudgetPlanItemDTO),
@@ -43,6 +46,7 @@ export function AddBudgetItemPlanForm({
       budget_id: budgetPlan?.budget_id || "",
       item_subtotal: 0,
       category_id: categoryId,
+      vendor_id: null,
       source: "vendor",
       item_name: "",
       description: "",
@@ -51,10 +55,13 @@ export function AddBudgetItemPlanForm({
   })
 
   const onSubmit = async (data: AddBudgetPlanItemDTO) => {
-    console.log("Submitting form:", data)
     try {
       if (data.source === "inventory" && !data.inventory_id) {
         form.setError("inventory_id", { message: "Please select an inventory item" })
+        return
+      }
+      if (data.source === "inventory" && (data.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0))) {
+        form.setError("item_qty", { message: "Available Inventory is not sufficient to reserved" })
         return
       }
       if (data.source === "vendor" && !data.vendor_service_id) {
@@ -71,7 +78,6 @@ export function AddBudgetItemPlanForm({
           return
         }
 
-        // Create a purchase item for "other" source
         const { item_name, item_price, description, created_by, ...budgetPlanData } = data
         
         const purchaseData: AddPurchaseDTO = {
@@ -82,14 +88,9 @@ export function AddBudgetItemPlanForm({
           created_by: created_by || "",
         }
 
-        console.log("Submitting purchase item:", purchaseData)
-        // First add the purchase item
         await onAddPurchasing(purchaseData)
         await onAddBudgetItemPlan(budgetPlanData)
-        console.log("Submitting budget item bawah purchase item:", budgetPlanData)
-        toast.success("Item added successfully")
       } else {
-        // For inventory or vendor sources
         const { item_name, item_price, description, created_by, ...budgetPlanData } = data
         
         if (item_name || item_price || description || created_by) {
@@ -98,29 +99,24 @@ export function AddBudgetItemPlanForm({
         
         await onAddBudgetItemPlan(budgetPlanData)
       }
-
-      // Reset form and close dialog
       form.reset()
       setOpen(false)
-    } catch (error) {
-      console.error("Error submitting form:", error)
-      toast.error("Failed to add budget item")
+    } finally{
     }
   }
 
+  const selectedVendor = form.watch("vendor_id")
   const selectedSource = form.watch("source")
   const selectedInventoryId = form.watch("inventory_id")
   const selectedVendorServiceId = form.watch("vendor_service_id")
   const quantity = form.watch("item_qty")
   const otherItemPrice = form.watch("item_price")
 
-  // Reset fields when source changes
   useEffect(() => {
     if (selectedSource) {
       form.setValue("vendor_service_id", "")
       form.setValue("inventory_id", "")
 
-      // Only generate a new ID when switching to "other"
       if (selectedSource === "other") {
         const newId = v4()
         form.setValue("other_item_id", newId)
@@ -133,7 +129,6 @@ export function AddBudgetItemPlanForm({
     }
   }, [selectedSource, form])
 
-  // Update price and subtotal when selections change
   useEffect(() => {
     let price = 0
 
@@ -141,10 +136,12 @@ export function AddBudgetItemPlanForm({
       const item = inventories.find((item) => item.inventory_id === selectedInventoryId)
       if (item) {
         price = item.item_price
+        setSelectedInventory(item);
         form.setValue("item_name", item.item_name)
+
       }
     } else if (selectedSource === "vendor" && selectedVendorServiceId) {
-      const service = vendorServices.find((service) => service.service_id === selectedVendorServiceId)
+      const service = selectedVendorService.find((service) => service.service_id === selectedVendorServiceId)
       if (service) {
         price = service.price
         form.setValue("item_name", service.service_name)
@@ -154,9 +151,8 @@ export function AddBudgetItemPlanForm({
     }
     form.setValue("item_price", price)
 
-    // Calculate subtotal
     form.setValue("item_subtotal", price * quantity)
-  }, [selectedSource, selectedInventoryId, selectedVendorServiceId, otherItemPrice, form, inventories, vendorServices, quantity])
+  }, [selectedSource, selectedInventoryId, selectedVendorServiceId, otherItemPrice, form, inventories, vendorServices, quantity, selectedVendorService])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -166,14 +162,25 @@ export function AddBudgetItemPlanForm({
     }).format(value)
   }
 
+  useEffect(() => {
+    if (selectedVendor) {
+      const selectedVendorEntity = vendorServices.find(vs => vs.vendor_id === selectedVendor)
+      const selectedVendorServiceByVendor = selectedVendorEntity?.vendor_service || []
+      setSelectedVendorService(selectedVendorServiceByVendor)
+    }
+  }, [selectedVendor, vendorServices])
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Plus size={18} className="" />
+        <Button variant={"ghost"}>
+          <Plus size={18} className="" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Item</DialogTitle>
+          <DialogTitle>Add Budget Plan Item</DialogTitle>
+          <DialogDescription>Fill all the data field to add budget plan item</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form id="add-item-plan-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -182,17 +189,17 @@ export function AddBudgetItemPlanForm({
               name="source"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Source</FormLabel>
+                  <FormLabel>Item Source</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select source" />
+                        <SelectValue placeholder="Select Budget Item Source..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="inventory">Inventory</SelectItem>
                       <SelectItem value="vendor">Vendor</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="other">Others</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -200,7 +207,6 @@ export function AddBudgetItemPlanForm({
               )}
             />
 
-            {/* Inventory source fields */}
             {selectedSource === "inventory" && (
               <FormField
                 control={form.control}
@@ -208,10 +214,10 @@ export function AddBudgetItemPlanForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inventory Item</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select inventory item" />
+                          <SelectValue placeholder="Select the Inventory Item..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -228,8 +234,32 @@ export function AddBudgetItemPlanForm({
               />
             )}
 
-            {/* Vendor source fields */}
             {selectedSource === "vendor" && (
+              <>
+              <FormField
+                  control={form.control}
+                  name="vendor_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vendor</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select the Vendor..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {vendorServices.map((vendor) => (
+                            <SelectItem key={vendor.vendor_id} value={vendor.vendor_id}>
+                              {vendor.contact.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               <FormField
                 control={form.control}
                 name="vendor_service_id"
@@ -239,11 +269,11 @@ export function AddBudgetItemPlanForm({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select vendor service" />
+                          <SelectValue placeholder="Select the Vendor Service Item..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {vendorServices.map((service) => (
+                        {selectedVendorService.map((service) => (
                           <SelectItem key={service.service_id} value={service.service_id}>
                             {service.service_name} - {formatCurrency(service.price)}
                           </SelectItem>
@@ -254,9 +284,9 @@ export function AddBudgetItemPlanForm({
                   </FormItem>
                 )}
               />
+              </>
             )}
 
-            {/* Other source fields */}
             {selectedSource === "other" && (
               <>
                 <FormField
@@ -264,9 +294,9 @@ export function AddBudgetItemPlanForm({
                   name="item_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Item Name</FormLabel>
+                      <FormLabel>Budget Item Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter item name" {...field} />
+                        <Input placeholder="Enter the budget item name..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -278,14 +308,13 @@ export function AddBudgetItemPlanForm({
                   name="item_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Item Price</FormLabel>
+                      <FormLabel>Budget Item Price</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Enter item price"
+                          placeholder="Enter the budget item price..."
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -300,7 +329,7 @@ export function AddBudgetItemPlanForm({
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Enter item description" className="resize-none" {...field} />
+                        <Textarea placeholder="Enter the budget item description..." className="resize-none" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -309,20 +338,47 @@ export function AddBudgetItemPlanForm({
               </>
             )}
 
-            {/* Common fields for all sources */}
-            <FormField
-              control={form.control}
-              name="item_qty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className={`${selectedSource === "inventory" ? "flex justify-between gap-6":""}`}>
+              <div className={`${selectedSource === "inventory"?"w-1/2":""}`}>
+                <FormField
+                  control={form.control}
+                  name="item_qty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantity</FormLabel>
+                      <FormControl>
+                      {selectedSource === "inventory"? (
+                        <Input type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                      ): (
+                        <Input type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+
+                      )}
+
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {selectedSource === "inventory" && (
+                <div className="w-1/2">
+                  <FormItem>
+                    <FormLabel>Available Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value= {(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0)-quantity}
+                        disabled
+                        className="bg-gray-50 text-gray-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
+                  )}
+            </div>
+
+
 
             <FormField
               control={form.control}
@@ -344,10 +400,11 @@ export function AddBudgetItemPlanForm({
             />
             {}
             <div className="flex justify-end space-x-2 pt-2">
-              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              <Button type="button" variant={"secondary"} onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button
+                variant={"default"}
                 type="submit"
                 form="add-item-plan-form"
               >

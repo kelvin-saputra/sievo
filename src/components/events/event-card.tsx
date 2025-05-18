@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
 import useHr from "@/hooks/use-hr";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 interface EventCardProps {
   event: EventSchema;
@@ -105,41 +106,55 @@ const EventCard = ({
         </div>
         <div className="flex items-center gap-4">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={(e) => e.stopPropagation()}
-                disabled={userRole === "FREELANCE"}
-              >
-                <span
-                  className={`rounded px-2 py-1 text-xs font-semibold ${
-                    eventStatusColorMap[eventData.status] ||
-                    "bg-gray-100 text-gray-800"
-                  }`}
+            {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(eventData.status) ? (
+              <>
+              
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  onClick={(e) => e.stopPropagation()}
+                  disabled={checkRoleClient(ADMINEXECUTIVEINTERNAL)}
                 >
-                  {eventData.status}
-                </span>
-                <MoreHorizontal className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            {userRole !== "FREELANCE" && (
-              <DropdownMenuContent align="end">
-                {EventStatusEnum.options.map((status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onClick={(e) => handleStatusChange(e, status)}
+                  <span
+                    className={`rounded px-2 py-1 text-xs font-semibold ${
+                      eventStatusColorMap[eventData.status] ||
+                      "bg-gray-100 text-gray-800"
+                    }`}
                   >
-                    <span
-                      className={`rounded px-2 py-1 text-xs font-semibold ${
-                        eventStatusColorMap[status] ||
-                        "bg-gray-100 text-gray-800"
-                      }`}
+                    {eventData.status}
+                  </span>
+                  <MoreHorizontal className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {EventStatusEnum.options.map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={(e) => handleStatusChange(e, status)}
                     >
-                      {status}
-                    </span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          eventStatusColorMap[status] ||
+                          "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </>
+            ) : (
+              <div
+                className={
+                  "rounded px-2 py-1 text-xs font-semibold border inline-block truncate max-w-[130px] " +
+                  (eventStatusColorMap[event.status] ||
+                    "bg-gray-100 text-gray-800")
+                }
+                title={event.status}
+              >
+                {event.status}
+              </div>
             )}
           </DropdownMenu>
           <Button variant="secondary" onClick={handleViewDetails}>

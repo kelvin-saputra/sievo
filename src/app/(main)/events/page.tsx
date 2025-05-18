@@ -8,7 +8,9 @@ import useHr from "@/hooks/use-hr";
 import useContact from "@/hooks/use-contact";
 import { AddEventModal } from "@/components/events/form/add-event-modal";
 import PageHeader from "@/components/common/page-header";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import { getUserDataClient } from "@/lib/userData";
+import Loading from "@/components/ui/loading";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function ViewAllEvents() {
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -29,13 +31,17 @@ export default function ViewAllEvents() {
     fetchAllEvents();
     fetchAllUsers();
     fetchAllContacts();
-    setUserRole(getUserRoleFromStorage());
+    setUserRole(getUserDataClient().role || "");
   }, [fetchAllEvents, fetchAllUsers, fetchAllContacts]);
 
   const clientContacts = contacts.filter((c) => c.role === "client");
 
   const activeEvents = events.filter((event) => event.status !== "DONE");
   const pastEvents = events.filter((event) => event.status === "DONE");
+
+  if (loading) {
+    return (<Loading message="Fetching Event Data..."/>)
+  }
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
@@ -92,10 +98,10 @@ export default function ViewAllEvents() {
               event={event}
               userRole={userRole}
               onStatusUpdate={
-                userRole !== "FREELANCE" ? handleStatusChange : undefined
+                checkRoleClient(ADMINEXECUTIVEINTERNAL) ? handleStatusChange : undefined
               }
               onDeleteEvent={
-                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
+                checkRoleClient(ADMINEXECUTIVEINTERNAL) ? handleDeleteEvent : undefined
               }
             />
           ))

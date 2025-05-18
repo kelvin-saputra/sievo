@@ -108,7 +108,7 @@ export function EventTable() {
                 <TableRow
                   key={budget.budget_id}
                   className="cursor-pointer hover:bg-gray-100 transition"
-                  onClick={() => router.push(`/events/${budget.event_id}`)}
+                  onClick={() => router.push(`/events/${budget.event_id}/budget`)}
                 >
                   <TableCell className="font-medium">{budget.event.event_name}</TableCell>
                   <TableCell>

@@ -6,6 +6,8 @@ import { DataTable } from "@/components/event_tasks/data-table";
 import EventContext from "@/models/context/event.context";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import { AddTaskModal } from "@/components/event_tasks/form/add-task-modal";
+import Loading from "@/components/ui/loading";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventPrepPage() {
   const {
@@ -19,17 +21,19 @@ export default function EventPrepPage() {
   } = useSafeContext(EventContext, "EventContext");
 
   if (tasksLoading) {
-    return <div>Loading tasks...</div>;
+    return <Loading message="Fetching Task Data..."/>
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <AddTaskModal
-          onAddTask={handleAddTask}
-          users={Array.isArray(users) ? users : []}
-        />
-      </div>
+        {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE", "REPORTING"].includes(event.status) && (
+          <div className="mb-4">
+            <AddTaskModal
+              onAddTask={handleAddTask}
+              users={Array.isArray(users) ? users : []}
+            />
+          </div>
+        )}
       <DataTable
         columns={getPrepColumns({
           onDeleteTask: handleDeleteTask,

@@ -15,7 +15,9 @@ export const VendorSchema = z.object({
         .default(0)
         .optional(),
     bankAccountDetail: z
-        .string({ required_error: "Detail rekening bank wajib diisi" })
+        .string()
+        .optional()
+        .nullable()
 });
 
 

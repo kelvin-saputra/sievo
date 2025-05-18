@@ -18,7 +18,6 @@ export default function ProfilePage() {
 
   const { user, handleUpdateProfile } = useSafeContext(ProfileContext, "Profile Context")
 
-  // Initialize form after user data is available
   const form = useForm<UpdateUserProfileDTO>({
     defaultValues: {
       id: user?.id,
@@ -32,7 +31,6 @@ export default function ProfilePage() {
     },
   })
 
-  // Update form values when user data changes
   useEffect(() => {
     if (user) {
       form.reset({
@@ -153,7 +151,7 @@ export default function ProfilePage() {
       : `${day}, ${dateNum} ${month} ${year}`
   }
   return (
-    <div className="container mx-auto py-10 max-w-3xl">
+    <div className="container mx-auto py-10 w-full">
       {user && (
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)}>
