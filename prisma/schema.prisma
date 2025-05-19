@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -17,15 +17,15 @@ datasource db {
 
 // DROP SYSTEM SCHEMA MODEL
 model User {
-  id           String    @id @default(uuid())
+  id           String      @id @default(uuid())
   name         String
   phone_number String
-  email        String    @unique
+  email        String      @unique
   password     String
-  role         ROLE      @default(FREELANCE)
-  is_active    Boolean   @default(true)
-  is_admin     Boolean   @default(false)
-  started_at   DateTime  @default(now())
+  role         ROLE        @default(FREELANCE)
+  is_active    Boolean     @default(true)
+  is_admin     Boolean     @default(false)
+  started_at   DateTime    @default(now())
   ended_at     DateTime?
   task         Task[]
   event        Event[]
@@ -35,9 +35,9 @@ model User {
 model Inventory {
   inventory_id       String             @id @default(uuid())
   item_name          String
-  item_qty           Int                 @default(0)  
-  item_qty_damaged   Int                 @default(0)  
-  item_qty_reserved  Int                 @default(0) 
+  item_qty           Int                @default(0)
+  item_qty_damaged   Int                @default(0)
+  item_qty_reserved  Int                @default(0)
   item_price         Float
   inventory_photo    String[]
   category           InventoryCategory  @default(CONSUMABLE)
@@ -84,6 +84,7 @@ model Contact {
   name         String
   email        String
   phone_number String
+  address      String
   description  String?
   created_by   String
   updated_by   String?
@@ -97,8 +98,9 @@ model Contact {
 model Vendor {
   vendor_id         String          @id @default(uuid())
   contact_id        String          @unique
-  rating            Float?          @default(0) //TODO: Derived from Vendor Service
-  bankAccountDetail String //TODO: MultiValued 
+  rating            Float?          @default(0)
+  bankAccountDetail String?
+  type              VendorType      @default(OTHERS)
   contact           Contact         @relation(fields: [contact_id], references: [contact_id])
   vendor_service    VendorService[]
   is_deleted        Boolean         @default(false)
@@ -185,7 +187,8 @@ model BudgetItemCategory {
   category_name      String
   actual_budget_item ActualBudgetItem[]
   budget_plan_item   BudgetPlanItem[]
-  budget             Budget[]
+  budget_id          String
+  budget             Budget             @relation(fields: [budget_id], references: [budget_id])
   is_deleted         Boolean            @default(false)
 }
 
@@ -208,7 +211,7 @@ model Proposal {
   proposal_name String
   proposal_link String
   status        ProposalStatus @default(DRAFT)
-  client_name   String         
+  client_name   String
   created_by    String
   updated_by    String?
   created_at    DateTime       @default(now())
@@ -236,20 +239,22 @@ model Event {
   updated_by       String?
   created_at       DateTime    @default(now())
   created_by       String
-  userEvents       UserEvent[] 
+  userEvents       UserEvent[]
 }
 
 model UserEvent {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  event     Event    @relation(fields: [eventId], references: [event_id])
-  eventId   String
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  event      Event    @relation(fields: [eventId], references: [event_id])
+  eventId    String
   assignedAt DateTime @default(now())
+  updated_by String
+  is_deleted Boolean
 }
 
 enum ROLE {
-  ADMIN 
+  ADMIN
   EXECUTIVE
   INTERNAL
   FREELANCE
@@ -310,5 +315,22 @@ enum VendorServiceCategory {
 
 enum ClientType {
   INDIVIDUAL
-  ORGANIZATION
+  CORPORATE
+  GOVERNMENT
+  EDUCATIONAL_INSTITUTION
+  COMMUNITIES_AND_ORGANIZATION
+  COMMERCIAL_BRAND_AND_AGENCY
+}
+
+enum VendorType {
+  DOCUMENTATION
+  SOUND_SYSTEM_AND_LIGHTING
+  TALENT_AND_ENTERTAINMENT
+  PRODUCTION_AND_DECORATION
+  TOOLS_AND_LOGISTIC
+  FOOD_AND_BEVERAGES
+  DIGITAL_AND_TECHNICAL
+  ACCOMODATION_AND_TRANSPORTATION
+  MEDICAL_AND_SECURITY
+  OTHERS
 }

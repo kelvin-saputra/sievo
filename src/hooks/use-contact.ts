@@ -50,7 +50,6 @@ export default function useContact() {
       }
     } catch (error) {
       console.error("Terjadi kesalahan saat mengambil data Contact:", error);
-      toast.error("Gagal mengambil data Contact.");
     }
     setLoading(false);
   }, []);

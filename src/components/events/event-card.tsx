@@ -176,9 +176,6 @@ const EventCard = ({
           </DialogHeader>
           <p className="my-4">Apakah Anda yakin ingin menghapus event ini?</p>
           <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
-              Batal
-            </Button>
             <Button
               variant="destructive"
               onClick={() => {
@@ -187,6 +184,9 @@ const EventCard = ({
               }}
             >
               Hapus
+            </Button>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+              Batal
             </Button>
           </div>
         </DialogContent>
