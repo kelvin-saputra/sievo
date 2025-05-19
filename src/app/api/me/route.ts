@@ -1,12 +1,16 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/utils/prisma";
-import { getPayloadToken } from "@/lib/jwt";
 import { responseFormat } from "@/utils/api";
 import { decryptAES, encryptAES } from "@/lib/aes";
+import { getUserDataServer } from "@/lib/userData";
 
 
 export async function GET(req: NextRequest) {
-    const { id: userID } = await getPayloadToken(req)
+    const userData = await getUserDataServer(req);
+    if (!userData) {
+        return responseFormat(401, "User unauthorized!", null)
+    }
+    const userID = userData.id;
     try {
         const user = await prisma.user.findFirst({
             where: {
@@ -29,7 +33,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { id: userID } = await getPayloadToken(req)
+    const userData = await getUserDataServer(req);
+    if (!userData) {
+        return responseFormat(401, "User unauthorized!", null)
+    }
+    const userID = userData.id;
     const { name, email, phone_number } = await req.json();
     try {
         const user = await prisma.user.update({

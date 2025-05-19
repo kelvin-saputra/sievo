@@ -37,6 +37,7 @@ export function UpdateActualBudgetItemForm({
 }: UpdateActualBudgetItemProps) {
   const [open, setOpen] = useState(false)
   const [selectedVendorService, setSelectedVendorService] = useState<VendorServiceSchema[]>([])
+  const [selectedInventory, setSelectedInventory] = useState<InventorySchema | null>(null)
 
   let item_name, description, item_price;
   if (currentSource === "other") {
@@ -82,6 +83,10 @@ export function UpdateActualBudgetItemForm({
         form.setError("inventory_id", { message: "Please select an inventory item" })
         return
       }
+      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0))) {
+        form.setError("item_qty", { message: "Reserved Inventory cannot more than available inventory" })
+        return
+      }
       if (source === "vendor" && !dataUpdate.vendor_service_id) {
         form.setError("vendor_service_id", { message: "Please select a vendor service" })
         return
@@ -122,8 +127,8 @@ export function UpdateActualBudgetItemForm({
         await onUpdateActualBudgetItem(actualBudgetData)
       }
       form.reset()
-    } finally {
       setOpen(false)
+    } finally {
     }
   }
 
@@ -136,9 +141,6 @@ export function UpdateActualBudgetItemForm({
 
   useEffect(() => {
     if (selectedSource) {
-      form.setValue("inventory_id", "")
-      form.setValue("vendor_service_id", "")
-
       if (selectedSource === "other" && selectedSource === currentSource) {
         form.setValue("item_name", existingItem.other_item?.item_name)
         form.setValue("description", existingItem.other_item?.description)
@@ -160,6 +162,7 @@ export function UpdateActualBudgetItemForm({
       const item = inventories.find((item) => item.inventory_id === selectedInventoryId)
       if (item) {
         price = item.item_price
+        setSelectedInventory(item)
         form.setValue("item_name", item.item_name)
         form.setValue("description", item.description || "")
       }
@@ -362,19 +365,45 @@ export function UpdateActualBudgetItemForm({
                 />
               </>
             )}
-            <FormField
-              control={form.control}
-              name="item_qty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className={`${selectedSource === "inventory" ? "flex justify-between gap-6":""}`}>
+              <div className={`${selectedSource === "inventory"?"w-1/2":""}`}>
+                <FormField
+                  control={form.control}
+                  name="item_qty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantity</FormLabel>
+                      <FormControl>
+                      {selectedSource === "inventory"? (
+                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                      ): (
+                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+
+                      )}
+
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {selectedSource === "inventory" && (
+                <div className="w-1/2">
+                  <FormItem>
+                    <FormLabel>Available Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value= {(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0)}
+                        disabled
+                        className="bg-gray-50 text-gray-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
+                  )}
+            </div>
             <FormField
               control={form.control}
               name="item_subtotal"

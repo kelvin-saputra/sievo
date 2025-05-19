@@ -113,7 +113,7 @@ const EventCard = ({
                 <Button
                   variant="outline"
                   onClick={(e) => e.stopPropagation()}
-                  disabled={checkRoleClient(ADMINEXECUTIVEINTERNAL)}
+                  disabled={!checkRoleClient(ADMINEXECUTIVEINTERNAL)}
                 >
                   <span
                     className={`rounded px-2 py-1 text-xs font-semibold ${

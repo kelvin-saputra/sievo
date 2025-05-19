@@ -24,7 +24,6 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 import { BudgetItemCategorySchema } from "@/models/schemas";
 
 interface UpdateBudgetItemCategoryFormProps {
@@ -48,7 +47,6 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
         form.reset();
         setOpen(false);
     } catch {
-        toast.error("Gagal memperbaharui kategori budget.");
     }
   };
 
@@ -86,7 +84,10 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  form.reset()
+                  setOpen(false)
+                }}
               >
                 Cancel
               </Button>

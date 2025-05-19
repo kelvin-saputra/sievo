@@ -83,7 +83,7 @@ export function UpdateBudgetItemPlanForm({
         form.setError("inventory_id", { message: "Please select an inventory item" })
         return
       }
-      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0))) {
+      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0))) {
         form.setError("item_qty", { message: "Reserved Inventory cannot more than available inventory" })
         return
       }
@@ -123,8 +123,8 @@ export function UpdateBudgetItemPlanForm({
         await onUpdateBudgetItemPlan(budgetPlanData)
       }
       form.reset()
-    } finally {
       setOpen(false)
+    } finally {
     }
   }
 
@@ -137,9 +137,6 @@ export function UpdateBudgetItemPlanForm({
 
   useEffect(() => {
     if (selectedSource) {
-      form.setValue("vendor_service_id", "")
-      form.setValue("inventory_id", "")
-
       if (selectedSource === "other" && selectedSource === currentSource) {
         form.setValue("item_name", existingItem.other_item?.item_name)
         form.setValue("description", existingItem.other_item?.description)
@@ -377,9 +374,9 @@ export function UpdateBudgetItemPlanForm({
                       <FormLabel>Quantity</FormLabel>
                       <FormControl>
                       {selectedSource === "inventory"? (
-                        <Input type="number" min="0" max={(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0)} {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                        <Input type="number" min="1" max={(selectedInventory?.item_qty || 1)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0)} {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
                       ): (
-                        <Input type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
 
                       )}
 
@@ -396,7 +393,7 @@ export function UpdateBudgetItemPlanForm({
                     <FormControl>
                       <Input
                         type="number"
-                        value= {(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0)}
+                        value= {(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0)}
                         disabled
                         className="bg-gray-50 text-gray-500"
                       />
@@ -425,7 +422,10 @@ export function UpdateBudgetItemPlanForm({
               )}
             />
             <div className="flex justify-end space-x-2 pt-2">
-              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              <Button type="button" variant="secondary" onClick={() => {
+                form.reset()
+                setOpen(false)
+              }}>
                 Cancel
               </Button>
               <Button
