@@ -1,3 +1,5 @@
+"use client"
+
 import { toast } from "sonner";
 import axios from "axios";
 import { ProposalSchema } from "@/models/schemas";
@@ -35,13 +37,28 @@ export default function useProposal() {
 
   const handleAddProposal = async (newProposal: addProposalDTO) => {
     try {
+
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+      let userRole = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk menambahkan Proposal.");
+        return;
+      }
       
       const proposalData = ProposalSchema.partial().parse({
         ...newProposal,
         status: newProposal.status ?? "DRAFT", 
-        created_by: "ID Anonymous",
-        updated_by: "ID Anonymous",
-        created_at: new Date().toISOString(), // ✅ Ensure valid ISO format
+        created_by: userEmail,
+        updated_by: userEmail,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
   
@@ -74,10 +91,25 @@ export default function useProposal() {
         { status: newStatus }
       );
 
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+      let userRole = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk mengubah status Proposal.");
+        return;
+      }
+
       setProposals((prevProposals) =>
         prevProposals.map((proposal) =>
           proposal.proposal_id === proposalId
-            ? { ...proposal, status: newStatus, updated_at: new Date(updatedProposal.updated_at) }
+            ? { ...proposal, status: newStatus, updated_at: new Date(updatedProposal.updated_at),updated_by: userEmail}
             : proposal
         )
       );
@@ -95,11 +127,26 @@ export default function useProposal() {
       const response = await axios.delete(`/api/proposal/${proposalId}`);
       const updatedProposal = response.data.data;
       console.log(updatedProposal.updated_at)
+
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+      let userRole = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk menghapus Proposal.");
+        return;
+      }
   
       setProposals((prevProposals) =>
         prevProposals.map((proposal) =>
           proposal.proposal_id === proposalId
-            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at) }
+            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at),updated_by: userEmail }
             : proposal
         )
       );
@@ -117,8 +164,30 @@ export default function useProposal() {
     proposalId: string,
     updated_by: string,
     data: updateProposalDTO
+
+    
   ) => {
     try {
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+      let userRole = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+        userRole = user.role?.toUpperCase() || "";
+      }
+
+      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+        toast.error("Anda tidak memiliki akses untuk mengubah Proposal.");
+        return;
+      }
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+      }
+
       const updatedData = ProposalSchema.pick({
         proposal_name: true,
         client_name: true,
@@ -129,7 +198,7 @@ export default function useProposal() {
         .partial()
         .parse({
           ...data,
-          updated_by,
+          updated_by: userEmail,
           updated_at: new Date().toISOString(),
         });
   

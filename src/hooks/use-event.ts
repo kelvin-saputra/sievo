@@ -1,9 +1,12 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { BudgetSchema, EventSchema } from "@/models/schemas";
 import { AddBudgetDTO, AddEventDTO, UpdateEventDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
+import { getCurrentUserName } from "@/utils/authUtils";
 
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
 const BUDGET_API_URL = process.env.NEXT_PUBLIC_BUDGET_API_URL!;
@@ -44,17 +47,20 @@ export default function useEvent() {
     data: UpdateEventDTO
   ) => {
     try {
+      const userName = getCurrentUserName();
+      if (!userName) {
+        toast.error("User belum login, tidak bisa memperbarui event.");
+        return;
+      }
+
       const updatedData = EventSchema.partial().parse({
         ...data,
         event_id: eventId,
-        created_by: created_by,
-        updated_by: "ID Anonymous",
+        created_by,
+        updated_by: userName,
       });
-      
-      const { data: response } = await axios.put(
-        `${API_URL}`,
-        updatedData
-      );
+
+      const { data: response } = await axios.put(`${API_URL}`, updatedData);
       const parsedEvent = EventSchema.parse(response.data);
 
       setEvents((prevEvents) =>
@@ -87,9 +93,18 @@ export default function useEvent() {
     newStatus: EventStatusEnum
   ) => {
     try {
+      const userName = getCurrentUserName();
+      if (!userName) {
+        toast.error("User belum login, tidak bisa memperbarui status event.");
+        return;
+      }
+
       const { data: updatedEvent } = await axios.put(
         `${API_URL}/${eventId}/status`,
-        { status: newStatus }
+        {
+          status: newStatus,
+          updated_by: userName,
+        }
       );
 
       const parsedEvent = EventSchema.parse(updatedEvent.event);
@@ -99,6 +114,7 @@ export default function useEvent() {
       if (event?.event_id === eventId) {
         setEvent(parsedEvent);
       }
+      toast.success("Status event berhasil diperbarui!");
     } catch (error) {
       console.error("Terjadi kesalahan saat memperbarui status event:", error);
       toast.error("Gagal memperbarui status event.");
@@ -106,17 +122,24 @@ export default function useEvent() {
     setLoading(false);
   };
 
+
   const handleAddEvent = async (newEvent: AddEventDTO) => {
     try {
+      const userName = getCurrentUserName();
+      if (!userName) {
+        toast.error("User belum login, tidak bisa menambahkan event.");
+        return;
+      }
+
       const eventData = EventSchema.partial().parse({
         ...newEvent,
-        // TODO: Connect the people that login ID here
-        created_by: "ID Anonymous",
-        updated_by: "ID Anonymous",
+        created_by: userName,
+        updated_by: userName,
       });
+
       const { data: createdEvent } = await axios.post(API_URL, eventData);
       const parsedEvent = EventSchema.parse(createdEvent);
-      
+
       setEvents((prevEvents) => [...prevEvents, parsedEvent]);
 
       const addBudgetDTO: AddBudgetDTO = {
@@ -128,6 +151,7 @@ export default function useEvent() {
       const budgetData = BudgetSchema.partial().parse({
         ...addBudgetDTO,
       });
+
       await axios.post(BUDGET_API_URL, budgetData);
     } catch {
       toast.error("Gagal menambahkan event.");

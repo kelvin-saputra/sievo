@@ -1,7 +1,10 @@
+"use client"
+
 import { useCallback, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { EventSchema, UserSchema } from "@/models/schemas";
+import { UserEventsSchema } from "@/models/schemas/user-event";
 
 const API_URL = process.env.NEXT_PUBLIC_HR_API_URL!;
 const EVENT_API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
@@ -17,6 +20,7 @@ export type Event = {
 
 export default function useHr() {
   const [users, setUsers] = useState<UserWithStatus[]>([]);
+  const [userEvents, setUserEvents]= useState<UserEventsSchema | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [assigning, setAssigning] = useState(false);
@@ -50,11 +54,19 @@ export default function useHr() {
   const assignUserToEvents = useCallback(
     async (user_id: string, event_ids: string[]) => {
       setAssigning(true);
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+      }
 
       try {
         const response = await axios.post(`${API_URL}`, {
           user_id,
           event_ids,
+          updated_by: userEmail,
         });
 
         
@@ -94,9 +106,17 @@ export default function useHr() {
   const handleConfirmAssignment = async (user_id: string, event_ids: string[]) => {
     setConfirmationModalOpen(false);
     try {
+      const userData = localStorage.getItem("authUser");
+      let userEmail = "";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+      }
       const response = await axios.post(`${API_URL}/confirmation-handle`, {
         user_id,
         event_ids,
+        updated_by: userEmail,
       });
 
       if (response.status === 201) {
@@ -115,12 +135,28 @@ export default function useHr() {
     setConfirmationModalOpen(false);
   };
 
+  const fetchAssignmentByUserId = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API_URL}/${id}`);
+      console.log('Response data:', data);
+      setUserEvents(UserEventsSchema.parse(data.data));
+    } catch (error) {
+      console.log("Error : " ,error)
+       toast.error("Gagal mengambil Data Penugasan.");
+    }
+    setLoading(false)
+  },[])
+
+
   return {
     fetchAllUsers,
     fetchAllEvents,
+    fetchAssignmentByUserId,
     assignUserToEvents,
     users,
     events,
+    userEvents,
     loading,
     assigning,
     confirmationModalOpen,

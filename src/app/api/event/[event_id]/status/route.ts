@@ -9,14 +9,22 @@ export async function PUT(
 
   try {
     const data = await req.json();
+    const { status, updated_by } = data;
 
     const updatedEvent = await prisma.event.update({
-      where: { event_id: (await params).event_id, is_deleted: false },
-      data: { status: data.status },
+      where: {
+        event_id: (await params).event_id,
+        is_deleted: false,
+      },
+      data: {
+        status,
+        updated_by,
+        updated_at: new Date(),
+      },
     });
 
     return NextResponse.json({
-      message: `Status event berhasil diperbarui menjadi ${data.status}`,
+      message: `Status event berhasil diperbarui menjadi ${status}`,
       event: updatedEvent,
     });
   } catch (error: unknown) {

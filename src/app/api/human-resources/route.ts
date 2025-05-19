@@ -46,7 +46,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { user_id, event_ids } = data;
+    const { user_id, event_ids,updated_by } = data;
 
     if (!user_id || !Array.isArray(event_ids) || event_ids.length === 0) {
       return NextResponse.json(
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     const existingAssignments = await prisma.userEvent.findMany({
       where: {
         userId: user_id,
-        eventId: { in: event_ids },  // Check if the user is assigned to any of the selected events
+        eventId: { in: event_ids },
       },
     });
 
@@ -91,6 +91,8 @@ export async function POST(req: Request) {
         data: {
           userId: user_id,
           eventId: eventId,
+          updated_by: updated_by,
+          is_deleted: false,
         },
       });
     });

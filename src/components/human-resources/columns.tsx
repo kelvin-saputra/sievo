@@ -1,25 +1,26 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpDown } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import useHr, { UserWithStatus } from "@/hooks/use-hr"
 import { AssignmentModal } from "./form/assignment-hr-modal"
+import { DetailModal } from "./detail-modal"
 import { ConfirmationModal } from "./confirmation-modal"
-import useHr from "@/hooks/use-hr"
-import type { ColumnDef } from "@tanstack/react-table"
 
-export type User = {
+export type Employee = {
   id: string
   name: string
-  role: string
-  status: "unassigned" | "inactive" | "assigned"
-  avatar?: string
+  email: string
+  department: string
+  status: "unassigned" | "assigned" | "inactive"
 }
 
 const AssignmentCell = ({ row }: { row: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedEventId, setSelectedEventId] = useState<string>("")
   const [selectedEventName, setSelectedEventName] = useState<string>("")
   const pendingAssignmentRef = useRef<{ userId: string; eventIds: string[] } | null>(null)
@@ -86,22 +87,33 @@ const AssignmentCell = ({ row }: { row: any }) => {
 
   return (
     <>
-      <Button
-        variant={user.status === "inactive" ? "ghost" : "default"}  // If inactive, make it a ghost button (greyed out)
-        size="sm"
-        disabled={user.status === "inactive"}  // Disable the button if inactive
-        onClick={() => {
-          if (user.status !== "inactive") {  // Only open the modal if not inactive
-            if (events.length === 0) {
-              fetchAllEvents()
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={user.status === "inactive"}
+          onClick={() => setIsDetailModalOpen(true)}
+        >
+          Detail
+        </Button>
+
+        <Button
+          variant={user.status === "inactive" ? "ghost" : "default"}
+          size="sm"
+          disabled={user.status === "inactive"}
+          onClick={() => {
+            if (user.status !== "inactive") {
+              if (events.length === 0) {
+                fetchAllEvents()
+              }
+              setIsModalOpen(true)
             }
-            setIsModalOpen(true)
-          }
-        }}
-        className={user.status === "inactive" ? "bg-gray-100 text-gray-600" : ""}  // Apply grey color to the button if inactive
-      >
-        Assign to
-      </Button>
+          }}
+          className={user.status === "inactive" ? "bg-gray-100 text-gray-600" : ""}
+        >
+          Assign to
+        </Button>
+      </div>
 
       <AssignmentModal
         isOpen={isModalOpen}
@@ -109,6 +121,13 @@ const AssignmentCell = ({ row }: { row: any }) => {
         onAssign={handleAssign}
         projects={projectsForModal}
         isLoading={assigning}
+      />
+
+      <DetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        userId={user.id}
+        userName={user.name}
       />
 
       <ConfirmationModal
@@ -123,60 +142,37 @@ const AssignmentCell = ({ row }: { row: any }) => {
   )
 }
 
-
-
-export const hrColumns: ColumnDef<User>[] = [
+export const hrColumns: ColumnDef<UserWithStatus>[] = [
   {
     accessorKey: "name",
-    header: ({ column }: { column: any }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Name <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }: { row: any }) => {
+    header: ({ column }) => {
       return (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={row.original.avatar || "/placeholder.svg"} alt={row.getValue("name")} />
-            <AvatarFallback>{(row.getValue("name") as string).charAt(0)}</AvatarFallback>
-          </Avatar>
-          <span>{row.getValue("name")}</span>
-        </div>
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       )
     },
   },
   {
-    accessorKey: "role",
-    header: ({ column }: { column: any }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Role <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
+    accessorKey: "email",
+    header: "Email",
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: any }) => {
-      const status = (row.getValue("status") as string).toLowerCase()
-      let colorClass = "bg-gray-100 text-gray-800"
-
-      if (status === "unassigned") {
-        colorClass = "bg-yellow-100 text-yellow-800"
-      } else if (status === "assigned") {
-        colorClass = "bg-green-100 text-green-800"
-      } else if (status === "inactive") {
-        colorClass = "bg-gray-100 text-gray-800"
-      }
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string
 
       return (
-        <Badge variant="secondary" className={colorClass}>
-          {status}
+        <Badge variant={status === "assigned" ? "default" : status === "unassigned" ? "secondary" : "destructive"}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
       )
     },
   },
   {
     id: "actions",
-    cell: ({ row }: { row: any }) => <AssignmentCell row={row} />,
+    cell: AssignmentCell,
   },
 ]

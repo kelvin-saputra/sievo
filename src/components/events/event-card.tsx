@@ -26,14 +26,16 @@ import useHr from "@/hooks/use-hr";
 
 interface EventCardProps {
   event: EventSchema;
-  onStatusUpdate: (eventId: string, status: EventStatusEnum) => void;
-  onDeleteEvent: (eventId: string) => void;
+  onStatusUpdate?: (eventId: string, status: EventStatusEnum) => void;
+  onDeleteEvent?: (eventId: string) => void;
+  userRole: string | null;
 }
 
 const EventCard = ({
   event,
   onStatusUpdate,
   onDeleteEvent,
+  userRole,
 }: EventCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [eventData, setEventData] = useState(event);
@@ -61,7 +63,8 @@ const EventCard = ({
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
-    onStatusUpdate(eventData.event_id, status);
+    if (userRole === "FREELANCE") return;
+    onStatusUpdate?.(eventData.event_id, status);
     setEventData((prev) => ({ ...prev, status }));
   };
 
@@ -103,7 +106,11 @@ const EventCard = ({
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="outline"
+                onClick={(e) => e.stopPropagation()}
+                disabled={userRole === "FREELANCE"}
+              >
                 <span
                   className={`rounded px-2 py-1 text-xs font-semibold ${
                     eventStatusColorMap[eventData.status] ||
@@ -115,27 +122,34 @@ const EventCard = ({
                 <MoreHorizontal className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {EventStatusEnum.options.map((status) => (
-                <DropdownMenuItem
-                  key={status}
-                  onClick={(e) => handleStatusChange(e, status)}
-                >
-                  <span
-                    className={`rounded px-2 py-1 text-xs font-semibold ${
-                      eventStatusColorMap[status] || "bg-gray-100 text-gray-800"
-                    }`}
+            {userRole !== "FREELANCE" && (
+              <DropdownMenuContent align="end">
+                {EventStatusEnum.options.map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={(e) => handleStatusChange(e, status)}
                   >
-                    {status}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
+                    <span
+                      className={`rounded px-2 py-1 text-xs font-semibold ${
+                        eventStatusColorMap[status] ||
+                        "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
           <Button variant="secondary" onClick={handleViewDetails}>
             View Details
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={userRole === "FREELANCE"}
+          >
             Delete
           </Button>
         </div>
@@ -169,7 +183,9 @@ const EventCard = ({
               variant="destructive"
               onClick={() => {
                 setConfirmOpen(false);
-                onDeleteEvent(eventData.event_id);
+                if (userRole !== "FREELANCE") {
+                  onDeleteEvent?.(eventData.event_id);
+                }
               }}
             >
               Hapus

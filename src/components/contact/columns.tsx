@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
@@ -16,7 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { UserSchema } from "@/models/schemas";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Pastikan file ini ada
 
 export interface Contact {
   contact_id: string;
@@ -37,24 +38,23 @@ export type ContactWithRole = Contact & {
 
 export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    id: "avatar",
+    header: " ",
+    cell: ({ row }) => {
+      const name = row.original.name;
+      const initials = name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+      return (
+        <Avatar className="h-8 w-8">
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+      );
+    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -104,20 +104,20 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
     cell: ({ row }) => {
       const role = row.getValue("role") as string;
       return (
-        <Badge 
+        <Badge
           className={
-            role === "client" 
-              ? "bg-green-100 text-green-800 hover:bg-blue-200" 
-              : role === "vendor" 
-                ? "bg-orange-100 text-orange-800 hover:bg-purple-200" 
-                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            role === "client"
+              ? "bg-green-100 text-green-800 hover:bg-blue-200"
+              : role === "vendor"
+              ? "bg-orange-100 text-orange-800 hover:bg-purple-200"
+              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
           }
         >
-          {role === "client" 
-            ? "Client" 
-            : role === "vendor" 
-              ? "Vendor" 
-              : "None"}
+          {role === "client"
+            ? "Client"
+            : role === "vendor"
+            ? "Vendor"
+            : "None"}
         </Badge>
       );
     },
@@ -143,7 +143,24 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
     cell: function ActionCell({ row, table }) {
       const router = useRouter();
       const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+      const [userRole, setUserRole] = useState<string>("");
+
       const meta = table.options.meta as { onDelete?: (contactId: string) => void };
+
+      useEffect(() => {
+        try {
+          const userData = localStorage.getItem("authUser");
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            const userParsed = UserSchema.partial().parse(parsedUser);
+            setUserRole((userParsed.role || "").toUpperCase());
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+        }
+      }, []);
+
+      const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
 
       const handleDelete = () => {
         if (meta.onDelete) {
@@ -161,27 +178,30 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
             >
               Detail
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              Delete
-            </Button>
+
+            {canDelete && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                Delete
+              </Button>
+            )}
           </div>
 
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
-              <AlertDialogDescription>
-                Apakah Anda yakin ingin menghapus kontak &quot;{row.original.name}&quot;? Tindakan ini tidak dapat dibatalkan.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Apakah Anda yakin ingin menghapus kontak &quot;{row.original.name}&quot;? Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Batal</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                   Delete
-                  </AlertDialogAction>
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

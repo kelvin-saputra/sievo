@@ -33,7 +33,6 @@ export default function useActualBudget(event_id: string) {
             const { data: rawActualBudget } = await axios.get(`${BUDGET_API}`, {params: {event_id:event_id, is_actual:true}});
             setActualBudget(() => rawActualBudget.data);
         } catch {
-            toast.error("Gagal mengambil data budget aktual.");
         }
         setLoading(false);
     }, [event_id]);
@@ -51,7 +50,6 @@ export default function useActualBudget(event_id: string) {
             setActualBudgetItems(validatedActualBudgetItems);
         } catch (error){
             console.log(error instanceof Error ? error.message : error);
-            toast.error("Gagal mengambil data budget aktual.");
         }
         setLoading(false);
     }, [event_id, actualBudget?.budget_id]);

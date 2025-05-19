@@ -112,7 +112,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
             <p className="text-sm font-medium text-muted-foreground">
               Akhir Kerja
             </p>
-            <p>{formatDateToIndonesian(user.ended_at)}</p>
+            <p>{formatDateToIndonesian(user.ended_at)==="Kamis, 1 Januari 1970"? "-":formatDateToIndonesian(user.ended_at)}</p>
           </div>
 
           <div>
