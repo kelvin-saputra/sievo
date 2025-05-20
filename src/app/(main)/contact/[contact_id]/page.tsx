@@ -22,7 +22,8 @@ import {
 import useContact from "@/hooks/use-contact";
 import PageHeader from "@/components/common/page-header";
 import { z } from "zod";
-import { UserSchema } from "@/models/schemas";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
+import { getUserDataClient } from "@/lib/userData";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Contact name must be at least 2 characters long" }),
@@ -52,8 +53,6 @@ const ContactDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
-  const [userRole, setUserRole] = useState<string>("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -65,28 +64,11 @@ const ContactDetail = () => {
     type: ""
   });
 
-  const canEdit = ["ADMIN", "INTERNAL", "EXECUTIVE"].includes(userRole);
-  const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
-
   useEffect(() => {
     if (typeof contact_id === "string") {
       fetchContactById(contact_id);
     }
   }, [contact_id, fetchContactById]);
-
-  useEffect(() => {
-    try {
-      const userData = localStorage.getItem("authUser");
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        const userParsed = UserSchema.partial().parse(parsedUser);
-        setUser(userParsed);
-        setUserRole((parsedUser.role || "").toUpperCase());
-      }
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-    }
-  }, []);
 
   useEffect(() => {
     if (contact) {
@@ -138,7 +120,7 @@ const ContactDetail = () => {
   };
 
   const handleEdit = () => {
-    if (!canEdit) {
+    if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
       toast.error("You do not have access to edit Contact.");
       return;
     }
@@ -146,7 +128,7 @@ const ContactDetail = () => {
   };
 
   const handleSave = async () => {
-    if (!canEdit) {
+    if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
       toast.error("You do not have access to edit Contact.");
       return;
     }
@@ -162,7 +144,7 @@ const ContactDetail = () => {
     }
 
     try {
-      const userId = user?.id || "550e8400-e29b-41d4-a716-446655440000";
+      const userId = getUserDataClient().id || "550e8400-e29b-41d4-a716-446655440000";
       
       // Create the update payload
       const updateData: any = {
@@ -194,7 +176,7 @@ const ContactDetail = () => {
   };
 
   const handleDeleteClick = () => {
-    if (!canDelete) {
+    if (!checkRoleClient(ADMINEXECUTIVE)) {
       toast.error("You do not have access to delete Contacts.");
       return;
     }
@@ -202,7 +184,7 @@ const ContactDetail = () => {
   };
 
   const handleDelete = async () => {
-    if (!canDelete) {
+    if (!checkRoleClient(ADMINEXECUTIVE)) {
       toast.error("You do not have access to delete Contacts.");
       return;
     }
@@ -370,8 +352,8 @@ const ContactDetail = () => {
               <Button 
                 onClick={handleEdit} 
                 variant={"default"}
-                className={`${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!canEdit}
+                className={`${!checkRoleClient(ADMINEXECUTIVEINTERNAL) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!checkRoleClient(ADMINEXECUTIVEINTERNAL)}
               >
                 Edit
               </Button>
@@ -410,7 +392,7 @@ const ContactDetail = () => {
         </Tabs>
       </div>
 
-      {canDelete && (
+      {checkRoleClient(ADMINEXECUTIVE) && (
         <div className="flex justify-end mt-8">
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>

@@ -82,7 +82,7 @@ export function DataTable<TData, TValue>({ columns, data, globalFilter }: DataTa
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Tidak ada data yang sesuai dengan kriteria pencarian
+                  No data matches your search criteria
                 </TableCell>
               </TableRow>
             )}

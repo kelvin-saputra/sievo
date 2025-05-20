@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { ContactSchema } from "@/models/schemas";
 import { AddContactDTO, UpdateContactDTO } from "@/models/dto";
+import { ADMINEXECUTIVE, ALL, checkRoleClient } from "@/lib/rbac-client";
 
 const API_URL = process.env.NEXT_PUBLIC_CONTACT_API_URL!;
 
@@ -82,17 +83,8 @@ const handleUpdateContact = async (
   data: UpdateContactDTO
 ) => {
   try {
-    // Get the current user role from localStorage
-    const userData = localStorage.getItem("authUser");
-    let userRole = "";
-    
-    if (userData) {
-      const user = JSON.parse(userData);
-      userRole = user.role?.toUpperCase() || "";
-    }
-
     // Check if user has permission to update contacts
-    if (!["ADMIN", "EMPLOYEE", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+    if (!checkRoleClient(ALL)) {
       toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
       return;
     }
@@ -137,17 +129,8 @@ const handleUpdateContact = async (
 
   const handleDeleteContact = async (contactId: string) => {
     try {
-      // Get the current user role from localStorage
-      const userData = localStorage.getItem("authUser");
-      let userRole = "";
-      
-      if (userData) {
-        const user = JSON.parse(userData);
-        userRole = user.role?.toUpperCase() || "";
-      }
-
       // Check if user has permission to delete contacts
-      if (!["ADMIN", "EXECUTIVE"].includes(userRole)) {
+      if (!checkRoleClient(ADMINEXECUTIVE)) {
         toast.error("You do not have access to delete Contact.");
         return;
       }

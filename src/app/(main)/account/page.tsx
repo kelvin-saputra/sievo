@@ -64,18 +64,18 @@ export default function ProfilePage() {
     const emailRegex = /^\S+@\S+\.\S+$/
 
     if (!data.email) {
-      form.setError("email", { message: "Email wajib diisi!" })
+      form.setError("email", { message: "Email is required!" })
       return
     } else if (!emailRegex.test(data.email)) {
       form.setError("email", {
-        message: "Format email tidak valid!",
+        message: "Invalid email format!",
       })
       return
     }
 
     if (!data.phone_number) {
       form.setError("phone_number", {
-        message: "Nomor telepon wajib diisi!",
+        message: "Phone number is required!",
       })
       return
     }
@@ -116,29 +116,29 @@ export default function ProfilePage() {
       : `${nameParts[0][0]}`.toUpperCase()
   }
 
-  const formatDateToIndonesian = (date: Date | string | undefined) => {
+  const formatDateToEnglish = (date: Date | string | undefined) => {
     if (!date) return ""
 
     // Convert to Date object if it's a string
     const dateObj = typeof date === "string" ? new Date(date) : date
 
-    // Array of day names in Indonesian
-    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+    // Array of day names in English
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-    // Array of month names in Indonesian
+    // Array of month names in English
     const months = [
-      "Januari",
-      "Februari",
-      "Maret",
+      "January",
+      "February",
+      "March",
       "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
+      "May",
+      "June",
+      "July",
+      "August",
       "September",
-      "Oktober",
+      "October",
       "November",
-      "Desember",
+      "December",
     ]
 
     const day = days[dateObj.getDay()]
@@ -146,8 +146,8 @@ export default function ProfilePage() {
     const month = months[dateObj.getMonth()]
     const year = dateObj.getFullYear()
 
-    return `${day}, ${dateNum} ${month} ${year}` === "Kamis, 1 Januari 1970"
-      ? "Anda Masih Aktif"
+    return `${day}, ${dateNum} ${month} ${year}` === "Thursday, 1 January 1970"
+      ? "You Are Still Active"
       : `${day}, ${dateNum} ${month} ${year}`
   }
   return (
@@ -223,7 +223,7 @@ export default function ProfilePage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel>E-mail</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                     name="phone_number"
                     render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel>Nomor Telepon</FormLabel>
+                        <FormLabel>Phone Number</FormLabel>
                         <FormControl>
                           <Input {...field} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                         </FormControl>
@@ -252,16 +252,16 @@ export default function ProfilePage() {
                   />
 
                   <FormItem className="space-y-2">
-                    <FormLabel>Mulai Kerja</FormLabel>
+                    <FormLabel>Start Date</FormLabel>
                     <FormControl>
-                      <Input value={formatDateToIndonesian(user.started_at)} disabled={true} className="bg-gray-50" />
+                      <Input value={formatDateToEnglish(user.started_at)} disabled={true} className="bg-gray-50" />
                     </FormControl>
                   </FormItem>
 
                   <FormItem className="space-y-2">
-                    <FormLabel>Akhir Kerja</FormLabel>
+                    <FormLabel>End Date</FormLabel>
                     <FormControl>
-                      <Input value={formatDateToIndonesian(user.ended_at)} disabled={true} className="bg-gray-50" />
+                      <Input value={formatDateToEnglish(user.ended_at)} disabled={true} className="bg-gray-50" />
                     </FormControl>
                   </FormItem>
 

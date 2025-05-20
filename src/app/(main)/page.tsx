@@ -6,7 +6,7 @@ import { Calendar, BarChart3, Users, Contact, FileText, Package } from "lucide-r
 import useHomepage from "@/hooks/use-homepage";
 import { useEffect } from "react";
 import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
-import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL } from "@/lib/rbac-client";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 import Loading from "@/components/ui/loading";
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
     }, [fetchHomepageData]);
 
   if (loading) {
-    return <Loading message="Mengambil data pengguna" />
+    return <Loading message="Fetching user data..." />
   }
 
   return (
@@ -65,7 +65,7 @@ export default function Home() {
             <Calendar className="h-6 w-6" />
             <span className="text-center">Event</span>
           </Link>
-            {homepageData && ADMINEXECUTIVE.includes(homepageData.role) && (
+            {checkRoleClient(ADMINEXECUTIVE) && (
               <>
                 <Link
                   href="/dashboard"
@@ -90,7 +90,7 @@ export default function Home() {
             <Contact className="h-6 w-6" />
             <span>Contact</span>
           </Link>
-          {homepageData && ADMINEXECUTIVEINTERNAL.includes(homepageData.role) && (
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
             <Link
               href="/proposal"
               className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
@@ -110,7 +110,7 @@ export default function Home() {
 
         {/* Upcoming Events */}
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Event</h2>
+          <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
           <div className="border-t border-gray-200">
             {homepageData?.event && homepageData.event.length > 0 ? (
               homepageData.event.map((event, index) => (
@@ -127,7 +127,7 @@ export default function Home() {
                 </Link>
               ))
             ) : (
-              <div className="py-8 text-center text-gray-500">Tidak ada upcoming event saat ini</div>
+              <div className="py-8 text-center text-gray-500">No upcoming events at this time</div>
             )}
           </div>
         </div>

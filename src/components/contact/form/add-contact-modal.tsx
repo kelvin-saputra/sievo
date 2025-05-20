@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -101,7 +102,6 @@ export function AddContactModal({ onAddContact }: AddContactModalProps) {
       vendorType: selectedRole === "vendor" ? vendorType : undefined
     };
     
-    console.log("Form submitted:", submissionData);
     onAddContact(submissionData);
     form.reset();
     setSelectedRole("none");
@@ -113,11 +113,12 @@ export function AddContactModal({ onAddContact }: AddContactModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Contact</Button>
+        <Button variant={"default"}>+ Add Contact</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Contact</DialogTitle>
+            <DialogDescription>Fill out the form below to add a new contact.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form id="add-contact-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

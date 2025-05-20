@@ -29,26 +29,26 @@ export type VendorService = {
   is_deleted: boolean | undefined
 }
 
-// Definisi kolom untuk data table
+// Column definitions for data table
 export const columns: ColumnDef<VendorService>[] = [
   {
     accessorKey: "vendor_name",
     header: ({ column }) => {
       return (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Nama Vendor
+          Vendor Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
       const vendorName = row.getValue("vendor_name") as string
-      const coontactId = row.original.contact_id
+      const contactId = row.original.contact_id
       
       return (
         <div className="flex items-center">
           <Link
-            href={`/contact/${coontactId}`} 
+            href={`/contact/${contactId}`} 
             className="flex items-center hover:text-primary hover:underline"
           >
             {vendorName}
@@ -64,7 +64,7 @@ export const columns: ColumnDef<VendorService>[] = [
     header: ({ column }) => {
       return (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Kategori
+          Category
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -77,7 +77,7 @@ export const columns: ColumnDef<VendorService>[] = [
     header: ({ column }) => {
       return (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Nama Service
+          Service Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -89,7 +89,7 @@ export const columns: ColumnDef<VendorService>[] = [
     header: ({ column }) => {
       return (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Harga
+          Price
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

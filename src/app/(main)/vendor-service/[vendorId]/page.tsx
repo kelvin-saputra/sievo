@@ -29,8 +29,7 @@ export default function VendorDetailPage() {
       setLoading(false)
     }
   }, [vendorId, vendorServices])
-  console.log("Founded service1", vendorServices)
-  console.log("Founded service", vendorId)
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -75,11 +74,11 @@ export default function VendorDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12">
-              <h2 className="text-xl font-semibold mb-2">Vendor tidak ditemukan</h2>
+              <h2 className="text-xl font-semibold mb-2">Vendor not found</h2>
               <p className="text-muted-foreground mb-4">
-                Vendor dengan ID {vendorId} tidak ditemukan atau telah dihapus.
+                Vendor with ID {vendorId} was not found or has been deleted.
               </p>
-              <Button onClick={() => router.push("/vendor-services")}>Kembali ke Daftar Vendor</Button>
+              <Button onClick={() => router.push("/vendor-services")}>Back to Vendor List</Button>
             </div>
           </CardContent>
         </Card>
@@ -94,16 +93,16 @@ export default function VendorDetailPage() {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-6">
         <Button variant="outline" onClick={() => router.push("/vendor-service")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Vendor
+          <ArrowLeft className="h-4 w-4" /> Back to Vendor Service List
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Informasi Vendor */}
+        {/* Vendor Information */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>Informasi Vendor</CardTitle>
-            <CardDescription>Detail kontak dan informasi vendor</CardDescription>
+            <CardTitle>Vendor Information</CardTitle>
+            <CardDescription>Contact details and vendor information</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -117,7 +116,7 @@ export default function VendorDetailPage() {
               <Separator />
 
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Kontak</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">Contact</h4>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span>{vendor.contact.email}</span>
@@ -132,7 +131,7 @@ export default function VendorDetailPage() {
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-muted-foreground">Informasi Bank</h4>
+                    <h4 className="font-medium text-sm text-muted-foreground">Bank Information</h4>
                     <p>{vendor.bankAccountDetail}</p>
                   </div>
                 </>
@@ -142,7 +141,7 @@ export default function VendorDetailPage() {
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-muted-foreground">Deskripsi</h4>
+                    <h4 className="font-medium text-sm text-muted-foreground">Description</h4>
                     <p>{vendor.contact.description}</p>
                   </div>
                 </>
@@ -151,16 +150,16 @@ export default function VendorDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Layanan Vendor */}
+        {/* Vendor Services */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Layanan yang Ditawarkan</CardTitle>
-            <CardDescription>{vendor.vendor_service.length} layanan tersedia dari vendor ini</CardDescription>
+            <CardTitle>Offered Services</CardTitle>
+            <CardDescription>{vendor.vendor_service.length} services available from this vendor</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="mb-4">
-                <TabsTrigger value="all">Semua</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
                 {Array.from(new Set(vendor.vendor_service.map((service) => service.category))).map((category) => (
                   <TabsTrigger key={category} value={category}>
                     {category}
@@ -187,7 +186,7 @@ export default function VendorDetailPage() {
                           <div className="text-xl font-semibold">{formatPrice(service.price)}</div>
                           <Link href={`${vendorId}/${service.service_id}`}>
                             <Button size="sm" className="mt-2">
-                              Lihat Detail
+                              View Details
                             </Button>
                           </Link>
                         </div>
@@ -219,7 +218,7 @@ export default function VendorDetailPage() {
                               <div className="text-xl font-semibold">{formatPrice(service.price)}</div>
                               <Link href={`${vendorId}/${service.service_id}`}>
                                 <Button size="sm" className="mt-2">
-                                  Lihat Detail
+                                  View Details
                                 </Button>
                               </Link>
                             </div>

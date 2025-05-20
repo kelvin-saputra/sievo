@@ -6,6 +6,8 @@ import { ProposalSchema } from "@/models/schemas";
 import { useState, useCallback } from "react";
 import { addProposalDTO, updateProposalDTO } from "@/models/dto/proposal.dto";
 import { ProposalStatusEnum } from "@/models/enums";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
+import { getUserDataClient } from "@/lib/userData";
 
 const API_URL = process.env.NEXT_PUBLIC_PROPOSAL_API_URL!;
 
@@ -37,18 +39,7 @@ export default function useProposal() {
 
   const handleAddProposal = async (newProposal: addProposalDTO) => {
     try {
-
-      const userData = localStorage.getItem("authUser");
-      let userEmail = "";
-      let userRole = "";
-
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "";
-        userRole = user.role?.toUpperCase() || "";
-      }
-
-      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+      if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
         toast.error("Anda tidak memiliki akses untuk menambahkan Proposal.");
         return;
       }
@@ -56,8 +47,8 @@ export default function useProposal() {
       const proposalData = ProposalSchema.partial().parse({
         ...newProposal,
         status: newProposal.status ?? "DRAFT", 
-        created_by: userEmail,
-        updated_by: userEmail,
+        created_by: getUserDataClient().email,
+        updated_by: getUserDataClient().email,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -91,17 +82,7 @@ export default function useProposal() {
         { status: newStatus }
       );
 
-      const userData = localStorage.getItem("authUser");
-      let userEmail = "";
-      let userRole = "";
-
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "";
-        userRole = user.role?.toUpperCase() || "";
-      }
-
-      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+      if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
         toast.error("Anda tidak memiliki akses untuk mengubah status Proposal.");
         return;
       }
@@ -109,7 +90,7 @@ export default function useProposal() {
       setProposals((prevProposals) =>
         prevProposals.map((proposal) =>
           proposal.proposal_id === proposalId
-            ? { ...proposal, status: newStatus, updated_at: new Date(updatedProposal.updated_at),updated_by: userEmail}
+            ? { ...proposal, status: newStatus, updated_at: new Date(updatedProposal.updated_at),updated_by: getUserDataClient().email}
             : proposal
         )
       );
@@ -126,19 +107,8 @@ export default function useProposal() {
       setLoading(true);
       const response = await axios.delete(`/api/proposal/${proposalId}`);
       const updatedProposal = response.data.data;
-      console.log(updatedProposal.updated_at)
 
-      const userData = localStorage.getItem("authUser");
-      let userEmail = "";
-      let userRole = "";
-
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "";
-        userRole = user.role?.toUpperCase() || "";
-      }
-
-      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+      if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
         toast.error("Anda tidak memiliki akses untuk menghapus Proposal.");
         return;
       }
@@ -146,15 +116,14 @@ export default function useProposal() {
       setProposals((prevProposals) =>
         prevProposals.map((proposal) =>
           proposal.proposal_id === proposalId
-            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at),updated_by: userEmail }
+            ? { ...proposal, deleted: true, updated_at: new Date(updatedProposal.updated_at),updated_by: getUserDataClient().email }
             : proposal
         )
       );
       await fetchAllProposals();
       toast.success("Proposal deleted successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete proposal.");
-      console.error("Delete proposal error:", error);
     } finally {
       setLoading(false);
     }
@@ -168,24 +137,9 @@ export default function useProposal() {
     
   ) => {
     try {
-      const userData = localStorage.getItem("authUser");
-      let userEmail = "";
-      let userRole = "";
-
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "";
-        userRole = user.role?.toUpperCase() || "";
-      }
-
-      if (!["ADMIN", "EXECUTIVE", "INTERNAL"].includes(userRole)) {
+      if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
         toast.error("Anda tidak memiliki akses untuk mengubah Proposal.");
         return;
-      }
-
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "";
       }
 
       const updatedData = ProposalSchema.pick({
@@ -198,7 +152,7 @@ export default function useProposal() {
         .partial()
         .parse({
           ...data,
-          updated_by: userEmail,
+          updated_by: getUserDataClient().email,
           updated_at: new Date().toISOString(),
         });
   

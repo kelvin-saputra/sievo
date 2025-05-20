@@ -28,43 +28,43 @@ interface AddVendorServiceFormProps {
 }
 
 export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFormProps) {
-	const form = useForm<AddVendorServiceDTO>({
-			resolver: zodResolver(AddVendorServiceDTO),
-			defaultValues: {
-					vendor_id: "",
-					service_name: "",
-					category: VendorServiceCategoryEnum.Enum.OTHERS,
-					price: 0,
-					rating: 0,
-					description: "",
-			},
-	})
+  const form = useForm<AddVendorServiceDTO>({
+      resolver: zodResolver(AddVendorServiceDTO),
+      defaultValues: {
+          vendor_id: "",
+          service_name: "",
+          category: VendorServiceCategoryEnum.Enum.OTHERS,
+          price: 0,
+          rating: 0,
+          description: "",
+      },
+  })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { vendorServices, handleAddVendorService } = useSafeContext(VendorServiceContext, "VendorServiceContext")
 
   async function onSubmit(data: AddVendorServiceDTO) {
-		setIsSubmitting(true);
+    setIsSubmitting(true);
     try {
-			const requestData = AddVendorServiceDTO.parse(data);
+      const requestData = AddVendorServiceDTO.parse(data);
 
       await handleAddVendorService(requestData)
     } catch (error) {
-			console.error("Error adding vendor service:", error)
+      console.error("Error adding vendor service:", error)
     } finally {
-			form.reset()
-			setIsSubmitting(false);
+      form.reset()
+      setIsSubmitting(false);
       onOpenChange(false)
-		}
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Tambah Layanan Vendor</DialogTitle>
-          <DialogDescription>Isi form berikut untuk menambahkan layanan vendor baru.</DialogDescription>
+          <DialogTitle>Add Vendor Service</DialogTitle>
+          <DialogDescription>Fill out the form below to add a new vendor service.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -78,7 +78,7 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih vendor" />
+                        <SelectValue placeholder="Select vendor" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -99,9 +99,9 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
               name="service_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Layanan</FormLabel>
+                  <FormLabel>Service Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan nama layanan" {...field} />
+                    <Input placeholder="Enter service name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,11 +113,11 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kategori</FormLabel>
+                  <FormLabel>Category</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -138,7 +138,7 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Harga (Rp)</FormLabel>
+                  <FormLabel>Price (Rp)</FormLabel>
                   <FormControl>
                     <Input type="number" min="0" step="1000" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
@@ -152,9 +152,9 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Masukkan deskripsi layanan" className="resize-none" rows={3} {...field} />
+                    <Textarea placeholder="Enter service description" className="resize-none" rows={3} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -177,10 +177,10 @@ export function AddVendorServiceForm({ open, onOpenChange }: AddVendorServiceFor
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Batal
+                Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Menyimpan..." : "Simpan"}
+                {isSubmitting ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>

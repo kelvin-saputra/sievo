@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import PageHeader from "@/components/common/page-header";
 import useContact from "@/hooks/use-contact";
@@ -11,6 +10,8 @@ import {
   contactColumns,
   ContactWithRole,
 } from "../../../components/contact/columns";
+import Loading from "@/components/ui/loading";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function ViewAllContacts() {
   const {
@@ -29,8 +30,7 @@ export default function ViewAllContacts() {
     try {
       await handleDeleteContact(contactId);
       fetchAllContacts();
-    } catch (error) {
-      console.error("Error deleting contact:", error);
+    } catch {
       toast.error("Failed to delete Contact. Please try again.");
     }
   };
@@ -40,6 +40,12 @@ export default function ViewAllContacts() {
     created_by: contact.created_by ?? "",
     role: contact.role ?? "none",
   }));
+
+  if (loading) {
+    return (
+          <Loading message="Fetching contacts data..." />
+    );
+  }
   
 
   return (
@@ -47,21 +53,18 @@ export default function ViewAllContacts() {
       <PageHeader
         title="Contacts Overview"
       />
-
-      <div className="mb-6">
-        <AddContactModal onAddContact={handleAddContact} />
-      </div>
+      {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
+        <div className="mb-6">
+          <AddContactModal onAddContact={handleAddContact} />
+        </div>
+      )}
 
       <div className="mb-8 p-6 border rounded-lg shadow-lg bg-super-white">
-        {loading ? (
-          <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
-        ) : (
-          <ContactTable<ContactWithRole>
-            columns={contactColumns}
-            data={typedContacts}
-            onDelete={handleDelete}
-          />
-        )}
+        <ContactTable<ContactWithRole>
+          columns={contactColumns}
+          data={typedContacts}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

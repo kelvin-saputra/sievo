@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Building, Calendar, Mail, Phone, Star, StarHalf } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { DeleteVendorServiceForm } from "@/components/vendor-services/form/delete-vendor-service-form"
 import { VendorServiceSchema } from "@/models/schemas"
 import { UpdateVendorServiceForm } from "@/components/vendor-services/form/update-vendor-service-form"
+import Loading from "@/components/ui/loading"
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client"
 
 interface ProcessedVendorService {
   service_id: string
@@ -91,13 +92,7 @@ export default function VendorServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </div>
+      <Loading message="Fetching vendor service data..."/>
     )
   }
 
@@ -107,11 +102,11 @@ export default function VendorServiceDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12">
-              <h2 className="text-xl font-semibold mb-2">Layanan tidak ditemukan</h2>
-              <p className="text-muted-foreground mb-4">
-                Layanan dengan ID {serviceId} tidak ditemukan atau telah dihapus.
-              </p>
-              <Button onClick={() => router.push("/vendor-service")}>Kembali ke Daftar Layanan</Button>
+                <h2 className="text-xl font-semibold mb-2">Vendor Service not found</h2>
+                <p className="text-muted-foreground mb-4">
+                Service with ID {serviceId} was not found or has been deleted.
+                </p>
+                <Button onClick={() => router.push("/vendor-service")}>Back to Vendor Service List</Button>
             </div>
           </CardContent>
         </Card>
@@ -123,7 +118,7 @@ export default function VendorServiceDetailPage() {
     <div className="container mx-auto px-4">
       <div className="mb-6">
         <Button variant="outline" onClick={() => router.push("/vendor-service")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Layanan
+          <ArrowLeft className="h-4 w-4" /> Back to Vendor Service List
         </Button>
       </div>
 
@@ -153,40 +148,44 @@ export default function VendorServiceDetailPage() {
 
             {service.description && (
               <div>
-                <h3 className="text-lg font-medium mb-2">Deskripsi Layanan</h3>
+                <h3 className="text-lg font-medium mb-2">Service Description</h3>
                 <p className="text-muted-foreground">{service.description}</p>
               </div>
             )}
 
             <div>
-              <h3 className="text-lg font-medium mb-2">Informasi Tambahan</h3>
+              <h3 className="text-lg font-medium mb-2">Additional Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <span>Tersedia untuk pemesanan</span>
+                  <span>Available for booking</span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant={"outline"} onClick={() => setUpdateForm(true)}>Edit Layanan</Button>
-            <DeleteVendorServiceForm
-              onDeleteVendorServices={handleDeleteVendorService}
-              serviceId={serviceId}
-              existingVendor={VendorServiceSchema.parse(service)}
-              trigger={<Button variant={"destructive"}>Hapus</Button>}
-            />
-            <UpdateVendorServiceForm 
-              open={isUpdateForm} 
-              existingVendorService={VendorServiceSchema.parse(service)}
-              onOpenChange={setUpdateForm}
-              onUpdateVendorService={handleUpdateVendorService}
-            />
-          </div>
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant={"outline"} onClick={() => setUpdateForm(true)}>Update Service</Button>
+              <DeleteVendorServiceForm
+                onDeleteVendorServices={handleDeleteVendorService}
+                serviceId={serviceId}
+                existingVendor={VendorServiceSchema.parse(service)}
+                trigger={<Button variant={"destructive"}>Delete</Button>}
+              />
+              {checkRoleClient(ADMINEXECUTIVE) && (
+                <UpdateVendorServiceForm 
+                  open={isUpdateForm} 
+                  existingVendorService={VendorServiceSchema.parse(service)}
+                  onOpenChange={setUpdateForm}
+                  onUpdateVendorService={handleUpdateVendorService}
+                />
+              )}
+            </div>
+          )}
           <Separator />
 
           <div>
-            <h3 className="text-lg font-medium mb-4">Disediakan oleh</h3>
+            <h3 className="text-lg font-medium mb-4">Provided by</h3>
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex items-center gap-3">
                 <Building className="h-10 w-10 p-2 bg-primary/10 rounded-full text-primary" />
@@ -197,7 +196,7 @@ export default function VendorServiceDetailPage() {
                     className="p-0 h-auto"
                     onClick={() => router.push(`/vendor-service/${service.vendor_id}`)}
                   >
-                    Lihat semua layanan
+                    View all services
                   </Button>
                 </div>
               </div>
@@ -216,7 +215,7 @@ export default function VendorServiceDetailPage() {
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Link href={`/contact/${service.contact_id}`}>
-              <Button>Lihat Vendor</Button>
+              <Button>View Vendor</Button>
             </Link>
           </div>
         </CardContent>

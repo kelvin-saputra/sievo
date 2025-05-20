@@ -16,9 +16,10 @@ export default function useProfile() {
             const { data: dataResponse } = await axios.get(`${PROFILE_API}`);
             const parsedResponse = UserSchema.parse(dataResponse.data);
             setUser(parsedResponse);
-            toast.success("Profile berhasil didapatkan!");
         } catch {
             toast.success("Profil tidak tersedia, silakan coba lagi nanti");
+        } finally {
+            setLoading(false);
         }
     }, [])
 
@@ -42,8 +43,11 @@ export default function useProfile() {
             }
             localStorage.setItem("authUser", JSON.stringify(userAccess))
             toast.success("Berhasil Memperbaharui Profile!");
+            window.location.reload();
         } catch {
             toast.error("Gagal memperbarui profil, coba lagi beberapa saat lagi.");
+        } finally {
+            setLoading(false);
         }
     }, []);
     return {

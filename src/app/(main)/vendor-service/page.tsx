@@ -46,7 +46,7 @@ export default function VendorServicePage() {
     <div className="container mx-auto py-8 px-4">
       <div>
         <Button variant={"default"} className="mb-4" onClick={() => setIsOpen(true)}>
-          <Plus className="mr-2" /> Tambah Vendor Services
+          <Plus className="mr-2" /> Add Vendor Services
         </Button>
         <AddVendorServiceForm
           open={isOpen}
@@ -60,13 +60,13 @@ export default function VendorServicePage() {
         <CardContent>
           <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-end">
             <div className="w-full md:w-1/3">
-              <label className="block text-sm font-medium mb-2">Filter berdasarkan Vendor:</label>
+              <label className="block text-sm font-medium mb-2">Filter by Vendor:</label>
               <Select value={selectedVendorId} onValueChange={(value) => setSelectedVendorId(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih vendor" />
+                  <SelectValue placeholder="Select vendor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Vendor</SelectItem>
+                  <SelectItem value="all">All Vendors</SelectItem>
                   {vendorServices.map((vendor) => (
                     <SelectItem key={vendor.vendor_id} value={vendor.vendor_id.toString()}>
                       {vendor.contact.name}
@@ -77,9 +77,9 @@ export default function VendorServicePage() {
             </div>
 
             <div className="w-full md:w-2/3">
-              <label className="block text-sm font-medium mb-2">Cari:</label>
+              <label className="block text-sm font-medium mb-2">Search:</label>
               <Input
-                placeholder="Cari layanan, vendor, atau durasi..."
+                placeholder="Search Vendor Service, Category, Price, and Vendor..."
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 className="w-full"

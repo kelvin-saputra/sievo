@@ -50,13 +50,13 @@ export default function ViewAllEvents() {
   const activeEvents = events.filter(
     (event) =>
       event.status !== "DONE" &&
-      (userRole !== "FREELANCE" || userEventIds.includes(event.event_id))
+      (checkRoleClient(ADMINEXECUTIVEINTERNAL) || userEventIds.includes(event.event_id))
   );
 
   const pastEvents = events.filter(
     (event) =>
       event.status === "DONE" &&
-      (userRole !== "FREELANCE" || userEventIds.includes(event.event_id))
+      (checkRoleClient(ADMINEXECUTIVEINTERNAL) || userEventIds.includes(event.event_id))
   );
 
   if (loading) {
@@ -70,7 +70,7 @@ export default function ViewAllEvents() {
         breadcrumbs={[{ label: "Events", href: "/events" }]}
       />
 
-      {userRole !== "FREELANCE" && (
+      {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
         <div className="mb-6">
           <AddEventModal
             onAddEvent={handleAddEvent}
@@ -94,10 +94,10 @@ export default function ViewAllEvents() {
               event={event}
               userRole={userRole}
               onStatusUpdate={
-                userRole !== "FREELANCE" ? handleStatusChange : undefined
+                checkRoleClient(ADMINEXECUTIVEINTERNAL) ? handleStatusChange : undefined
               }
               onDeleteEvent={
-                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
+                checkRoleClient(ADMINEXECUTIVEINTERNAL) ? handleDeleteEvent : undefined
               }
             />
           ))

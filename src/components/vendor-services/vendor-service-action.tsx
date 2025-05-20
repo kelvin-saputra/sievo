@@ -2,14 +2,14 @@
 
 import { useSafeContext } from "@/hooks/use-safe-context";
 import VendorServiceContext from "@/models/context/vendor-service-context";
-import { UserSchema, VendorServiceSchema } from "@/models/schemas";
-import { useEffect, useState } from "react";
+import { VendorServiceSchema } from "@/models/schemas";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { Pencil, SquareArrowOutUpRight, Trash2 } from "lucide-react";
 import { UpdateVendorServiceForm } from "./form/update-vendor-service-form";
 import { DeleteVendorServiceForm } from "./form/delete-vendor-service-form";
-import { ADMINEXECUTIVE } from "@/lib/rbac-client";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export const VendorServiceActions = ({ vendor_service }: { vendor_service: VendorServiceSchema }) => {
   const {
@@ -18,16 +18,6 @@ export const VendorServiceActions = ({ vendor_service }: { vendor_service: Vendo
 	} = useSafeContext(VendorServiceContext, "VendorServiceContext")
 	const router = useRouter();
   const [isUpdateForm, setUpdateForm] = useState(false);
-  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("authUser")!);
-    try {
-      const userParsed = UserSchema.partial().parse(user);
-      setUser(userParsed);
-    } catch {}
-  }, []);
-
 
   return (
     <div className="flex space-x-2">
@@ -39,12 +29,14 @@ export const VendorServiceActions = ({ vendor_service }: { vendor_service: Vendo
       >
         <SquareArrowOutUpRight className="h-4 w-4" />
       </Button>
-			<Button variant="outline" size="icon" className="p-1 h-8 w-8" onClick={() => setUpdateForm(true)}>
-        <Pencil className="h-4 w-4" />
-      </Button>
+      {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
+        <Button variant="outline" size="icon" className="p-1 h-8 w-8" onClick={() => setUpdateForm(true)}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
         <UpdateVendorServiceForm existingVendorService={vendor_service} onUpdateVendorService={handleUpdateVendorService} open={isUpdateForm} onOpenChange={setUpdateForm} />
 
-      {user?.role && ADMINEXECUTIVE.includes((user.role)) && (
+      {checkRoleClient(ADMINEXECUTIVE) && (
         <DeleteVendorServiceForm
           serviceId={vendor_service.service_id} 
           onDeleteVendorServices={handleDeleteVendorService}

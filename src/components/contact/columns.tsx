@@ -15,9 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
-import { UserSchema } from "@/models/schemas";
+import { useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ADMINEXECUTIVE, checkRoleClient } from "@/lib/rbac-client";
 
 export interface Contact {
   contact_id: string;
@@ -204,24 +204,8 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
     cell: function ActionCell({ row, table }) {
       const router = useRouter();
       const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-      const [userRole, setUserRole] = useState<string>("");
 
       const meta = table.options.meta as { onDelete?: (contactId: string) => void };
-
-      useEffect(() => {
-        try {
-          const userData = localStorage.getItem("authUser");
-          if (userData) {
-            const parsedUser = JSON.parse(userData);
-            const userParsed = UserSchema.partial().parse(parsedUser);
-            setUserRole((userParsed.role || "").toUpperCase());
-          }
-        } catch (error) {
-          console.error("Error parsing user data:", error);
-        }
-      }, []);
-
-      const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
 
       const handleDelete = () => {
         if (meta.onDelete) {
@@ -241,7 +225,7 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
               Detail
             </Button>
 
-            {canDelete && (
+            {checkRoleClient(ADMINEXECUTIVE) && (
               <Button
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
