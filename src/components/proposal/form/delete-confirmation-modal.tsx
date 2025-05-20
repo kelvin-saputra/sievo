@@ -39,7 +39,7 @@ export function DeleteConfirmationModal({ isOpen, onClose, onConfirm}: DeleteCon
           <Button variant="outline" onClick={onClose} className="border-gray-300">
             Cancel
           </Button>
-          <Button onClick={onConfirm} className="bg-red-500 hover:bg-red-600 text-white">
+          <Button variant = "destructive"onClick={onConfirm} className="bg-red-500 hover:bg-red-600 text-white">
             Delete
           </Button>
         </DialogFooter>

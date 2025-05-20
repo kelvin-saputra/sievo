@@ -110,7 +110,7 @@ export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: 
               <Button variant="secondary" type="button" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" form="add-proposal-form" className="bg-green-500 text-white">
+              <Button type="submit" variant="default" form="add-proposal-form" className="bg-green-500 text-white">
                 Add Proposal
               </Button>
             </div>
