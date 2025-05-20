@@ -7,6 +7,8 @@ import { useForm } from "react-hook-form";
 import { ChevronsUpDown } from "lucide-react";
 import { UserSchema } from "@/models/schemas";
 
+import { Pencil } from "lucide-react"
+
 import {
   Dialog,
   DialogContent,
@@ -180,7 +182,9 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
       }}
     >
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">Edit Inventory</Button>
+        <Button variant="outline" size="icon" className="p-1 h-8 w-8">
+          <Pencil className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="flex flex-col max-h-[90vh]">
         <DialogHeader>

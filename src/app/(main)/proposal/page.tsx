@@ -35,7 +35,7 @@ export default function ViewAllProposal() {
     <div className="p-6 w-full max-w-7xl mx-auto">
       <PageHeader title="Proposal" breadcrumbs={[{ label: "Proposal", href: "/proposal" }]} />
       <div className="mb-6">
-        <Button onClick={() => setIsModalOpen(true)} className="mb-4 bg-blue-500 text-white">
+        <Button variant="default" onClick={() => setIsModalOpen(true)}>
           + Add Proposal
         </Button>
         {isModalOpen && (

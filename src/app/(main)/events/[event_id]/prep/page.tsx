@@ -28,8 +28,6 @@ export default function EventPrepPage() {
         <AddTaskModal
           onAddTask={handleAddTask}
           users={Array.isArray(users) ? users : []}
-          eventStartDate={event.start_date}
-          eventEndDate={event.end_date}
         />
       </div>
       <DataTable

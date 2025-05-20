@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import EventCard from "@/components/events/event-card";
 import useEvent from "@/hooks/use-event";
@@ -8,8 +8,11 @@ import useHr from "@/hooks/use-hr";
 import useContact from "@/hooks/use-contact";
 import { AddEventModal } from "@/components/events/form/add-event-modal";
 import PageHeader from "@/components/common/page-header";
+import { getUserRoleFromStorage } from "@/utils/authUtils";
 
 export default function ViewAllEvents() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   const {
     events,
     loading,
@@ -26,6 +29,7 @@ export default function ViewAllEvents() {
     fetchAllEvents();
     fetchAllUsers();
     fetchAllContacts();
+    setUserRole(getUserRoleFromStorage());
   }, [fetchAllEvents, fetchAllUsers, fetchAllContacts]);
 
   const clientContacts = contacts.filter((c) => c.role === "client");
@@ -40,13 +44,15 @@ export default function ViewAllEvents() {
         breadcrumbs={[{ label: "Events", href: "/events" }]}
       />
 
-      <div className="mb-6">
-        <AddEventModal
-          onAddEvent={handleAddEvent}
-          users={users}
-          clientContacts={clientContacts}
-        />
-      </div>
+      {userRole !== "FREELANCE" && (
+        <div className="mb-6">
+          <AddEventModal
+            onAddEvent={handleAddEvent}
+            users={users}
+            clientContacts={clientContacts}
+          />
+        </div>
+      )}
 
       <div className="mb-8 p-6 border rounded-lg shadow-lg bg-green-100">
         <h2 className="text-xl font-semibold text-green-800 mb-4">
@@ -60,8 +66,13 @@ export default function ViewAllEvents() {
             <EventCard
               key={event.event_id}
               event={event}
-              onStatusUpdate={handleStatusChange}
-              onDeleteEvent={handleDeleteEvent}
+              userRole={userRole}
+              onStatusUpdate={
+                userRole !== "FREELANCE" ? handleStatusChange : undefined
+              }
+              onDeleteEvent={
+                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
+              }
             />
           ))
         )}
@@ -79,8 +90,13 @@ export default function ViewAllEvents() {
             <EventCard
               key={event.event_id}
               event={event}
-              onStatusUpdate={handleStatusChange}
-              onDeleteEvent={handleDeleteEvent}
+              userRole={userRole}
+              onStatusUpdate={
+                userRole !== "FREELANCE" ? handleStatusChange : undefined
+              }
+              onDeleteEvent={
+                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
+              }
             />
           ))
         )}
