@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -60,13 +58,10 @@ export default function useEvent() {
         event_id: eventId,
         created_by,
         updated_by: userName,
-        created_by,
-        updated_by: userName,
       });
 
       const { data: response } = await axios.put(`${API_URL}`, updatedData);
 
-      const { data: response } = await axios.put(`${API_URL}`, updatedData);
       const parsedEvent = EventSchema.parse(response.data);
 
       setEvents((prevEvents) =>
@@ -111,10 +106,6 @@ export default function useEvent() {
           status: newStatus,
           updated_by: userName,
         }
-        {
-          status: newStatus,
-          updated_by: userName,
-        }
       );
 
       const parsedEvent = EventSchema.parse(updatedEvent.event);
@@ -145,8 +136,6 @@ export default function useEvent() {
 
       const eventData = EventSchema.partial().parse({
         ...newEvent,
-        created_by: userName,
-        updated_by: userName,
         created_by: userName,
         updated_by: userName,
       });
