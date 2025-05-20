@@ -109,7 +109,7 @@ export async function PUT(req: NextRequest) {
     const { name, email, phone_number, description, address, updated_by, type } = data;
     
     // Start a transaction to ensure data consistency
-    const updatedContact = await prisma.$transaction(async (tx: typeof prisma) => {
+    const updatedContact = await prisma.$transaction(async (tx) => {
       const contact = await tx.contact.update({
         where: { contact_id: id },
         data: {

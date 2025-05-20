@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { EventStatusEnum } from "@/models/enums";
@@ -30,14 +29,7 @@ const taskStatusColorMap: Record<string, string> = {
 };
 
 export default function EventDetailPage() {
-  const { event, tasks, budgetPlanData, budgetActualData, client, manager, handleStatusChange } =
-    useSafeContext(EventContext, "EventContext");
-
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
+  const { event, tasks, budgetPlanData, budgetActualData, client, manager, handleStatusChange } = useSafeContext(EventContext, "EventContext");
 
   const clientName = client?.name || "-";
   const managerName = manager?.name || "-";
@@ -211,7 +203,6 @@ export default function EventDetailPage() {
       <div className="flex flex-col h-full bg-blue-50 p-4 rounded-lg border-2">
         <div className="flex gap-2">
           <div className="flex-1 min-w-0">
-          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500">Status</p>
 
             {(checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status)) ? (
@@ -312,5 +303,5 @@ export default function EventDetailPage() {
         </div>
       </div>
     </div>
-  );
-}
+  )
+};

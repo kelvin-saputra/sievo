@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import EventCard from "@/components/events/event-card";
 import useEvent from "@/hooks/use-event";
@@ -30,9 +29,7 @@ export default function ViewAllEvents() {
   const { fetchAllContacts, contacts } = useContact();
 
   useEffect(() => {
-    const id = getUserIdFromStorage();
-    setUserRole(getUserRoleFromStorage());
-
+    const id = getUserDataClient().id || ""
     fetchAllEvents();
     fetchAllUsers();
     fetchAllContacts();
@@ -42,9 +39,8 @@ export default function ViewAllEvents() {
         if (user) setCurrentUser(user);
       });
     }
-  }, [fetchAllEvents, fetchAllUsers, fetchAllContacts, fetchUserById]);
     setUserRole(getUserDataClient().role || "");
-  }, [fetchAllEvents, fetchAllUsers, fetchAllContacts]);
+  }, [fetchAllEvents, fetchAllUsers, fetchAllContacts, fetchUserById]);
 
   const clientContacts = contacts.filter((c) => c.role === "client");
 
@@ -62,8 +58,6 @@ export default function ViewAllEvents() {
       event.status === "DONE" &&
       (userRole !== "FREELANCE" || userEventIds.includes(event.event_id))
   );
-  const activeEvents = events.filter((event) => event.status !== "DONE");
-  const pastEvents = events.filter((event) => event.status === "DONE");
 
   if (loading) {
     return (<Loading message="Fetching Event Data..."/>)
@@ -107,13 +101,6 @@ export default function ViewAllEvents() {
             <EventCard
               key={event.event_id}
               event={event}
-              userRole={userRole}
-              onStatusUpdate={
-                userRole !== "FREELANCE" ? handleStatusChange : undefined
-              }
-              onDeleteEvent={
-                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
-              }
               userRole={userRole}
               onStatusUpdate={
                 userRole !== "FREELANCE" ? handleStatusChange : undefined

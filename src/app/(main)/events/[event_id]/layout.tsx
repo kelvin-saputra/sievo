@@ -32,7 +32,6 @@ export default function EventLayout({
   children: React.ReactNode;
 }) {
   const { event_id } = useParams();
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const {
@@ -123,7 +122,6 @@ export default function EventLayout({
 
   useEffect(() => {
     refetchAll();
-    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {

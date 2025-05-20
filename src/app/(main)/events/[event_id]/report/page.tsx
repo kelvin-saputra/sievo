@@ -8,13 +8,6 @@ import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventReportPage() {
   const ctx = useSafeContext(EventContext, "EventContext");
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
-
-  const allowedRoles = ["ADMIN", "EXECUTIVE", "INTERNAL"];
 
   if (!ctx.event) {
     return (<p className="text-red-600">No event data available.</p>);
