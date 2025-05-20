@@ -7,6 +7,7 @@ import { Edit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -58,6 +59,7 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Update Budget Category</DialogTitle>
+          <DialogDescription>Change data that you want to change to update your categories</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -71,9 +73,9 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
               name="category_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Kategori</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nama Kategori" {...field} />
+                    <Input placeholder="Enter the Category Name..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,7 +85,7 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant={"outline"}
                 onClick={() => {
                   form.reset()
                   setOpen(false)
@@ -94,6 +96,7 @@ export function UpdateBudgetItemCategoryForm({onUpdateBudgetItemCategory, catego
               <Button
                 type="submit"
                 form="update-budget-category-item-form"
+                variant={"default"}
                 className="text-white"
               >
                 Update Category

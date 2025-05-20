@@ -188,12 +188,12 @@ const EventCard = ({
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Konfirmasi Penghapusan</DialogTitle>
+            <DialogTitle>Deletion Confirmation</DialogTitle>
           </DialogHeader>
-          <p className="my-4">Apakah Anda yakin ingin menghapus event ini?</p>
+          <p className="my-4">Are you sure you want to delete this event? This action cannot be undone.</p>
           <div className="flex justify-end gap-2">
             <Button
-              variant="destructive"
+              variant={"destructive"}
               onClick={() => {
                 setConfirmOpen(false);
                 if (userRole !== "FREELANCE") {
@@ -201,10 +201,10 @@ const EventCard = ({
                 }
               }}
             >
-              Hapus
+              Delete
             </Button>
-            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
-              Batal
+            <Button variant={"outline"} onClick={() => setConfirmOpen(false)}>
+              Cancel
             </Button>
           </div>
         </DialogContent>

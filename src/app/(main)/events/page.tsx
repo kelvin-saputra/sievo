@@ -79,15 +79,6 @@ export default function ViewAllEvents() {
           />
         </div>
       )}
-      {userRole !== "FREELANCE" && (
-        <div className="mb-6">
-          <AddEventModal
-            onAddEvent={handleAddEvent}
-            users={users}
-            clientContacts={clientContacts}
-          />
-        </div>
-      )}
 
       <div className="mb-8 p-6 border rounded-lg shadow-lg bg-green-100">
         <h2 className="text-xl font-semibold text-green-800 mb-4">

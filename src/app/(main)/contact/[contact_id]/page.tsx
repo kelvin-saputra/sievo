@@ -334,7 +334,7 @@ const ContactDetail = () => {
           <div className="flex justify-start">
             {isEditing ? (
               <>
-                <Button onClick={handleSave} className="bg-indigo-900 hover:bg-indigo-800">
+                <Button onClick={handleSave} variant={"default"}>
                   Save
                 </Button>
                 <Button 
@@ -360,7 +360,7 @@ const ContactDetail = () => {
                     }
                     setFormErrors({});
                   }} 
-                  variant="outline"
+                  variant={"outline"}
                   className="ml-2"
                 >
                   Cancel
@@ -369,7 +369,8 @@ const ContactDetail = () => {
             ) : (
               <Button 
                 onClick={handleEdit} 
-                className={`bg-indigo-900 hover:bg-indigo-800 ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                variant={"default"}
+                className={`${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!canEdit}
               >
                 Edit
@@ -425,7 +426,7 @@ const ContactDetail = () => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/80">
                   Delete
                 </AlertDialogAction>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>

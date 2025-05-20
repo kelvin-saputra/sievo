@@ -63,9 +63,6 @@ export default function useEventTask(eventId: string) {
         taskId,
         created_by,
         updated_by: userName,
-        taskId,
-        created_by,
-        updated_by: userName,
       });
 
       const { data: updatedTask } = await axios.put(
@@ -107,8 +104,6 @@ export default function useEventTask(eventId: string) {
 
       const taskData = TaskSchema.partial().parse({
         ...newTask,
-        created_by: userName,
-        updated_by: userName,
         created_by: userName,
         updated_by: userName,
       });

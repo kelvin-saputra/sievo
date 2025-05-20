@@ -185,7 +185,7 @@ export function EventReportPDF({
       category_name: category.category_name
     })))
 
-    const progressCount: Record<TaskStatus, number> = {
+    const progressCount: Record<TaskStatusEnum, number> = {
     PENDING: 0,
     ON_PROGRESS: 0,
     DONE: 0,

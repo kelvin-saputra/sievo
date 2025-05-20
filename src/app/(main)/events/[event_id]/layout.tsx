@@ -72,7 +72,7 @@ export default function EventLayout({
     handleDeleteCategory
   } = useBudget(event_id as string);
 
-  const { handleAddPurchase, handleUpdatePurchase, handleDeletePurchase } =
+  const { loading: purchasingLoading, handleAddPurchase, handleUpdatePurchase, handleDeletePurchase } =
     usePurchasing();
   const { vendorServices, fetchAllVendorServices } = useVendor("");
   const { inventories, fetchAllInventories } = useInventory();
@@ -135,6 +135,8 @@ export default function EventLayout({
     return <Loading message="Fetching task data..."/>
   } else if (budgetLoading) {
     return <Loading message="Fetching budget data..."/>
+  } else if (purchasingLoading) {
+    return <Loading message="Fetching pruchased item data..."/>
   }
 
   if (!event) {
@@ -204,7 +206,6 @@ export default function EventLayout({
         />
         <div className="flex items-center justify-between border-b -mt-2 mb-4 pb-2">
           <NavigationTabs />
-          <NavigationTabs />
         </div>
         <div className="flex gap-2 px-6 justify-end">
           {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
@@ -219,7 +220,7 @@ export default function EventLayout({
 
           {checkRoleClient(ADMINEXECUTIVE) && !["IMPLEMENTATION", "REPORTING", "DONE"].includes(event.status) && (
             <Button
-              variant="destructive"
+              variant={"destructive"}
               onClick={() => setConfirmDeleteOpen(true)}
             >
               <Trash className="h-4 w-4" />
@@ -250,7 +251,7 @@ export default function EventLayout({
               Delete
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setConfirmDeleteOpen(false)}
             >
               Cancel

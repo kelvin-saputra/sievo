@@ -171,35 +171,7 @@ export default function EventDetailPage() {
             </span>
           </div>
         </div>
-
-        <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700 space-y-2">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Dibuat oleh</span>
-            <span className="font-medium">{event.created_by || "-"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Tanggal dibuat</span>
-            <span className="font-medium">
-              {event.created_at
-                ? new Date(event.created_at).toLocaleString("id-ID")
-                : "-"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Diperbarui oleh</span>
-            <span className="font-medium">{event.updated_by || "-"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Tanggal diperbarui</span>
-            <span className="font-medium">
-              {event.updated_at
-                ? new Date(event.updated_at).toLocaleString("id-ID")
-                : "-"}
-            </span>
-          </div>
-        </div>
       </div>
-
       <div className="flex flex-col h-full bg-blue-50 p-4 rounded-lg border-2">
         <div className="flex gap-2">
           <div className="flex-1 min-w-0">
@@ -209,7 +181,7 @@ export default function EventDetailPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant={"outline"}
                     className="cursor-pointer w-full flex items-center justify-between gap-2"
                   >
                     <span
@@ -272,7 +244,7 @@ export default function EventDetailPage() {
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-blue-100">
-            <p className="text-sm text-gray-500">Total Realisasi Anggaran</p>
+            <p className="text-sm text-gray-500">Budget Realization Total</p>
             <p className="text-2xl font-bold">
               Rp{totalBudgetActual.toLocaleString("id-ID")}
             </p>

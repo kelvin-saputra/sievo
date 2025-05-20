@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { AddBudgetItemPlanForm } from "./form/create-item-plan-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { InventorySchema } from "@/models/schemas";
+import { InventorySchema, PurchasingSchema } from "@/models/schemas";
 import { AddBudgetPlanItemDTO, UpdateBudgetItemCategoryDTO, UpdateBudgetPlanItemDTO, UpdatePurchaseDTO } from "@/models/dto";
 import { AddPurchaseDTO } from "@/models/dto";
 import { DeleteCategoryModal } from "./form/delete-category-form";
@@ -24,7 +24,7 @@ interface BudgetManagementAccordionProps {
     handleUpdateBudgetItemPlan: (data: UpdateBudgetPlanItemDTO) => Promise<void>;
     handleDeleteBudgetItemPlan: (budgetItemId: string) => Promise<void>;
     handleAddPurchasing: (data: AddPurchaseDTO) => Promise<void>;
-    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<void>;
+    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>;
     handleDeleteCategory: (categoryId: number, isActual: boolean) => Promise<void>;
     handleUpdateCategory: (categoryId: number, data: UpdateBudgetItemCategoryDTO) => void;
 }
@@ -89,7 +89,7 @@ export function BudgetManagementAccordion({
                 <div className="grid grid-cols-6 gap-4 border-b font-bold">
                   <div className="col-span-1">Item</div>
                   <div className="col-span-1">Basic Price</div>
-                  <div className="col-span-1">Quantity</div>
+                  <div className="col-span-1 text-center">Quantity</div>
                   <div className="col-span-1">Subtotal</div>
                   <div className="col-span-1">Source</div>
                   <div className="col-span-1 flex justify-end">

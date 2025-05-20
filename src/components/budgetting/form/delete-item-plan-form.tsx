@@ -29,21 +29,21 @@ export function DeleteBudgetPlanItemModal({onDeleteItemPlan, budgetItemId}: Dele
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl">
-            Apakah Anda yakin ingin menghapus Item Perencanaan Anggaran?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Item yang dihapus tidak dapat dikembalikan.
-          </AlertDialogDescription>
+            <AlertDialogTitle className="text-xl">
+              Delete Budget Planning Item
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+            Are you sure you want to delete this Budget Planning Item? Deleted items cannot be undoned.
+            </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           
           <AlertDialogAction className="bg-destructive hover:bg-destructive/80"
             onClick={() => {onDeleteItemPlan(budgetItemId);}}
           >
-            Hapus
+            Delete
           </AlertDialogAction>
-          <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

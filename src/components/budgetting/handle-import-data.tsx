@@ -29,7 +29,7 @@ export function ImportDataModal({onImportData}: ImportDataPlanningProps) {
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl">Are you sure you want to import data from planning?</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl">Import Budget Planning Data</AlertDialogTitle>
             <AlertDialogDescription>
               This action will add all budget item from planning into your current budget data. Are you sure you want to continue?
             </AlertDialogDescription>

@@ -25,7 +25,6 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 
 interface AddBudgetItemCategoryFormProps {
   onAddBudgetItemCategory: (is_actual:boolean, dto: AddBudgetItemCategoryDTO) => void;
@@ -47,7 +46,6 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
         form.reset();
         setOpen(false);
     } catch {
-        toast.error("Gagal mengirimkan data kategori budget")
     }
   };
 
@@ -88,7 +86,7 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant={"outline"}
                 onClick={() => setOpen(false)}
               >
                 Cancel
@@ -96,7 +94,7 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
               <Button
                 type="submit"
                 form="add-budget-category-item-form"
-                className="text-white"
+                variant={"default"}
               >
                 Add Category
               </Button>

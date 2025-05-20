@@ -1,6 +1,6 @@
 // src/context/event-context.tsx
 import { createContext } from "react";
-import { ContactSchema, EventSchema, InventorySchema, TaskSchema } from "@/models/schemas";
+import { ContactSchema, EventSchema, InventorySchema, PurchasingSchema, TaskSchema } from "@/models/schemas";
 import { UpdateEventDTO } from "@/models/dto/event.dto";
 import { UpdateTaskDTO, AddTaskDTO, AddBudgetPlanItemDTO, UpdateBudgetPlanItemDTO, AddBudgetItemCategoryDTO, AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, AddPurchaseDTO, UpdatePurchaseDTO, UpdateBudgetItemCategoryDTO, UpdateBudgetDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
@@ -78,7 +78,7 @@ interface EventContextType {
 
   // PURCHASING
   handleAddPurchase: (data: AddPurchaseDTO) => Promise<void>;
-  handleUpdatePurchase: (data: UpdatePurchaseDTO) => Promise<void>;
+  handleUpdatePurchase: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>;
   handleDeletePurchase: (purchaseId: string) => Promise<void>;
   
   refetchAll: () => void;

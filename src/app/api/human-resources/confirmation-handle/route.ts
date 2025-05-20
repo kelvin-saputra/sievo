@@ -35,6 +35,8 @@ export async function POST(req: Request) {
         data: {
           userId: user_id,
           eventId: eventId,
+          updated_by: user_id,
+          is_deleted: false,
         },
       });
     });

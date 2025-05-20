@@ -95,7 +95,6 @@ export function AddActualBudgetItemForm({
         
         await onAddActualBudgetItem(actualBudgetData)
       }
-
       form.reset()
       setOpen(false)
     } finally {
@@ -342,7 +341,7 @@ export function AddActualBudgetItemForm({
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                    <Input placeholder="Insert the quantity..." type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

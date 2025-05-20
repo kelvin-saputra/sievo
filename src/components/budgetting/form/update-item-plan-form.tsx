@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { UpdateBudgetPlanItemDTO, UpdatePurchaseDTO } from "@/models/dto"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { InventorySchema, VendorServiceSchema } from "@/models/schemas"
+import { InventorySchema, PurchasingSchema, VendorServiceSchema } from "@/models/schemas"
 import { Textarea } from "@/components/ui/textarea"
 import { BudgetItemPlan } from "@/models/response/plan-item"
 import { VendorWithService } from "@/models/response/vendor-with-service"
@@ -19,7 +19,7 @@ import { Pencil } from "lucide-react"
 
 interface UpdateBudgetPlanItemProps {
   onUpdateBudgetItemPlan: (data: UpdateBudgetPlanItemDTO) => Promise<void>
-  onUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<void>
+  onUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>
   categoryId: number
   inventories: InventorySchema[]
   vendorServices: VendorWithService[]

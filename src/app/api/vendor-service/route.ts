@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
                 include: {
                     vendor_service: {
                         where: {
-                            is_deleted: true,
+                            is_deleted: false,
                         },
                     },
                     contact: true,

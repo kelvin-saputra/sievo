@@ -115,7 +115,9 @@ export function BreadcrumbApp() {
         }
       } else if (index === 2 && pathNames[0] === "vendor-service" && vendorServicePath) {
         console.log(path)
+        console.log(vendorServicePath.vendor_service)
         const selectedService = vendorServicePath.vendor_service.find((vs) => vs.service_id.toUpperCase() === path.toUpperCase())
+        console.log(selectedService)
         if (selectedService) {
           displayName = selectedService.service_name || displayName
         }

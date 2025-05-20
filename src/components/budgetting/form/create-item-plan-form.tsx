@@ -348,9 +348,9 @@ export function AddBudgetItemPlanForm({
                       <FormLabel>Quantity</FormLabel>
                       <FormControl>
                       {selectedSource === "inventory"? (
-                        <Input type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                        <Input placeholder="Insert the quantity..." type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
                       ): (
-                        <Input type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                        <Input placeholder="Insert the quantity..." type="number" min="0" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
 
                       )}
 

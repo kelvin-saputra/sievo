@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { toast } from "sonner"
 import { UpdateActualBudgetItemDTO, type UpdatePurchaseDTO } from "@/models/dto"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PurchasingSchema, type InventorySchema, type VendorServiceSchema } from "@/models/schemas"
@@ -18,7 +17,7 @@ import { VendorWithService } from "@/models/response/vendor-with-service"
 
 interface UpdateActualBudgetItemProps {
   onUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>
-  onUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<void>
+  onUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>
   categoryId: number
   inventories: InventorySchema[]
   vendorServices: VendorWithService[]
@@ -115,8 +114,6 @@ export function UpdateActualBudgetItemForm({
         const updatedPurchase = await onUpdatePurchasing(purchaseData)
         actualBudgetData.other_item_id = PurchasingSchema.parse(updatedPurchase).other_item_id
         await onUpdateActualBudgetItem(actualBudgetData)
-
-        toast.success("Item updated successfully")
       } else {
         const { item_name, item_price, description, created_by, ...actualBudgetData } = dataUpdate
         

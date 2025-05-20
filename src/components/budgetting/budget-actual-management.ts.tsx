@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { InventorySchema } from "@/models/schemas";
+import { InventorySchema, PurchasingSchema } from "@/models/schemas";
 import { AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, UpdateBudgetItemCategoryDTO, UpdatePurchaseDTO } from "@/models/dto";
 import { AddPurchaseDTO } from "@/models/dto";
 import { DeleteCategoryModal } from "./form/delete-category-form";
@@ -24,7 +24,7 @@ interface BudgetManagementAccordionProps {
     handleUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>;
     handleDeleteActualBudgetItem: (budgetItemId: string) => Promise<void>;
     handleAddPurchasing: (data: AddPurchaseDTO) => Promise<void>;
-    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<void>;
+    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>;
     handleDeleteCategory: (categoryId: number, isActual: boolean) => Promise<void>;
     handleUpdateCategory: (categoryId: number, data: UpdateBudgetItemCategoryDTO) => Promise<void>;
 }
@@ -87,13 +87,13 @@ export function ActualBudgetManagementAccordion({
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4 pt-2">
-                <div className="grid grid-cols-7 gap-4 mb-2 border-b pb-2 font-bold">
+                <div className="grid grid-cols-6 gap-4 mb-2 border-b pb-2 font-bold">
                   <div className="col-span-1">Item</div>
                   <div className="col-span-1">Basic Price</div>
-                  <div className="col-span-1">Quantity</div>
+                  <div className="col-span-1 text-center">Quantity</div>
                   <div className="col-span-1">Subtotal</div>
                   <div className="col-span-1">Source</div>
-                  <div className="col-span-1">Note</div>
+                  {/* <div className="col-span-1">Note</div> */}
                   <div className="col-span-1 flex justify-end">
                       {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
                         <AddActualBudgetItemForm
@@ -137,23 +137,8 @@ export function ActualBudgetManagementAccordion({
                                   Inventory
                                 </Badge>
                               </div>
-                              <div className="col-span-1">
-                                <div className="text-gray-800">{item.notes}</div>
-                              </div>
                               {/* <div className="col-span-1">
-                                {item.status === "PENDING" ? (
-                                  <Badge className="bg-warning text-super-white hover:bg-warning-light">
-                                    Pending
-                                  </Badge>
-                                ) : item.status === "CANCELED" ? (
-                                  <Badge className="bg-destructive text-super-white hover:bg-destructive-light">
-                                    Rejected
-                                  </Badge>
-                                ):(
-                                  <Badge className="bg-success text-super-white hover:bg-success-light">
-                                    Approved
-                                  </Badge>
-                                )}
+                                <div className="text-gray-800">{item.notes}</div>
                               </div> */}
                               <div className="col-span-1 flex justify-end gap-2">
                                 {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
