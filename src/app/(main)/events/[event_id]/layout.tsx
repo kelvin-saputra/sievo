@@ -76,7 +76,7 @@ export default function EventLayout({
     usePurchasing();
   const { vendorServices, fetchAllVendorServices } = useVendor("");
   const { inventories, fetchAllInventories } = useInventory();
-  const { fetchAllUsers, users } = useHr();
+  const { fetchAllUsersAssigned, userAssigned } = useHr();
   const { fetchAllContacts, contacts } = useContact();
 
 
@@ -97,9 +97,9 @@ export default function EventLayout({
   }, [event, contacts]);
 
   const manager = useMemo(() => {
-    if (!event || users.length === 0) return null;
-    return users.find((u) => u.id === event.manager_id) || null;
-  }, [event, users]);
+    if (!event || userAssigned.length === 0) return null;
+    return userAssigned.find((u) => u.id === event.manager_id) || null;
+  }, [event, userAssigned]);
 
   const refetchAll = useCallback(() => {
     if (event_id) {
@@ -125,9 +125,9 @@ export default function EventLayout({
   }, [refetchAll]);
 
   useEffect(() => {
-    fetchAllUsers();
+    fetchAllUsersAssigned();
     fetchAllContacts();
-  }, [fetchAllUsers, fetchAllContacts]);
+  }, [fetchAllUsersAssigned, fetchAllContacts]);
 
   if ( eventLoading ) {
     return <Loading message="Fetching event data..." />
@@ -156,7 +156,7 @@ export default function EventLayout({
       value={{
         event,
         client,
-        users,
+        userAssigned,
         manager,
         budgetPlanData,
         budgetActualData,
@@ -213,7 +213,7 @@ export default function EventLayout({
               event={event}
               createdBy={event.created_by}
               onUpdateEvent={handleUpdateEvent}
-              users={users}
+              users={userAssigned}
               clientContacts={clientContacts}
             />
           )}

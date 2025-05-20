@@ -25,22 +25,22 @@ export default function ViewAllEvents() {
     handleStatusChange,
   } = useEvent();
 
-  const { fetchAllUsers, fetchUserById, users } = useHr();
+  const { fetchAllUsersAssigned, fetchUserEventById, userAssigned } = useHr();
   const { fetchAllContacts, contacts } = useContact();
 
   useEffect(() => {
     const id = getUserDataClient().id || ""
     fetchAllEvents();
-    fetchAllUsers();
+    fetchAllUsersAssigned();
     fetchAllContacts();
 
     if (id) {
-      fetchUserById(id).then((user) => {
+      fetchUserEventById(id).then((user) => {
         if (user) setCurrentUser(user);
       });
     }
     setUserRole(getUserDataClient().role || "");
-  }, [fetchAllEvents, fetchAllUsers, fetchAllContacts, fetchUserById]);
+  }, [fetchAllEvents, fetchAllUsersAssigned, fetchAllContacts, fetchUserEventById]);
 
   const clientContacts = contacts.filter((c) => c.role === "client");
 
@@ -74,7 +74,7 @@ export default function ViewAllEvents() {
         <div className="mb-6">
           <AddEventModal
             onAddEvent={handleAddEvent}
-            users={users}
+            users={userAssigned}
             clientContacts={clientContacts}
           />
         </div>

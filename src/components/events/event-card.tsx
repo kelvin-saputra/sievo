@@ -49,18 +49,18 @@ const EventCard = ({
     fetchAllTasks,
   } = useEventTask(event.event_id);
 
-  const { users, fetchAllUsers, loading: usersLoading } = useHr();
+  const { userAssigned, fetchAllUsersAssigned, loading: usersLoading } = useHr();
   const [usersFetched, setUsersFetched] = useState(false);
 
   useEffect(() => {
     if (expanded) {
       if (!usersFetched) {
-        fetchAllUsers();
+        fetchAllUsersAssigned();
         setUsersFetched(true);
       }
       fetchAllTasks();
     }
-  }, [expanded, fetchAllUsers, fetchAllTasks, usersFetched]);
+  }, [expanded, fetchAllUsersAssigned, fetchAllTasks, usersFetched]);
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
@@ -177,9 +177,9 @@ const EventCard = ({
             <div>Loading tasks...</div>
           ) : (
             <DataTable
-              columns={taskColumns(users)}
+              columns={taskColumns(userAssigned)}
               data={tasks}
-              users={users}
+              users={userAssigned}
             />
           )}
         </div>

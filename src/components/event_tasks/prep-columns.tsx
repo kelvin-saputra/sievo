@@ -24,7 +24,7 @@ interface PrepColumnsProps {
     createdBy: string,
     dto: UpdateTaskDTO
   ) => Promise<void>;
-  users: UserWithStatus[];
+  userAssigned: UserWithStatus[];
   eventStartDate?: Date;
   eventEndDate?: Date;
 }
@@ -89,11 +89,11 @@ const DeleteTaskCell = ({
 export const getPrepColumns = ({
   onDeleteTask,
   onUpdateTask,
-  users,
+  userAssigned,
   eventStartDate,
   eventEndDate,
 }: PrepColumnsProps): ColumnDef<TaskSchema>[] => [
-  ...taskColumns(users),
+  ...taskColumns(userAssigned),
   {
     id: "actions",
     header: () => <div className="text-right">Actions</div>,
@@ -104,7 +104,7 @@ export const getPrepColumns = ({
           <UpdateTaskModal
             task={task}
             onUpdateTask={onUpdateTask}
-            users={users}
+            users={userAssigned}
             eventStartDate={eventStartDate || new Date()}
             eventEndDate={eventEndDate || new Date()}
           />

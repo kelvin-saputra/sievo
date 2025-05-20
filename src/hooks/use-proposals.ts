@@ -1,3 +1,5 @@
+"use client"
+
 import { toast } from "sonner";
 import axios from "axios";
 import { ProposalSchema } from "@/models/schemas";

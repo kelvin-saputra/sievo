@@ -4,7 +4,7 @@ import { prisma } from "@/utils/prisma";
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { user_id, event_ids } = data;
+    const { user_id, event_ids,updated_by } = data;
 
     if (!user_id || !Array.isArray(event_ids) || event_ids.length === 0) {
       return NextResponse.json(
@@ -35,8 +35,9 @@ export async function POST(req: Request) {
         data: {
           userId: user_id,
           eventId: eventId,
-          updated_by: user_id,
+          updated_by:updated_by,
           is_deleted: false,
+
         },
       });
     });

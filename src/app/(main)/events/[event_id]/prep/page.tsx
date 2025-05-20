@@ -13,7 +13,7 @@ export default function EventPrepPage() {
   const {
     event,
     tasks,
-    users,
+    userAssigned,
     loading: tasksLoading,
     handleDeleteTask,
     handleAddTask,
@@ -30,7 +30,7 @@ export default function EventPrepPage() {
           <div className="mb-4">
             <AddTaskModal
               onAddTask={handleAddTask}
-              users={Array.isArray(users) ? users : []}
+              users={Array.isArray(userAssigned) ? userAssigned : []}
               currentEventId={event.event_id}
         />
           </div>
@@ -39,12 +39,12 @@ export default function EventPrepPage() {
         columns={getPrepColumns({
           onDeleteTask: handleDeleteTask,
           onUpdateTask: handleUpdateTask,
-          users,
+          userAssigned,
           eventStartDate: event.start_date,
           eventEndDate: event.end_date,
         })}
         data={tasks}
-        users={Array.isArray(users) ? users : []}
+        users={Array.isArray(userAssigned) ? userAssigned : []}
       />
     </div>
   );

@@ -1,38 +1,38 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/utils/prisma';
+import { NextRequest } from "next/server";
+import { prisma } from "@/utils/prisma";
+import { responseFormat } from "@/utils/api";
 
-export async function GET(
-    req: Request,
-    context: { params: Promise<{ id: string }> }
-) {
-    try {
-        const { id } = await context.params;
+interface RequestBody {
+  updated_by?: string;
+}
 
-        const user = await prisma.user.findUnique({
-            where: { id },
-            include: { userEvents: true },
-        });
+export async function DELETE(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-        if (!user) {
-            return NextResponse.json(
-                { error: 'User not found' },
-                { status: 404 }
-            );
-        }
-
-        const status: 'inactive' | 'unassigned' | 'assigned' =
-            !user.is_active
-                ? 'inactive'
-                : user.userEvents.length === 0
-                    ? 'unassigned'
-                    : 'assigned';
-
-        return NextResponse.json({ ...user, status });
-    } catch (err) {
-        console.error('Error fetching user:', err);
-        return NextResponse.json(
-            { error: 'Failed to fetch user' },
-            { status: 500 }
-        );
+    if (!id) {
+      return responseFormat(400, "User Events ID Required", null);
     }
+    let reqBody: RequestBody = {};
+    try {
+      reqBody = await req.json();
+    } catch {
+      reqBody = {};
+    }
+    const { updated_by } = reqBody;
+
+    const updatedUserEvents = await prisma.userEvent.update({
+      where: { id },
+      data: {
+        is_deleted: true,
+        updated_by,
+      },
+    });
+
+    return responseFormat(200, "Delete Assignment is Successful", updatedUserEvents);
+  } catch (error) {
+    console.error("Error:", error);
+    return responseFormat(500, "Failed to Delete Assignment", null);
+  }
 }

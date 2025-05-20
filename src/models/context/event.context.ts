@@ -12,7 +12,7 @@ import { VendorWithService } from "../response/vendor-with-service";
 interface EventContextType {
   event: EventSchema;
   tasks: TaskSchema[];
-  users: UserWithStatus[];
+  userAssigned: UserWithStatus[];
   client?: ContactSchema | null;
   manager?: UserWithStatus | null;
 
