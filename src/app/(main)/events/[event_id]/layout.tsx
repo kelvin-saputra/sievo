@@ -5,6 +5,12 @@ import { useParams } from "next/navigation";
 import PageHeader from "@/components/common/page-header";
 import NavigationTabs from "@/components/events/navigation-tabs";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import EventContext from "@/models/context/event.context";
 import { UpdateEventForm } from "@/components/events/form/update-event-form";
 import { Trash } from "lucide-react";
@@ -26,6 +32,9 @@ export default function EventLayout({
   children: React.ReactNode;
 }) {
   const { event_id } = useParams();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
   const {
     event,
     fetchEventById,
@@ -213,15 +222,44 @@ export default function EventLayout({
           {checkRoleClient(ADMINEXECUTIVE) && !["IMPLEMENTATION", "REPORTING", "DONE"].includes(event.status) && (
             <Button
               variant="destructive"
-              onClick={() => event && handleDeleteEvent(event.event_id)}
+              onClick={() => setConfirmDeleteOpen(true)}
             >
-              <Trash />
+              <Trash className="h-4 w-4" />
               Delete Event
             </Button>
           )}
         </div>
         <div className="p-6 bg-white rounded-lg shadow-md">{children}</div>
       </div>
+
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p className="my-4">
+            Are you sure you want to delete this event? This action cannot be
+            undone.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmDeleteOpen(false);
+                handleDeleteEvent(event.event_id);
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setConfirmDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </EventContext.Provider>
   );
 }

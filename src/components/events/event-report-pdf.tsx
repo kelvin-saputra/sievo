@@ -2,16 +2,15 @@ import React from "react";
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import { registerPlusJakartaSans } from "@/utils/pdfFontRegister";
 import { PDF_THEME_COLORS as COLORS } from "@/utils/pdfThemeColors";
+import { TaskStatusEnum } from "@/models/enums";
 
 registerPlusJakartaSans();
 
-type TaskStatus = "PENDING" | "ON_PROGRESS" | "DONE" | "CANCELLED";
-
-const statusMap: Record<TaskStatus, { label: string; color: string }> = {
-  PENDING: { label: "Belum Dikerjakan", color: COLORS.warning },
-  ON_PROGRESS: { label: "Sedang Berjalan", color: COLORS.primary },
-  DONE: { label: "Selesai", color: COLORS.success },
-  CANCELLED: { label: "Dibatalkan", color: COLORS.gray },
+const statusMap: Record<TaskStatusEnum, { label: string; color: string }> = {
+  PENDING: { label: "Not Started", color: COLORS.warning },
+  ON_PROGRESS: { label: "In Progress", color: COLORS.primary },
+  DONE: { label: "Completed", color: COLORS.success },
+  CANCELLED: { label: "Cancelled", color: COLORS.gray },
 };
 
 const styles = StyleSheet.create({
@@ -193,7 +192,7 @@ export function EventReportPDF({
     CANCELLED: 0,
   };
   tasks.forEach((t: any) => {
-    const s = t.status as TaskStatus;
+    const s = t.status as TaskStatusEnum;
     if (progressCount[s] !== undefined) progressCount[s] += 1;
   });
 
@@ -253,30 +252,24 @@ export function EventReportPDF({
             </Text>
           </View>
           <View style={styles.infoBlock}>
-            <Text style={styles.infoLabel}>PIC</Text>
+            <Text style={styles.infoLabel}>Manager (PIC)</Text>
             <Text style={styles.infoValue}>
               {manager?.name || manager?.email || "-"}
-            </Text>
-          </View>
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoLabel}>Tentang Event</Text>
-            <Text style={styles.infoValue}>
-              {event?.event_description || "-"}
             </Text>
           </View>
         </View>
 
         {event?.notes && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Catatan Event</Text>
+            <Text style={styles.sectionTitle}>Event Notes</Text>
             <Text style={styles.description}>{event.notes}</Text>
           </View>
         )}
 
         <View style={[styles.section, { marginBottom: 6 }]}>
-          <Text style={styles.sectionTitle}>Progress Tugas</Text>
+          <Text style={styles.sectionTitle}>Task Progress</Text>
           <View style={styles.progressRow}>
-            {(Object.keys(statusMap) as TaskStatus[]).map((s) => (
+            {(Object.keys(statusMap) as TaskStatusEnum[]).map((s) => (
               <View
                 key={s}
                 style={{ flexDirection: "row", alignItems: "center" }}
@@ -298,11 +291,11 @@ export function EventReportPDF({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tabel Tugas ({tasks.length})</Text>
+          <Text style={styles.sectionTitle}>Task Table</Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={styles.cell1}>Nama Tugas</Text>
-              <Text style={styles.cell2}>Penanggung Jawab</Text>
+              <Text style={styles.cell1}>Task Name</Text>
+              <Text style={styles.cell2}>Assignee</Text>
               <Text style={styles.cell3}>Deadline</Text>
               <Text style={styles.cell4}>Status</Text>
             </View>
@@ -319,11 +312,11 @@ export function EventReportPDF({
                   <Text
                     style={{
                       ...styles.cell4,
-                      color: statusMap[t.status as TaskStatus].color,
+                      color: statusMap[t.status as TaskStatusEnum].color,
                       fontWeight: 700,
                     }}
                   >
-                    {statusMap[t.status as TaskStatus].label}
+                    {statusMap[t.status as TaskStatusEnum].label}
                   </Text>
                 </View>
               ))
@@ -339,11 +332,11 @@ export function EventReportPDF({
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Rencana Anggaran — Total Rp{totalPlanned.toLocaleString("id-ID")}
+            Planned Budget — Total Rp{totalPlanned.toLocaleString("id-ID")}
           </Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={styles.cell1}>Kategori</Text>
+              <Text style={styles.cell1}>Category</Text>
               <Text style={styles.cell2}>Item</Text>
               <Text style={styles.cell3}>Qty</Text>
               <Text style={styles.cell4}>Subtotal</Text>
@@ -373,11 +366,11 @@ export function EventReportPDF({
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Realisasi Anggaran — Total Rp{totalActual.toLocaleString("id-ID")}
+            Actual Budget — Total Rp{totalActual.toLocaleString("id-ID")}
           </Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={styles.cell1}>Kategori</Text>
+              <Text style={styles.cell1}>Category</Text>
               <Text style={styles.cell2}>Item</Text>
               <Text style={styles.cell3}>Qty</Text>
               <Text style={styles.cell4}>Subtotal</Text>
@@ -408,15 +401,13 @@ export function EventReportPDF({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Perbandingan Anggaran per Kategori
-          </Text>
+          <Text style={styles.sectionTitle}>Budget Comparison by Category</Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={styles.cell1}>Kategori</Text>
-              <Text style={styles.cell3}>Rencana</Text>
-              <Text style={styles.cell4}>Realisasi</Text>
-              <Text style={styles.cell5}>Selisih</Text>
+              <Text style={styles.cell1}>Category</Text>
+              <Text style={styles.cell3}>Plan</Text>
+              <Text style={styles.cell4}>Actual</Text>
+              <Text style={styles.cell5}>Difference</Text>
             </View>
             {categoryComparisons.length ? (
               categoryComparisons.map((c: any) => (
@@ -445,7 +436,7 @@ export function EventReportPDF({
             ) : (
               <View style={styles.tableRow}>
                 <Text style={{ ...styles.cell1, flex: 5, textAlign: "center" }}>
-                  Tidak ada kategori anggaran.
+                  No budget categories.
                 </Text>
               </View>
             )}
@@ -453,7 +444,7 @@ export function EventReportPDF({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Servis Vendor</Text>
+          <Text style={styles.sectionTitle}>Vendor Service</Text>
           {(() => {
             const vendorItems = Array.from(
               new Map(
@@ -493,15 +484,13 @@ export function EventReportPDF({
                 );
               })
             ) : (
-              <Text style={styles.emptyNotice}>
-                Tidak ada layanan vendor yang digunakan.
-              </Text>
+              <Text style={styles.emptyNotice}>No vendor services used.</Text>
             );
           })()}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Inventaris yang Terpakai</Text>
+          <Text style={styles.sectionTitle}>Used Inventory</Text>
           {(() => {
             const inventoryItems = Array.from(
               new Map(
@@ -541,7 +530,7 @@ export function EventReportPDF({
                           },
                         ]}
                       >
-                        {inv.is_avail ? "Tersedia" : "Tidak Tersedia"}
+                        {inv.is_avail ? "Available" : "Unavailable"}
                       </Text>
                     </View>
                     {inv.description && (
@@ -553,9 +542,7 @@ export function EventReportPDF({
                 );
               })
             ) : (
-              <Text style={styles.emptyNotice}>
-                Tidak ada inventaris yang digunakan.
-              </Text>
+              <Text style={styles.emptyNotice}>No inventory items used.</Text>
             );
           })()}
         </View>

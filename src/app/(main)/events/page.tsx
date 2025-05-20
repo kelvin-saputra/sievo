@@ -15,8 +15,7 @@ import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function ViewAllEvents() {
   const [userRole, setUserRole] = useState<string | null>(null);
-
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
 
   const {
     events,
@@ -27,18 +26,42 @@ export default function ViewAllEvents() {
     handleStatusChange,
   } = useEvent();
 
-  const { fetchAllUsers, users } = useHr();
+  const { fetchAllUsers, fetchUserById, users } = useHr();
   const { fetchAllContacts, contacts } = useContact();
 
   useEffect(() => {
+    const id = getUserIdFromStorage();
+    setUserRole(getUserRoleFromStorage());
+
     fetchAllEvents();
     fetchAllUsers();
     fetchAllContacts();
+
+    if (id) {
+      fetchUserById(id).then((user) => {
+        if (user) setCurrentUser(user);
+      });
+    }
+  }, [fetchAllEvents, fetchAllUsers, fetchAllContacts, fetchUserById]);
     setUserRole(getUserDataClient().role || "");
   }, [fetchAllEvents, fetchAllUsers, fetchAllContacts]);
 
   const clientContacts = contacts.filter((c) => c.role === "client");
 
+  const userEventIds =
+    currentUser?.userEvents?.map((ue: any) => ue.eventId) || [];
+
+  const activeEvents = events.filter(
+    (event) =>
+      event.status !== "DONE" &&
+      (userRole !== "FREELANCE" || userEventIds.includes(event.event_id))
+  );
+
+  const pastEvents = events.filter(
+    (event) =>
+      event.status === "DONE" &&
+      (userRole !== "FREELANCE" || userEventIds.includes(event.event_id))
+  );
   const activeEvents = events.filter((event) => event.status !== "DONE");
   const pastEvents = events.filter((event) => event.status === "DONE");
 
@@ -79,7 +102,7 @@ export default function ViewAllEvents() {
 
         {loading ? (
           <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
-        ) : (
+        ) : activeEvents.length > 0 ? (
           activeEvents.map((event) => (
             <EventCard
               key={event.event_id}
@@ -100,6 +123,11 @@ export default function ViewAllEvents() {
               }
             />
           ))
+        ) : (
+          <p className="text-sm text-green-800 italic">
+            You have no active events assigned. Please contact your
+            administrator or manager to get assigned to one.
+          </p>
         )}
       </div>
 
@@ -110,7 +138,7 @@ export default function ViewAllEvents() {
 
         {loading ? (
           <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
-        ) : (
+        ) : pastEvents.length > 0 ? (
           pastEvents.map((event) => (
             <EventCard
               key={event.event_id}
@@ -124,6 +152,11 @@ export default function ViewAllEvents() {
               }
             />
           ))
+        ) : (
+          <p className="text-sm text-gray-700 italic">
+            You have no past events recorded. Once you complete an assigned
+            event, it will appear here.
+          </p>
         )}
       </div>
     </div>

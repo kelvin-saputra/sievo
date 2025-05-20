@@ -20,6 +20,8 @@ export default function EventPrepPage() {
     handleUpdateTask,
   } = useSafeContext(EventContext, "EventContext");
 
+  // console.log("Users from EventContext:", users);
+
   if (tasksLoading) {
     return <Loading message="Fetching Task Data..."/>
   }
@@ -31,7 +33,8 @@ export default function EventPrepPage() {
             <AddTaskModal
               onAddTask={handleAddTask}
               users={Array.isArray(users) ? users : []}
-            />
+              currentEventId={event.event_id}
+        />
           </div>
         )}
       <DataTable
