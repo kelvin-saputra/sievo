@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop();
+        
 
         const assignments = await prisma.userEvent.findMany({
             where: {
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
                 },
                 assignedAt: true,
                 updated_by: true,
+                id:true,
             },
         });
 
@@ -30,3 +32,4 @@ export async function GET(req: NextRequest) {
         return responseFormat(500, "Failed to retrieve assignments", null);
     }
 }
+

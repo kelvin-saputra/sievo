@@ -12,27 +12,19 @@ export async function GET() {
     type UserWithUserEvents = {
       id: string;
       is_active: boolean;
-      userEvents: any[];
+      userEvents: { is_deleted: boolean }[];
     };
 
     const updatedUsers = users.map((user: UserWithUserEvents) => {
-      let status: string;
-
-      if (!user.is_active) {
-        status = "inactive";
-      } else if (user.userEvents.length === 0) {
-        status = "unassigned";
-      } else {
-        status = "assigned";
-      }
+      const activeUserEventsCount = user.userEvents.filter(event => !event.is_deleted).length;
 
       return {
         ...user,
-        status,
+        userEventsCount: activeUserEventsCount,
       };
     });
 
-    console.log("Updated Users:", updatedUsers);
+    console.log("Updated Users with active userEvents count:", updatedUsers);
 
     return NextResponse.json(updatedUsers);
   } catch (error: unknown) {
@@ -43,10 +35,11 @@ export async function GET() {
   }
 }
 
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { user_id, event_ids,updated_by } = data;
+    const { user_id, event_ids, updated_by } = data;
 
     if (!user_id || !Array.isArray(event_ids) || event_ids.length === 0) {
       return NextResponse.json(
@@ -55,6 +48,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // Fetch all existing assignments for this user and given event_ids
     const existingAssignments = await prisma.userEvent.findMany({
       where: {
         userId: user_id,
@@ -62,7 +56,10 @@ export async function POST(req: Request) {
       },
     });
 
-    if (existingAssignments.length > 0) {
+    const activeAssignments = existingAssignments.filter(a => !a.is_deleted);
+    const deletedAssignments = existingAssignments.filter(a => a.is_deleted);
+
+    if (activeAssignments.length > 0) {
       return NextResponse.json(
         {
           error: "User already assigned to one or more of the selected events.",
@@ -73,7 +70,10 @@ export async function POST(req: Request) {
     }
 
     const userAssignments = await prisma.userEvent.findMany({
-      where: { userId: user_id },
+      where: {
+        userId: user_id,
+        is_deleted: false,  // only active assignments
+      },
     });
 
     if (userAssignments.length > 0) {
@@ -86,18 +86,39 @@ export async function POST(req: Request) {
       );
     }
 
-    const assignments = event_ids.map((eventId: string) => {
-      return prisma.userEvent.create({
+    
+
+    const reactivatePromises = deletedAssignments.map(a =>
+      prisma.userEvent.update({
+        where: { id: a.id },
+        data: {
+          is_deleted: false,
+          updated_by,
+        },
+      })
+    );
+
+    // For events not in existingAssignments, create new assignments
+    const newEventIds = event_ids.filter(
+      (eventId) => !existingAssignments.some(a => a.eventId === eventId)
+    );
+
+    const createPromises = newEventIds.map(eventId =>
+      prisma.userEvent.create({
         data: {
           userId: user_id,
-          eventId: eventId,
-          updated_by: updated_by,
+          eventId,
+          updated_by,
           is_deleted: false,
         },
-      });
-    });
+      })
+    );
 
-    const result = await prisma.$transaction(assignments);
+    // Run all updates and creates in a transaction
+    const result = await prisma.$transaction([
+      ...reactivatePromises,
+      ...createPromises,
+    ]);
 
     return NextResponse.json(
       { message: "User successfully assigned to events", assigned: result },

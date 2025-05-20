@@ -3,9 +3,9 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, FileText } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import useHr, { UserWithStatus } from "@/hooks/use-hr"
+import useHr, { type UserWithStatus } from "@/hooks/use-hr"
 import { AssignmentModal } from "./form/assignment-hr-modal"
 import { DetailModal } from "./detail-modal"
 import { ConfirmationModal } from "./confirmation-modal"
@@ -94,6 +94,7 @@ const AssignmentCell = ({ row }: { row: any }) => {
           disabled={user.status === "inactive"}
           onClick={() => setIsDetailModalOpen(true)}
         >
+          
           Detail
         </Button>
 
@@ -159,14 +160,21 @@ export const hrColumns: ColumnDef<UserWithStatus>[] = [
     header: "Email",
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "userEventsCount",
+    header: "Event Assigned to",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string
+      const count = (row.getValue("userEventsCount") as number) || 0
+
+      let bgColor = "bg-gray-100 text-gray-800"
+      if (count > 3) {
+        bgColor = "bg-yellow-100 text-yellow-800"
+      } else if (count > 0) {
+        bgColor = "bg-blue-100 text-blue-800"
+      }
 
       return (
-        <Badge variant={status === "assigned" ? "default" : status === "unassigned" ? "secondary" : "destructive"}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+        <Badge variant="secondary" className={bgColor}>
+          {count} Event{count !== 1 ? "s" : ""}
         </Badge>
       )
     },

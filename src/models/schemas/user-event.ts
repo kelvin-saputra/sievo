@@ -10,6 +10,10 @@ export const UserEventsSchema = z.array(
       message: "Invalid date format",
     }),
     updated_by: z.string().email().nullable().optional(),
+    id: z
+      .string()
+      .uuid()
+      .default(() => crypto.randomUUID()),
   })
 );
 

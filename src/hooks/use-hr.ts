@@ -1,4 +1,3 @@
-"use client"
 
 import { useCallback, useState } from "react";
 import axios from "axios";
@@ -19,7 +18,7 @@ export type Event = {
 };
 
 export default function useHr() {
-  const [users, setUsers] = useState<UserWithStatus[]>([]);
+  const [users, setUsers] = useState<UserEventsSchema[]>([]);
   const [userEvents, setUserEvents]= useState<UserEventsSchema | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,6 +55,7 @@ export default function useHr() {
       setAssigning(true);
       const userData = localStorage.getItem("authUser");
       let userEmail = "";
+      setLoading(true);
 
       if (userData) {
         const user = JSON.parse(userData);
@@ -99,12 +99,14 @@ export default function useHr() {
         toast.error("Error assigning user to events.");
       }
       setAssigning(false);
+      setLoading(false);
     },
     []
   );
 
   const handleConfirmAssignment = async (user_id: string, event_ids: string[]) => {
     setConfirmationModalOpen(false);
+    setLoading(true);
     try {
       const userData = localStorage.getItem("authUser");
       let userEmail = "";
@@ -129,6 +131,7 @@ export default function useHr() {
       console.error("Error fetching events:", error);
       toast.error("Error confirming assignment.");
     }
+    setLoading(false);
   };
   
   const handleCancelAssignment = () => {
@@ -138,7 +141,7 @@ export default function useHr() {
   const fetchAssignmentByUserId = useCallback(async (id: string) => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_URL}/${id}`);
+      const { data } = await axios.get(`${API_URL}/assignment/${id}`);
       console.log('Response data:', data);
       setUserEvents(UserEventsSchema.parse(data.data));
     } catch (error) {
@@ -148,12 +151,45 @@ export default function useHr() {
     setLoading(false)
   },[])
 
+ const handleDeleteAssignment = async (id: string) => {
+    try {
+
+
+      let userEmail = "";
+      console.log("usereventid:", id);
+      const userData = localStorage.getItem("authUser");
+      if (userData) {
+        const user = JSON.parse(userData);
+        userEmail = user.email || "";
+      }
+      const response = await axios.delete(`${API_URL}/${id}`, {
+        data: {
+          update_by: userEmail,
+        },
+      });
+
+      
+
+      if (response.status === 200) {
+        toast.success("Assignment deleted successfully!");
+        window.location.reload();
+      } else {
+        toast.error("Failed to delete assignment.");
+      }
+    } catch (error) {
+      console.log("usereventid:", id);
+      toast.error("Failed to delete assignment.");
+      console.error("Delete assignment error:", error);
+    }
+  };
+
 
   return {
     fetchAllUsers,
     fetchAllEvents,
     fetchAssignmentByUserId,
     assignUserToEvents,
+    handleDeleteAssignment,
     users,
     events,
     userEvents,

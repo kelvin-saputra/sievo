@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import useHr from "@/hooks/use-hr"
 import { format } from "date-fns"
+import { DeleteConfirmationModal } from "./confirmation-delete"
 
 interface DetailModalProps {
   isOpen: boolean
@@ -16,7 +17,9 @@ interface DetailModalProps {
 }
 
 export function DetailModal({ isOpen, onClose, userId, userName }: DetailModalProps) {
-  const { userEvents, loading, fetchAssignmentByUserId } = useHr()
+  const { userEvents, loading, fetchAssignmentByUserId, handleDeleteAssignment } = useHr()
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedAssignment, setSelectedAssignment] = useState<{ id: string; eventName: string } | null>(null)
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -24,71 +27,96 @@ export function DetailModal({ isOpen, onClose, userId, userName }: DetailModalPr
     }
   }, [isOpen, userId, fetchAssignmentByUserId])
 
-  const handleDelete = (eventId: string) => {
-    console.log(`Delete event ${eventId} for user ${userId}`)
+  const handleDeleteClick = (assignmentId: string, eventName: string) => {
+    setSelectedAssignment({ id: assignmentId, eventName })
+    setDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!selectedAssignment) return
+
+    await handleDeleteAssignment(selectedAssignment.id)
+    fetchAssignmentByUserId(userId)
+    setDeleteModalOpen(false)
+    setSelectedAssignment(null)
   }
 
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy HH:mm")
-    } catch (error) {
-      return "-"
+    } catch{
+      return 
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Event Assignments for {userName}</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Event Assignments for {userName}</DialogTitle>
+          </DialogHeader>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <p className="text-gray-500">Loading...</p>
-          </div>
-        ) : (
-          <div className="max-h-[400px] overflow-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event Name</TableHead>
-                  <TableHead>Updated By</TableHead>
-                  <TableHead>Assigned At</TableHead>
-                  <TableHead className="w-[80px]">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.isArray(userEvents) && userEvents.length > 0 ? (
-                  userEvents.map((assignment: any, index: number) => (
-                    <TableRow key={`event-${assignment.event?.event_id || index}`}>
-                      <TableCell>{assignment.event?.event_name || "N/A"}</TableCell>
-                      <TableCell>{assignment.updated_by || "-"}</TableCell>
-                      <TableCell>{formatDate(assignment.assignedAt)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(assignment.event?.event_id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <p className="text-gray-500">Loading...</p>
+            </div>
+          ) : (
+            <div className="max-h-[400px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Event Name</TableHead>
+                    <TableHead>Updated By</TableHead>
+                    <TableHead>Assigned At</TableHead>
+                    <TableHead className="w-[80px]">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.isArray(userEvents) && userEvents.length > 0 ? (
+                    userEvents.map((assignment: any, index: number) => {
+                      console.log("Assignment data:", assignment)
+                      const assignmentId = assignment.id || assignment._id
+                      return (
+                        <TableRow key={`event-${assignment.event?.event_id || index}`}>
+                          <TableCell>{assignment.event?.event_name || "N/A"}</TableCell>
+                          <TableCell>{assignment.updated_by || "-"}</TableCell>
+                          <TableCell>{formatDate(assignment.assignedAt)}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(assignmentId, assignment.event?.event_name)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center">
+                        No assignments found.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      No assignments found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {deleteModalOpen && selectedAssignment && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          eventName={selectedAssignment.eventName}
+        />
+      )}
+    </>
   )
 }
