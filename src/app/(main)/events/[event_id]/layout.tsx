@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useParams } from "next/navigation";
 import PageHeader from "@/components/common/page-header";
 import NavigationTabs from "@/components/events/navigation-tabs";
@@ -71,6 +71,7 @@ export default function EventLayout({
   const { fetchAllUsers, users } = useHr();
   const { fetchAllContacts, contacts } = useContact();
 
+
   const clientContacts = useMemo(
     () => contacts.filter((c) => c.role === "client"),
     [contacts]
@@ -113,6 +114,7 @@ export default function EventLayout({
 
   useEffect(() => {
     refetchAll();
+    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {
@@ -194,6 +196,7 @@ export default function EventLayout({
           ]}
         />
         <div className="flex items-center justify-between border-b -mt-2 mb-4 pb-2">
+          <NavigationTabs />
           <NavigationTabs />
         </div>
         <div className="flex gap-2 px-6 justify-end">

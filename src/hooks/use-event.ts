@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -58,7 +60,11 @@ export default function useEvent() {
         event_id: eventId,
         created_by,
         updated_by: userName,
+        created_by,
+        updated_by: userName,
       });
+
+      const { data: response } = await axios.put(`${API_URL}`, updatedData);
 
       const { data: response } = await axios.put(`${API_URL}`, updatedData);
       const parsedEvent = EventSchema.parse(response.data);
@@ -105,6 +111,10 @@ export default function useEvent() {
           status: newStatus,
           updated_by: userName,
         }
+        {
+          status: newStatus,
+          updated_by: userName,
+        }
       );
 
       const parsedEvent = EventSchema.parse(updatedEvent.event);
@@ -115,12 +125,14 @@ export default function useEvent() {
         setEvent(parsedEvent);
       }
       toast.success("Status event berhasil diperbarui!");
+      toast.success("Status event berhasil diperbarui!");
     } catch (error) {
       console.error("Terjadi kesalahan saat memperbarui status event:", error);
       toast.error("Gagal memperbarui status event.");
     }
     setLoading(false);
   };
+
 
 
   const handleAddEvent = async (newEvent: AddEventDTO) => {
@@ -135,10 +147,14 @@ export default function useEvent() {
         ...newEvent,
         created_by: userName,
         updated_by: userName,
+        created_by: userName,
+        updated_by: userName,
       });
+
 
       const { data: createdEvent } = await axios.post(API_URL, eventData);
       const parsedEvent = EventSchema.parse(createdEvent);
+
 
       setEvents((prevEvents) => [...prevEvents, parsedEvent]);
 
@@ -151,6 +167,7 @@ export default function useEvent() {
       const budgetData = BudgetSchema.partial().parse({
         ...addBudgetDTO,
       });
+
 
       await axios.post(BUDGET_API_URL, budgetData);
     } catch {

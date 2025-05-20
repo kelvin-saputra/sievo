@@ -43,7 +43,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const dataBody = await req.json();
-    const { role, ...contactData } = dataBody;
+    const { role, clientType, vendorType, ...contactData } = dataBody;
     
     const contactItem = await prisma.contact.create({
       data: {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       await prisma.client.create({
         data: {
           contact_id: contactItem.contact_id,
-          type: "INDIVIDUAL", 
+          type: clientType || "INDIVIDUAL", 
           is_deleted: false
         }
       });
@@ -63,7 +63,8 @@ export async function POST(req: Request) {
       await prisma.vendor.create({
         data: {
           contact_id: contactItem.contact_id,
-          bankAccountDetail: "", 
+          type: vendorType || "OTHERS", 
+          bankAccountDetail: "",
           is_deleted: false
         }
       });

@@ -30,12 +30,16 @@ interface EventCardProps {
   onStatusUpdate?: (eventId: string, status: EventStatusEnum) => void;
   onDeleteEvent?: (eventId: string) => void;
   userRole: string | null;
+  onStatusUpdate?: (eventId: string, status: EventStatusEnum) => void;
+  onDeleteEvent?: (eventId: string) => void;
+  userRole: string | null;
 }
 
 const EventCard = ({
   event,
   onStatusUpdate,
   onDeleteEvent,
+  userRole,
   userRole,
 }: EventCardProps) => {
   const [expanded, setExpanded] = useState(false);
@@ -64,6 +68,8 @@ const EventCard = ({
 
   const handleStatusChange = (e: React.MouseEvent, status: EventStatusEnum) => {
     e.stopPropagation();
+    if (userRole === "FREELANCE") return;
+    onStatusUpdate?.(eventData.event_id, status);
     if (userRole === "FREELANCE") return;
     onStatusUpdate?.(eventData.event_id, status);
     setEventData((prev) => ({ ...prev, status }));
@@ -165,6 +171,11 @@ const EventCard = ({
             onClick={handleDelete}
             disabled={userRole === "FREELANCE"}
           >
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={userRole === "FREELANCE"}
+          >
             Delete
           </Button>
         </div>
@@ -198,6 +209,9 @@ const EventCard = ({
               variant="destructive"
               onClick={() => {
                 setConfirmOpen(false);
+                if (userRole !== "FREELANCE") {
+                  onDeleteEvent?.(eventData.event_id);
+                }
                 if (userRole !== "FREELANCE") {
                   onDeleteEvent?.(eventData.event_id);
                 }

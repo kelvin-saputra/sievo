@@ -8,6 +8,13 @@ import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventReportPage() {
   const ctx = useSafeContext(EventContext, "EventContext");
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserRole(getUserRoleFromStorage());
+  }, []);
+
+  const allowedRoles = ["ADMIN", "EXECUTIVE", "INTERNAL"];
 
   if (!ctx.event) {
     return (<p className="text-red-600">No event data available.</p>);
@@ -34,6 +41,7 @@ export default function EventReportPage() {
         </h2>
         <p className="text-yellow-700">
           Laporan hanya dapat diakses jika status event sudah{" "}
+          <b>REPORTING atau DONE</b>.
           <b>REPORTING atau DONE</b>.
           <br />
           Saat ini status event adalah:{" "}

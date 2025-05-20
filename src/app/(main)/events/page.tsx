@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import EventCard from "@/components/events/event-card";
 import useEvent from "@/hooks/use-event";
@@ -13,6 +14,8 @@ import Loading from "@/components/ui/loading";
 import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function ViewAllEvents() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   const [userRole, setUserRole] = useState<string | null>(null);
 
   const {
@@ -59,6 +62,15 @@ export default function ViewAllEvents() {
           />
         </div>
       )}
+      {userRole !== "FREELANCE" && (
+        <div className="mb-6">
+          <AddEventModal
+            onAddEvent={handleAddEvent}
+            users={users}
+            clientContacts={clientContacts}
+          />
+        </div>
+      )}
 
       <div className="mb-8 p-6 border rounded-lg shadow-lg bg-green-100">
         <h2 className="text-xl font-semibold text-green-800 mb-4">
@@ -72,6 +84,13 @@ export default function ViewAllEvents() {
             <EventCard
               key={event.event_id}
               event={event}
+              userRole={userRole}
+              onStatusUpdate={
+                userRole !== "FREELANCE" ? handleStatusChange : undefined
+              }
+              onDeleteEvent={
+                userRole !== "FREELANCE" ? handleDeleteEvent : undefined
+              }
               userRole={userRole}
               onStatusUpdate={
                 userRole !== "FREELANCE" ? handleStatusChange : undefined
