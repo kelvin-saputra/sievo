@@ -100,7 +100,7 @@ export function EventTable() {
             {filteredBudgets.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center py-10 text-gray-500">
-                  Tidak ada anggaran event yang dapat dilihat.
+                  No Available Budget Planning
                 </TableCell>
               </TableRow>
             ) : (
@@ -108,7 +108,7 @@ export function EventTable() {
                 <TableRow
                   key={budget.budget_id}
                   className="cursor-pointer hover:bg-gray-100 transition"
-                  onClick={() => router.push(`/events/${budget.event_id}`)}
+                  onClick={() => router.push(`/events/${budget.event_id}/plan`)}
                 >
                   <TableCell className="font-medium">{budget.event.event_name}</TableCell>
                   <TableCell>
