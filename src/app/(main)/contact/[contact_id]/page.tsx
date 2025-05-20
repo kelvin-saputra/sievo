@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -26,11 +25,25 @@ import { z } from "zod";
 import { UserSchema } from "@/models/schemas";
 
 const contactFormSchema = z.object({
-  name: z.string().min(2, { message: "Nama kontak minimal 2 karakter" }),
-  email: z.string().email({ message: "Email tidak valid" }),
-  phone_number: z.string().min(10, { message: "Nomor handphone minimal 10 karakter" }),
+  name: z.string().min(2, { message: "Contact name must be at least 2 characters long" }),
+  email: z.string().email({ message: "Invalid Email" }),
+  phone_number: z.string().min(10, { message: "Phone number must be at least 10 characters long" }),
+  address: z.string().min(5,{message: "Invalid Addres" }),
   description: z.string().optional()
 });
+
+// Format enum values to readable text
+const formatEnumValue = (value: string) => {
+  if (!value) return "";
+  
+  // Handle empty or N/A values
+  if (value === "N/A") return value;
+  
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 const ContactDetail = () => {
   const { contact_id } = useParams();
@@ -46,8 +59,10 @@ const ContactDetail = () => {
     name: "",
     email: "",
     phone_number: "",
+    address: "",
     description: "",
-    role: "none" as "none" | "client" | "vendor"
+    role: "none" as "none" | "client" | "vendor",
+    type: ""
   });
 
   const canEdit = ["ADMIN", "INTERNAL", "EXECUTIVE"].includes(userRole);
@@ -75,12 +90,22 @@ const ContactDetail = () => {
 
   useEffect(() => {
     if (contact) {
+      // Determine contact type based on role
+      let contactType = "N/A";
+      if (contact.role === "client" && contact.client?.type) {
+        contactType = contact.client.type;
+      } else if (contact.role === "vendor" && contact.vendor?.type) {
+        contactType = contact.vendor.type;
+      }
+      
       setFormData({
         name: contact.name,
         email: contact.email,
         phone_number: contact.phone_number,
+        address: contact.address || "",
         description: contact.description || "",
-        role: contact.role || "none"
+        role: contact.role || "none",
+        type: contactType
       });
     }
   }, [contact]);
@@ -95,8 +120,8 @@ const ContactDetail = () => {
 
   const validateForm = () => {
     try {
-      const { name, email, phone_number, description } = formData;
-      contactFormSchema.parse({ name, email, phone_number, description });
+      const { name, email, phone_number, address, description } = formData;
+      contactFormSchema.parse({ name, email, phone_number, address, description });
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -114,7 +139,7 @@ const ContactDetail = () => {
 
   const handleEdit = () => {
     if (!canEdit) {
-      toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+      toast.error("You do not have access to edit Contact.");
       return;
     }
     setIsEditing(true);
@@ -122,46 +147,55 @@ const ContactDetail = () => {
 
   const handleSave = async () => {
     if (!canEdit) {
-      toast.error("Anda tidak memiliki akses untuk mengubah Contact.");
+      toast.error("You do not have access to edit Contact.");
       return;
     }
 
     if (!validateForm()) {
-      toast.error("Ada kesalahan dalam pengisian form");
+      toast.error("There was an error in filling out the form");
       return;
     }
 
     if (!contact_id || typeof contact_id !== "string") {
-      toast.error("ID kontak tidak valid");
+      toast.error("Invalid Contact ID");
       return;
     }
 
     try {
       const userId = user?.id || "550e8400-e29b-41d4-a716-446655440000";
       
+      // Create the update payload
+      const updateData: any = {
+        name: formData.name,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        description: formData.description,
+        address: formData.address,     
+        updated_at: new Date(),
+      };
+      
+      // Only include type if it exists and the contact has a role
+      if (formData.type && formData.role !== "none") {
+        updateData.type = formData.type;
+      }
+      
       await handleUpdateContact(
         contact_id,
         userId,
-        {
-          name: formData.name,
-          email: formData.email,
-          phone_number: formData.phone_number,
-          description: formData.description,
-          updated_at: new Date()
-        }
+        updateData
       );
       
       setIsEditing(false);
       fetchContactById(contact_id);
     } catch (error) {
       console.error("Error updating contact:", error);
-      toast.error("Gagal memperbarui contact. Silakan coba lagi.");
+      toast.error("Failed to update contact. Please try again.");
     }
   };
 
   const handleDeleteClick = () => {
     if (!canDelete) {
-      toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+      toast.error("You do not have access to delete Contacts.");
       return;
     }
     setIsDeleteDialogOpen(true);
@@ -169,7 +203,7 @@ const ContactDetail = () => {
 
   const handleDelete = async () => {
     if (!canDelete) {
-      toast.error("Anda tidak memiliki akses untuk menghapus Contact.");
+      toast.error("You do not have access to delete Contacts.");
       return;
     }
     
@@ -180,7 +214,7 @@ const ContactDetail = () => {
       router.push("/contact");
     } catch (error) {
       console.error("Error deleting contact:", error);
-      toast.error("Gagal menghapus contact. Silakan coba lagi.");
+      toast.error("Failed to delete contact. Please try again.");
     }
     setIsDeleteDialogOpen(false);
   };
@@ -231,22 +265,39 @@ const ContactDetail = () => {
           <Badge variant="outline" className={`px-4 py-1 text-sm font-medium ${roleBadge.classes}`}>
             {roleBadge.text}
           </Badge>
+          {formData.type && formData.type !== "N/A" && (
+            <Badge variant="outline" className="px-4 py-1 text-sm font-medium bg-blue-100 text-blue-800 mt-2">
+              {formatEnumValue(formData.type)}
+            </Badge>
+          )}
         </div>
-
         <div className="space-y-6">
           <div className="space-y-4">
-            {["name", "email", "phone_number"].map((field) => (
+            {["name", "email", "phone_number", "address"].map((field) => (
               <div className="space-y-2" key={field}>
                 <label className="block text-sm font-medium">
-                  {field === "name" ? "Name" : field === "email" ? "Email" : "Phone Number"}
+                  {field === "name" ? "Name" : 
+                   field === "email" ? "Email" : 
+                   field === "phone_number" ? "Phone Number" : "Address"}
                 </label>
-                <Input 
-                  name={field}
-                  value={(formData as any)[field]} 
-                  onChange={handleChange}
-                  disabled={!isEditing} 
-                  className="w-full" 
-                />
+                {field === "address" ? (
+                  <Textarea
+                    name={field}
+                    value={(formData as any)[field]}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full"
+                    placeholder="Contact address"
+                  />
+                ) : (
+                  <Input 
+                    name={field}
+                    value={(formData as any)[field]} 
+                    onChange={handleChange}
+                    disabled={!isEditing} 
+                    className="w-full" 
+                  />
+                )}
                 {formErrors[field] && <p className="text-red-500 text-xs mt-1">{formErrors[field]}</p>}
               </div>
             ))}
@@ -255,7 +306,16 @@ const ContactDetail = () => {
               <Input value={roleBadge.text} disabled className="w-full" />
               {isEditing && (
                 <p className="text-xs text-muted-foreground italic mt-1">
-                  Role tidak dapat diubah setelah kontak dibuat
+                  Roles cannot be changed once a contact is created.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Type</label>
+              <Input value={formatEnumValue(formData.type)} disabled className="w-full" />
+              {isEditing && (
+                <p className="text-xs text-muted-foreground italic mt-1">
+                  Type cannot be changed once a contact is created.
                 </p>
               )}
             </div>
@@ -281,12 +341,21 @@ const ContactDetail = () => {
                   onClick={() => {
                     setIsEditing(false);
                     if (contact) {
+                      let contactType = "N/A";
+                      if (contact.role === "client" && contact.client?.type) {
+                        contactType = contact.client.type;
+                      } else if (contact.role === "vendor" && contact.vendor?.type) {
+                        contactType = contact.vendor.type;
+                      }
+                      
                       setFormData({
                         name: contact.name,
                         email: contact.email,
                         phone_number: contact.phone_number,
+                        address: contact.address || "",
                         description: contact.description || "",
-                        role: contact.role || "none"
+                        role: contact.role || "none",
+                        type: contactType
                       });
                     }
                     setFormErrors({});
@@ -310,11 +379,11 @@ const ContactDetail = () => {
         </div>
       </div>
 
-      <div className="mt-12">
-        <Tabs defaultValue="description">
-          <TabsList className="border-b w-full justify-start gap-8 px-0">
-            <TabsTrigger value="description" className="pb-2 px-0 mr-8">Description</TabsTrigger>
-            <TabsTrigger value="history" className="pb-2 px-0">History</TabsTrigger>
+      <div className="my-12 w-full max-w-5xl">
+        <Tabs defaultValue="description" className="w-full">
+          <TabsList>
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="pt-6">
             <p className="text-muted-foreground leading-relaxed">{formData.description || "No description available."}</p>
@@ -350,16 +419,16 @@ const ContactDetail = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                <AlertDialogTitle>Are you sure you want to delete this contact?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.
+                This action can not be undone. This will permanently delete the contact.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Batal</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                  Hapus
+                  Delete
                 </AlertDialogAction>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

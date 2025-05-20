@@ -31,13 +31,13 @@ export default function ViewAllContacts() {
       fetchAllContacts();
     } catch (error) {
       console.error("Error deleting contact:", error);
-      toast.error("Gagal menghapus Contact. Silakan coba lagi.");
+      toast.error("Failed to delete Contact. Please try again.");
     }
   };
 
   const typedContacts: ContactWithRole[] = contacts.map((contact) => ({
     ...contact,
-    created_by: contact.created_by ?? "", // fallback jika null
+    created_by: contact.created_by ?? "",
     role: contact.role ?? "none",
   }));
   
@@ -46,7 +46,6 @@ export default function ViewAllContacts() {
     <div className="p-6 w-full max-w-7xl mx-auto">
       <PageHeader
         title="Contacts Overview"
-        breadcrumbs={[{ label: "Contacts", href: "/contact" }]}
       />
 
       <div className="mb-6">

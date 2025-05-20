@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { UserSchema } from "@/models/schemas";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Pastikan file ini ada
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export interface Contact {
   contact_id: string;
@@ -25,6 +25,7 @@ export interface Contact {
   email: string;
   phone_number: string;
   description?: string | null;
+  address: string;
   created_by: string;
   updated_by?: string | null;
   created_at: Date;
@@ -34,6 +35,23 @@ export interface Contact {
 
 export type ContactWithRole = Contact & {
   role: "none" | "client" | "vendor";
+  client?: {
+    type: string;
+  } | null;
+  vendor?: {
+    type: string;
+  } | null;
+};
+
+// Helper function to format enum values to human-readable text
+const formatEnumValue = (value: string): string => {
+  if (!value) return "N/A";
+  
+  // Split by underscores and convert to title case
+  return value
+    .split("_")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
@@ -90,6 +108,49 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
         Phone Number <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
+  },
+  {
+    accessorKey: "address",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Address <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const address = row.getValue("address") as string;
+      // Truncate address if it's too long
+      return <div title={address}>{address.length > 30 ? `${address.substring(0, 27)}...` : address}</div>;
+    },
+  },
+  {
+    id: "type",
+    header: () => (
+      <Button
+        variant="ghost"
+      >
+        Type
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const role = row.original.role;
+      let type = "N/A";
+      
+      if (role === "client" && row.original.client?.type) {
+        type = formatEnumValue(row.original.client.type);
+      } else if (role === "vendor" && row.original.vendor?.type) {
+        type = formatEnumValue(row.original.vendor.type);
+      }
+      
+      return (
+        <div>
+          {type}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "role",
@@ -171,10 +232,11 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
 
       return (
         <>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 whitespace-nowrap">
             <Button
               variant="outline"
               onClick={() => router.push(`/contact/${row.original.contact_id}`)}
+              className="px-3"
             >
               Detail
             </Button>
@@ -183,6 +245,7 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
               <Button
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
+                className="px-3"
               >
                 Delete
               </Button>
@@ -192,16 +255,16 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                <AlertDialogTitle>Are you sure you want to delete &quot;{row.original.name}&quot;?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Apakah Anda yakin ingin menghapus kontak &quot;{row.original.name}&quot;? Tindakan ini tidak dapat dibatalkan.
+                  This action can not be undone. This will permanently delete the contact.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Batal</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                   Delete
                 </AlertDialogAction>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
