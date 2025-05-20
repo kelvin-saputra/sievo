@@ -100,7 +100,7 @@ export function EventTable() {
             {filteredBudgets.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center py-10 text-gray-500">
-                  Tidak ada anggaran event yang dapat dilihat.
+                  No Available Budget Planning
                 </TableCell>
               </TableRow>
             ) : (

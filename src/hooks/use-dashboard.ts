@@ -25,6 +25,7 @@ export type EventBudgetSummary = {
   event_name: string;
   planned_budget: number;
   actual_budget: number;
+  event_status:string;
 };
 
 export type BudgetSummary = {
