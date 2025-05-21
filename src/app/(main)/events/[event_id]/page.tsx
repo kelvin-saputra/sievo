@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { EventStatusEnum } from "@/models/enums";
@@ -30,6 +31,12 @@ const taskStatusColorMap: Record<string, string> = {
 
 export default function EventDetailPage() {
   const { event, tasks, budgetPlanData, budgetActualData, client, manager, handleStatusChange } = useSafeContext(EventContext, "EventContext");
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserRole(getUserRoleFromStorage());
+  }, []);
 
   const clientName = client?.name || "-";
   const managerName = manager?.name || "-";
@@ -167,6 +174,33 @@ export default function EventDetailPage() {
             <span className="font-medium">
               {event.updated_at
                 ? new Date(event.updated_at).toLocaleString("en-GB")
+                : "-"}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700 space-y-2">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Dibuat oleh</span>
+            <span className="font-medium">{event.created_by || "-"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Tanggal dibuat</span>
+            <span className="font-medium">
+              {event.created_at
+                ? new Date(event.created_at).toLocaleString("id-ID")
+                : "-"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Diperbarui oleh</span>
+            <span className="font-medium">{event.updated_by || "-"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Tanggal diperbarui</span>
+            <span className="font-medium">
+              {event.updated_at
+                ? new Date(event.updated_at).toLocaleString("id-ID")
                 : "-"}
             </span>
           </div>

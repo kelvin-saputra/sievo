@@ -207,6 +207,21 @@ export const contactColumns: ColumnDef<ContactWithRole, unknown>[] = [
 
       const meta = table.options.meta as { onDelete?: (contactId: string) => void };
 
+      useEffect(() => {
+        try {
+          const userData = localStorage.getItem("authUser");
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            const userParsed = UserSchema.partial().parse(parsedUser);
+            setUserRole((userParsed.role || "").toUpperCase());
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+        }
+      }, []);
+
+      const canDelete = ["ADMIN", "EXECUTIVE"].includes(userRole);
+
       const handleDelete = () => {
         if (meta.onDelete) {
           meta.onDelete(row.original.contact_id);
