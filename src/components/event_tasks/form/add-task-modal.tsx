@@ -50,15 +50,19 @@ import {
   SelectContent,
   SelectValue,
 } from "@/components/ui/select";
-import { UserWithStatus } from "@/hooks/use-hr";
 import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
 interface AddTaskModalProps {
   onAddTask: (dto: AddTaskDTO) => void;
-  users: UserWithStatus[];
+  users: any[];
+  currentEventId: string;
 }
 
-export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
+export function AddTaskModal({
+  onAddTask,
+  users,
+  currentEventId,
+}: AddTaskModalProps) {
   const [open, setOpen] = useState(false);
   const [openStatus, setOpenStatus] = React.useState(false);
 
@@ -83,7 +87,7 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Task</Button>
+        <Button variant={"default"}>+ Add Task</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -140,11 +144,17 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
                       <SelectValue placeholder="Select assignee" />
                     </SelectTrigger>
                     <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name || user.email}
-                        </SelectItem>
-                      ))}
+                      {(users as any[])
+                        .filter((user) =>
+                          user.userEvents?.some(
+                            (event: any) => event.eventId === currentEventId
+                          )
+                        )
+                        .map((user: any) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name || user.email}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -282,7 +292,7 @@ export function AddTaskModal({ onAddTask, users }: AddTaskModalProps) {
               <Button
                 type="submit"
                 form="add-task-form"
-                className="bg-green-500 text-white"
+                variant={"default"}
               >
                 Add Task
               </Button>

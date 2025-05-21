@@ -5,22 +5,26 @@ import { useParams } from "next/navigation";
 import PageHeader from "@/components/common/page-header";
 import NavigationTabs from "@/components/events/navigation-tabs";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import EventContext from "@/models/context/event.context";
-import EventDetailSkeleton from "@/components/events/event-detail-skeleton";
 import { UpdateEventForm } from "@/components/events/form/update-event-form";
 import { Trash } from "lucide-react";
 
 import useEvent from "@/hooks/use-event";
 import useEventTask from "@/hooks/use-event-task";
-import useBudgetPlan from "@/hooks/use-budget-plan";
-import useActualBudget from "@/hooks/use-budget-actual";
-import useCategory from "@/hooks/use-category";
 import usePurchasing from "@/hooks/use-purchase";
-import useVendorService from "@/hooks/use-vendor-service";
 import useInventory from "@/hooks/use-inventory";
 import useHr from "@/hooks/use-hr";
 import useContact from "@/hooks/use-contact";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import useBudget from "@/hooks/use-budget";
+import Loading from "@/components/ui/loading";
+import useVendor from "@/hooks/use-vendor";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventLayout({
   children,
@@ -28,7 +32,7 @@ export default function EventLayout({
   children: React.ReactNode;
 }) {
   const { event_id } = useParams();
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const {
     event,
@@ -50,49 +54,31 @@ export default function EventLayout({
   } = useEventTask(event_id as string);
 
   const {
-    budgetPlan,
-    budgetPlanItems,
-    loading: budgetPlanLoading,
-    fetchBudgetPlan,
-    fetchAllBudgetPlanItems,
+    budgetPlanData,
+    budgetActualData,
+    loading: budgetLoading,
+    fetchBudgetDataPlan,
+    handleUpdateBudgetPlanStatus,
     handleAddBudgetPlanItem,
     handleUpdateBudgetPlanItem,
     handleDeleteBudgetPlanItem,
-  } = useBudgetPlan(event_id as string);
-
-  const {
-    actualBudget,
-    actualBudgetItems,
-    loading: actualBudgetLoading,
-    fetchActualBudget,
-    fetchAllActualBudgetItems,
+    fetchBudgetDataActual,
+    handleImportBudgetData,
     handleAddActualBudgetItem,
     handleUpdateActualBudgetItem,
     handleDeleteActualBudgetItem,
-    handleImportBudgetData,
-  } = useActualBudget(event_id as string);
-
-  const {
-    categoriesPlan,
-    actualCategories,
-    loading: budgetCategoriesLoadingPlan,
-    fetchCategoriesByBudgetIdPlan,
-    fetchCategoriesByActualBudgetId,
     handleAddCategory,
     handleUpdateCategory,
-    handleDeleteCategory,
-  } = useCategory(
-    event_id as string,
-    budgetPlan?.budget_id as string,
-    actualBudget?.budget_id as string
-  );
+    handleDeleteCategory
+  } = useBudget(event_id as string);
 
-  const { handleAddPurchase, handleUpdatePurchase, handleDeletePurchase } =
+  const { loading: purchasingLoading, handleAddPurchase, handleUpdatePurchase, handleDeletePurchase } =
     usePurchasing();
-  const { vendorServices, fetchAllVendorServices } = useVendorService();
+  const { vendorServices, fetchAllVendorServices } = useVendor("");
   const { inventories, fetchAllInventories } = useInventory();
-  const { fetchAllUsers, users } = useHr();
+  const { fetchAllUsersAssigned, userAssigned } = useHr();
   const { fetchAllContacts, contacts } = useContact();
+
 
   const clientContacts = useMemo(
     () => contacts.filter((c) => c.role === "client"),
@@ -111,85 +97,76 @@ export default function EventLayout({
   }, [event, contacts]);
 
   const manager = useMemo(() => {
-    if (!event || users.length === 0) return null;
-    return users.find((u) => u.id === event.manager_id) || null;
-  }, [event, users]);
+    if (!event || userAssigned.length === 0) return null;
+    return userAssigned.find((u) => u.id === event.manager_id) || null;
+  }, [event, userAssigned]);
 
   const refetchAll = useCallback(() => {
     if (event_id) {
       fetchEventById(event_id as string);
       fetchAllTasks();
-      fetchBudgetPlan();
-      fetchActualBudget();
-      fetchAllBudgetPlanItems();
-      fetchAllActualBudgetItems();
-      fetchCategoriesByBudgetIdPlan();
-      fetchCategoriesByActualBudgetId();
       fetchAllVendorServices();
       fetchAllInventories();
+      fetchBudgetDataPlan();
+      fetchBudgetDataActual();
     }
   }, [
     event_id,
     fetchEventById,
     fetchAllTasks,
-    fetchBudgetPlan,
-    fetchActualBudget,
-    fetchAllBudgetPlanItems,
-    fetchAllActualBudgetItems,
-    fetchCategoriesByBudgetIdPlan,
-    fetchCategoriesByActualBudgetId,
     fetchAllVendorServices,
     fetchAllInventories,
+    fetchBudgetDataPlan,
+    fetchBudgetDataActual,
   ]);
 
   useEffect(() => {
     refetchAll();
-    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {
-    fetchAllUsers();
+    fetchAllUsersAssigned();
     fetchAllContacts();
-  }, [fetchAllUsers, fetchAllContacts]);
+  }, [fetchAllUsersAssigned, fetchAllContacts]);
 
-  if (
-    eventLoading ||
-    budgetPlanLoading ||
-    budgetCategoriesLoadingPlan ||
-    taskLoading
-  ) {
-    return <EventDetailSkeleton />;
+  if ( eventLoading ) {
+    return <Loading message="Fetching event data..." />
+  } else if (taskLoading) {
+    return <Loading message="Fetching task data..."/>
+  } else if (budgetLoading) {
+    return <Loading message="Fetching budget data..."/>
+  } else if (purchasingLoading) {
+    return <Loading message="Fetching pruchased item data..."/>
   }
 
   if (!event) {
-    return <p className="text-red-500 text-lg">Event not found.</p>;
+    return (
+      <div className=" max-w-2xl mx-auto my-16 p-8 bg-red-50 border border-red-300 rounded text-center">
+        <h2 className="text-xl font-semibold mb-2 text-red-800">
+          Event Not Found!
+        </h2>
+        <p className='text-red-700'>
+          The event you are searching for is not available or doesn&apos;t exist. Please check the event ID or try searching again.
+        </p>
+      </div>
+    );
   }
-  if (!tasks) {
-    return <p className="text-red-500 text-lg">Task not found.</p>;
-  }
-
   return (
     <EventContext.Provider
       value={{
         event,
         client,
-        users,
+        userAssigned,
         manager,
+        budgetPlanData,
+        budgetActualData,
         tasks,
-        budgetPlan,
-        actualBudget,
-        budgetPlanItems,
-        actualBudgetItems,
-        categoriesPlan,
-        actualCategories,
         inventories,
         vendorServices,
         loading:
           eventLoading ||
           taskLoading ||
-          budgetPlanLoading ||
-          budgetCategoriesLoadingPlan ||
-          actualBudgetLoading,
+          budgetLoading,
         handleUpdateEvent,
         handleDeleteEvent,
         handleStatusChange,
@@ -198,19 +175,16 @@ export default function EventLayout({
         handleUpdateTask,
         handleDeleteTask,
         handleAddTask,
-        fetchBudgetPlan,
-        fetchAllBudgetPlanItems,
+        fetchBudgetDataPlan,
+        fetchBudgetDataActual,
+        handleUpdateBudgetPlanStatus,
         handleAddBudgetPlanItem,
         handleDeleteBudgetPlanItem,
         handleUpdateBudgetPlanItem,
-        fetchActualBudget,
-        fetchAllActualBudgetItems,
         handleAddActualBudgetItem,
         handleDeleteActualBudgetItem,
         handleUpdateActualBudgetItem,
         handleImportBudgetData,
-        fetchCategoriesByBudgetIdPlan,
-        fetchCategoriesByActualBudgetId,
         handleAddCategory,
         handleUpdateCategory,
         handleDeleteCategory,
@@ -222,7 +196,7 @@ export default function EventLayout({
         refetchAll,
       }}
     >
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 w-full mx-auto">
         <PageHeader
           title={event.event_name}
           breadcrumbs={[
@@ -234,28 +208,57 @@ export default function EventLayout({
           <NavigationTabs />
         </div>
         <div className="flex gap-2 px-6 justify-end">
-          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
             <UpdateEventForm
               event={event}
               createdBy={event.created_by}
               onUpdateEvent={handleUpdateEvent}
-              users={users}
+              users={userAssigned}
               clientContacts={clientContacts}
             />
           )}
 
-          {["ADMIN", "EXECUTIVE"].includes(userRole || "") && (
+          {checkRoleClient(ADMINEXECUTIVE) && !["IMPLEMENTATION", "REPORTING", "DONE"].includes(event.status) && (
             <Button
-              variant="destructive"
-              onClick={() => event && handleDeleteEvent(event.event_id)}
+              variant={"destructive"}
+              onClick={() => setConfirmDeleteOpen(true)}
             >
-              <Trash />
+              <Trash className="h-4 w-4" />
               Delete Event
             </Button>
           )}
         </div>
         <div className="p-6 bg-white rounded-lg shadow-md">{children}</div>
       </div>
+
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p className="my-4">
+            Are you sure you want to delete this event? This action cannot be
+            undone.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmDeleteOpen(false);
+                handleDeleteEvent(event.event_id);
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </EventContext.Provider>
   );
 }

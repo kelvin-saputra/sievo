@@ -41,25 +41,25 @@ export const data = {
                    </svg>`,
             roles: ["ADMIN", "EXECUTIVE"]
         },
-        // {
-        //     title: "Vendor",
-        //     url: "/vendor",
-        //     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-        //             <path d="M2.47484 10.7667C2.2288 10.9145 2.02511 11.1233 1.88349 11.373C1.74188 11.6226 1.66713 11.9046 1.6665 12.1917V14.8917C1.66713 15.1787 1.74188 15.4607 1.88349 15.7103C2.02511 15.96 2.2288 16.1688 2.47484 16.3167L4.97484 17.8167C5.23406 17.9724 5.53076 18.0547 5.83317 18.0547C6.13558 18.0547 6.43228 17.9724 6.6915 17.8167L9.99984 15.8333V11.25L5.83317 8.75L2.47484 10.7667Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M5.8333 13.75L1.8833 11.375" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M5.8335 13.75L10.0002 11.25" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M5.8335 13.75V18.0583" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M10 11.25V15.8333L13.3083 17.8167C13.5676 17.9724 13.8643 18.0547 14.1667 18.0547C14.4691 18.0547 14.7658 17.9724 15.025 17.8167L17.525 16.3167C17.771 16.1688 17.9747 15.96 18.1163 15.7103C18.258 15.4607 18.3327 15.1787 18.3333 14.8917V12.1917C18.3327 11.9046 18.258 11.6226 18.1163 11.373C17.9747 11.1233 17.771 10.9145 17.525 10.7667L14.1667 8.75L10 11.25Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M14.1667 13.75L10 11.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M14.1665 13.75L18.1165 11.375" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M14.1665 13.75V18.0583" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M6.64183 3.68333C6.39579 3.83115 6.1921 4.04 6.05049 4.28965C5.90887 4.53931 5.83413 4.8213 5.8335 5.10833V8.75L10.0002 11.25L14.1668 8.75V5.10833C14.1662 4.8213 14.0915 4.53931 13.9498 4.28965C13.8082 4.04 13.6045 3.83115 13.3585 3.68333L10.8585 2.18333C10.5993 2.02759 10.3026 1.94531 10.0002 1.94531C9.69776 1.94531 9.40105 2.02759 9.14183 2.18333L6.64183 3.68333Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M9.9998 6.66675L6.0498 4.29175" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M10 6.66675L13.95 4.29175" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //             <path d="M10 11.2501V6.66675" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        //            </svg>`,
-        //     roles: ["ADMIN", "EXECUTIVE", "INTERNAL", "FREELANCE"]
-        // },
+        {
+            title: "Vendor Services",
+            url: "/vendor-service",
+            icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M2.47484 10.7667C2.2288 10.9145 2.02511 11.1233 1.88349 11.373C1.74188 11.6226 1.66713 11.9046 1.6665 12.1917V14.8917C1.66713 15.1787 1.74188 15.4607 1.88349 15.7103C2.02511 15.96 2.2288 16.1688 2.47484 16.3167L4.97484 17.8167C5.23406 17.9724 5.53076 18.0547 5.83317 18.0547C6.13558 18.0547 6.43228 17.9724 6.6915 17.8167L9.99984 15.8333V11.25L5.83317 8.75L2.47484 10.7667Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.8333 13.75L1.8833 11.375" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.8335 13.75L10.0002 11.25" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.8335 13.75V18.0583" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 11.25V15.8333L13.3083 17.8167C13.5676 17.9724 13.8643 18.0547 14.1667 18.0547C14.4691 18.0547 14.7658 17.9724 15.025 17.8167L17.525 16.3167C17.771 16.1688 17.9747 15.96 18.1163 15.7103C18.258 15.4607 18.3327 15.1787 18.3333 14.8917V12.1917C18.3327 11.9046 18.258 11.6226 18.1163 11.373C17.9747 11.1233 17.771 10.9145 17.525 10.7667L14.1667 8.75L10 11.25Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.1667 13.75L10 11.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.1665 13.75L18.1165 11.375" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.1665 13.75V18.0583" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6.64183 3.68333C6.39579 3.83115 6.1921 4.04 6.05049 4.28965C5.90887 4.53931 5.83413 4.8213 5.8335 5.10833V8.75L10.0002 11.25L14.1668 8.75V5.10833C14.1662 4.8213 14.0915 4.53931 13.9498 4.28965C13.8082 4.04 13.6045 3.83115 13.3585 3.68333L10.8585 2.18333C10.5993 2.02759 10.3026 1.94531 10.0002 1.94531C9.69776 1.94531 9.40105 2.02759 9.14183 2.18333L6.64183 3.68333Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.9998 6.66675L6.0498 4.29175" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 6.66675L13.95 4.29175" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 11.2501V6.66675" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                   </svg>`,
+            roles: ["ADMIN", "EXECUTIVE", "INTERNAL", "FREELANCE"]
+        },
         // {
         //     title: "Client",
         //     url: "/client",

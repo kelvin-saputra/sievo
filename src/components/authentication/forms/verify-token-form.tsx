@@ -21,9 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 const tokenSchema = z.object({
-  token: z.string().min(1, { message: "Token registrasi diperlukan" }),
+  token: z.string().min(1, { message: "Registration token is required" }),
 });
 
 type TokenFormValues = z.infer<typeof tokenSchema>;
@@ -59,10 +60,10 @@ export default function TokenVerificationForm({
       if (isValid) {
         onTokenVerified(values.token);
       } else {
-        setVerificationError("Token registrasi tidak valid atau kadaluwarsa");
+        setVerificationError("Invalid or expired registration token");
       }
     } catch {
-      setVerificationError("Terjadi kesalahan saat memverifikasi token");
+      setVerificationError("An error occurred while verifying the token");
     } finally {
       setIsVerifying(false);
     }
@@ -71,9 +72,9 @@ export default function TokenVerificationForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Verifikasi Token</CardTitle>
+        <CardTitle className="text-2xl">Token Verification</CardTitle>
         <CardDescription>
-          Masukkan token registrasi untuk melanjutkan pendaftaran.
+          Enter your registration token to continue the registration process.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -84,10 +85,10 @@ export default function TokenVerificationForm({
               name="token"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Token Registrasi</FormLabel>
+                  <FormLabel>Registration Token</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Masukkan token registrasi anda"
+                      placeholder="Enter your registration token"
                       {...field}
                     />
                   </FormControl>
@@ -103,8 +104,14 @@ export default function TokenVerificationForm({
             )}
 
             <Button type="submit" className="w-full" disabled={isVerifying}>
-              {isVerifying ? "Memverifikasi..." : "Verifikasi Token"}
+              {isVerifying ? "Verifying..." : "Verify Token"}
             </Button>
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <Link href="/login" className="underline underline-offset-4">
+                Login Here
+              </Link>
+            </div>
           </form>
         </Form>
       </CardContent>

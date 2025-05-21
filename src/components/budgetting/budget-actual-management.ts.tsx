@@ -1,36 +1,36 @@
 import { X } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { BudgetItemCategorySchema, BudgetSchema, InventorySchema, VendorServiceSchema } from "@/models/schemas";
+import { InventorySchema, PurchasingSchema } from "@/models/schemas";
 import { AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, UpdateBudgetItemCategoryDTO, UpdatePurchaseDTO } from "@/models/dto";
 import { AddPurchaseDTO } from "@/models/dto";
 import { DeleteCategoryModal } from "./form/delete-category-form";
 import { UpdateBudgetItemCategoryForm } from "./form/update-category-form";
 import { Badge } from "../ui/badge";
-import { ActualBudgetItemResponse } from "@/models/response/item-actual.response";
 import { AddActualBudgetItemForm } from "./form/create-actual-item-form";
 import { UpdateActualBudgetItemForm } from "./form/update-actual-item-form";
 import { DeleteActualBudgetItemModal } from "./form/delete-actual-item-form";
+import { BudgetWithCategoryBudgetActual } from "@/models/response/budget-with-category-budget-actual";
+import { VendorWithService } from "@/models/response/vendor-with-service";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
+import { useSafeContext } from "@/hooks/use-safe-context";
+import EventContext from "@/models/context/event.context";
 
 interface BudgetManagementAccordionProps {
-    actualCategories: BudgetItemCategorySchema[];
-    categoriesActualItems: Record<string, ActualBudgetItemResponse[]>;
-    actualBudget: BudgetSchema | null;
-    totalPriceMap: Record<string, number>;
+    budgetDataActual: BudgetWithCategoryBudgetActual | null;
+    totalPriceByCategory: Record<string, number>;
     inventories: InventorySchema[];
-    vendorServices: VendorServiceSchema[];
-    handleAddActualBudget: (data: AddActualBudgetItemDTO) => void;
-    handleUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => void;
-    handleDeleteActualBudgetItem: (budgetItemId: string) => void;
-    handleAddPurchasing: (data: AddPurchaseDTO) => void;
-    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => void;
-    handleDeleteCategory: (categoryId: number, isActual: boolean) => void;
-    handleUpdateCategory: (categoryId: number, data: UpdateBudgetItemCategoryDTO) => void;
+    vendorServices: VendorWithService[];
+    handleAddActualBudget: (data: AddActualBudgetItemDTO) => Promise<void>;
+    handleUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>;
+    handleDeleteActualBudgetItem: (budgetItemId: string) => Promise<void>;
+    handleAddPurchasing: (data: AddPurchaseDTO) => Promise<void>;
+    handleUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>;
+    handleDeleteCategory: (categoryId: number, isActual: boolean) => Promise<void>;
+    handleUpdateCategory: (categoryId: number, data: UpdateBudgetItemCategoryDTO) => Promise<void>;
 }
 export function ActualBudgetManagementAccordion({ 
-  actualCategories,
-  categoriesActualItems,
-  actualBudget,
-  totalPriceMap,
+  budgetDataActual,
+  totalPriceByCategory,
   inventories,
   vendorServices,
   handleAddActualBudget,
@@ -44,70 +44,81 @@ export function ActualBudgetManagementAccordion({
   const formatToRupiah = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')},00`;
   };
+
+  const {event} = useSafeContext(EventContext, "EventContext");
   return (
       <>
         <Accordion type="multiple" defaultValue={["1"]}>
-          {actualCategories.map((category) => (
-            <AccordionItem key={category.category_id} value={category.category_name} className="border-b">
+          {budgetDataActual?.categories.map((category) => (
+            <AccordionItem key={category?.category_id} value={category?.category_name||""} className="border-b">
               <AccordionTrigger className="px-4 py-3 hover:bg-gray-50 hover:no-underline">
                 <div className="flex justify-between items-center w-full">
                   <div className="flex flex-row items-center gap-2">
                     <span className="font-medium">
-                      {category.category_name}
+                      {category?.category_name}
                     </span>
-                      <UpdateBudgetItemCategoryForm
-                        category={category}
-                        onUpdateBudgetItemCategory={handleUpdateCategory}
-                      />
-                  </div>
-                  <div className="flex items-center gap-8">
-                        <span className="font-medium">{formatToRupiah(totalPriceMap[category.category_name])}</span>
-                        <DeleteCategoryModal
-                          onDeleteCategory={handleDeleteCategory}
-                          categoryName={category.category_name}
-                          categoryId={category.category_id}
-                          is_actual={true}
-                          trigger={
-                              <X size={18} />
-                          }
+                    {
+                      category && checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                        <UpdateBudgetItemCategoryForm
+                          category={{
+                            is_deleted:category.is_deleted,
+                            category_id: category.category_id,
+                            category_name: category.category_name,
+                          }}
+                          onUpdateBudgetItemCategory={handleUpdateCategory}
                         />
-                      </div>
+                      )
+                    }
+                  </div>
+                  {category && checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                    <div className="flex items-center gap-8">
+                      <span className="font-medium">{formatToRupiah(totalPriceByCategory[category?.category_name||""])}</span>
+                      <DeleteCategoryModal
+                        onDeleteCategory={handleDeleteCategory}
+                        categoryName={category?.category_name|| ""}
+                        categoryId={category?.category_id|| 0}
+                        is_actual={true}
+                        trigger={
+                            <X size={18} />
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4 pt-2">
-                {/* Table header */}
-                <div className="grid grid-cols-8 gap-4 mb-2 border-b pb-2 font-bold">
+                <div className="grid grid-cols-6 gap-4 mb-2 border-b pb-2 font-bold">
                   <div className="col-span-1">Item</div>
-                  <div className="col-span-1">Cost</div>
-                  <div className="col-span-1">Quantity</div>
+                  <div className="col-span-1">Basic Price</div>
+                  <div className="col-span-1 text-center">Quantity</div>
                   <div className="col-span-1">Subtotal</div>
                   <div className="col-span-1">Source</div>
-                  <div className="col-span-1">Note</div>
-                  <div className="col-span-1">Status</div>
+                  {/* <div className="col-span-1">Note</div> */}
                   <div className="col-span-1 flex justify-end">
-                      <AddActualBudgetItemForm
-                        categoryId={category.category_id}
-                        onAddActualBudgetItem={handleAddActualBudget}
-                        onAddPurchasing={handleAddPurchasing} 
-                        inventories={inventories}
-                        vendorServices={vendorServices}
-                        actualBudget={actualBudget}
-                      />
+                      {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                        <AddActualBudgetItemForm
+                          categoryId={category?.category_id}
+                          onAddActualBudgetItem={handleAddActualBudget}
+                          onAddPurchasing={handleAddPurchasing} 
+                          inventories={inventories}
+                          vendorServices={vendorServices}
+                          budgetDataActual={budgetDataActual}
+                        />
+                      )}
                   </div>
                 </div>
     
-                {/* Table rows */}
-                {categoriesActualItems[category.category_id].length === 0 ? (
+                {category?.actual_budget_item.length === 0 ? (
                       <div className="py-8 text-center text-gray-500 italic">
                         No items added yet. Click the + button to add an item.
                       </div>
                     ) : (
-                      categoriesActualItems[category.category_id].map((item) => (
+                      category?.actual_budget_item.map((item) => (
                         <div
-                          key={item.actual_budget_item_id}
+                          key={item?.actual_budget_item_id}
                           className="grid grid-cols-6 gap-4 py-3 border-b border-gray-100 items-center hover:bg-gray-50 rounded-md transition-colors"
                         >
-                          {item.inventory_id ? (
+                          {item?.inventory_id ? (
                             <>
                               <div className="col-span-1">
                                 <div className="text-gray-800">{item.inventory?.item_name}</div>
@@ -126,45 +137,30 @@ export function ActualBudgetManagementAccordion({
                                   Inventory
                                 </Badge>
                               </div>
-                              <div className="col-span-1">
+                              {/* <div className="col-span-1">
                                 <div className="text-gray-800">{item.notes}</div>
-                              </div>
-                              <div className="col-span-1">
-                                {item.status === "PENDING" ? (
-                                  <Badge className="bg-warning text-super-white hover:bg-warning-light">
-                                    Pending
-                                  </Badge>
-                                ) : item.status === "CANCELED" ? (
-                                  <Badge className="bg-destructive text-super-white hover:bg-destructive-light">
-                                    Rejected
-                                  </Badge>
-                                ):(
-                                  <Badge className="bg-success text-super-white hover:bg-success-light">
-                                    Approved
-                                  </Badge>
-                                )}
-                                
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-                                  Approved
-                                </Badge>
-                              </div>
+                              </div> */}
                               <div className="col-span-1 flex justify-end gap-2">
-                                <UpdateActualBudgetItemForm
-                                  onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
-                                  onUpdatePurchasing={handleUpdatePurchasing}
-                                  categoryId={category.category_id}
-                                  existingItem={item}
-                                  inventories={inventories}
-                                  vendorServices={vendorServices}
-                                  currentSource="inventory"
-                                />
-                                <DeleteActualBudgetItemModal
-                                  onDeleteActualItem={handleDeleteActualBudgetItem}
-                                  budgetItemId={item.actual_budget_item_id}
-                                />
+                                {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                                  <>
+                                    <UpdateActualBudgetItemForm
+                                      onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
+                                      onUpdatePurchasing={handleUpdatePurchasing}
+                                      categoryId={category.category_id}
+                                      existingItem={item}
+                                      inventories={inventories}
+                                      vendorServices={vendorServices}
+                                      currentSource="inventory"
+                                    />
+                                    <DeleteActualBudgetItemModal
+                                      onDeleteActualItem={handleDeleteActualBudgetItem}
+                                      budgetItemId={item.actual_budget_item_id}
+                                    />
+                                  </>
+                                )}
                               </div>
                             </>
-                          ) : item.vendor_service_id ? (
+                          ) : item?.vendor_service_id ? (
                             <>
                               <div className="col-span-1">
                                 <div className="">{item.vendor_service?.service_name}</div>
@@ -182,22 +178,26 @@ export function ActualBudgetManagementAccordion({
                                 <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Vendor</Badge>
                               </div>
                               <div className="col-span-1 flex justify-end gap-2">
-                                <UpdateActualBudgetItemForm
-                                  onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
-                                  onUpdatePurchasing={handleUpdatePurchasing}
-                                  categoryId={category.category_id}
-                                  existingItem={item}
-                                  inventories={inventories}
-                                  vendorServices={vendorServices}
-                                  currentSource="inventory"
-                                />
-                                <DeleteActualBudgetItemModal
-                                  onDeleteActualItem={handleDeleteActualBudgetItem}
-                                  budgetItemId={item.actual_budget_item_id}
-                                />
+                                {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                                  <>
+                                    <UpdateActualBudgetItemForm
+                                      onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
+                                      onUpdatePurchasing={handleUpdatePurchasing}
+                                      categoryId={category.category_id}
+                                      existingItem={item}
+                                      inventories={inventories}
+                                      vendorServices={vendorServices}
+                                      currentSource="vendor"
+                                    />
+                                    <DeleteActualBudgetItemModal
+                                      onDeleteActualItem={handleDeleteActualBudgetItem}
+                                      budgetItemId={item.actual_budget_item_id}
+                                    />
+                                  </>
+                                )}
                               </div>
                             </>
-                          ) : item.other_item_id ? (
+                          ) : item?.other_item_id ? (
                             <>
                               <div className="col-span-1">
                                 <div className="font-medium text-gray-800">{item.other_item?.item_name}</div>
@@ -215,19 +215,23 @@ export function ActualBudgetManagementAccordion({
                                 <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Purchase</Badge>
                               </div>
                               <div className="col-span-1 flex justify-end gap-2">
-                                <UpdateActualBudgetItemForm
-                                  onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
-                                  onUpdatePurchasing={handleUpdatePurchasing}
-                                  categoryId={category.category_id}
-                                  existingItem={item}
-                                  inventories={inventories}
-                                  vendorServices={vendorServices}
-                                  currentSource="inventory"
-                                />
-                                <DeleteActualBudgetItemModal
-                                  onDeleteActualItem={handleDeleteActualBudgetItem}
-                                  budgetItemId={item.actual_budget_item_id}
-                                />
+                                {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status) && (
+                                  <>
+                                    <UpdateActualBudgetItemForm
+                                      onUpdateActualBudgetItem={handleUpdateActualBudgetItem}
+                                      onUpdatePurchasing={handleUpdatePurchasing}
+                                      categoryId={category.category_id}
+                                      existingItem={item}
+                                      inventories={inventories}
+                                      vendorServices={vendorServices}
+                                      currentSource="other"
+                                    />
+                                    <DeleteActualBudgetItemModal
+                                      onDeleteActualItem={handleDeleteActualBudgetItem}
+                                      budgetItemId={item.actual_budget_item_id}
+                                    />
+                                  </>
+                                )}
                               </div>
                             </>
                           ) : null}

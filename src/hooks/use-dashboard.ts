@@ -1,3 +1,5 @@
+"use client"
+
 import { toast } from "sonner";
 import axios from "axios";
 import { useState, useCallback } from "react";
@@ -23,6 +25,7 @@ export type EventBudgetSummary = {
   event_name: string;
   planned_budget: number;
   actual_budget: number;
+  event_status:string;
 };
 
 export type BudgetSummary = {

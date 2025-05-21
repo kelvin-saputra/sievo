@@ -10,6 +10,7 @@ export async function GET() {
       select: {
         event_id: true,
         event_name: true,
+        status : true,
         budget: {
           where: {
             is_deleted: false,
@@ -45,6 +46,7 @@ export async function GET() {
       return {
         event_id: event.event_id,
         event_name: event.event_name,
+        event_status: event.status,
         planned_budget: planned,
         actual_budget: actual,
       };

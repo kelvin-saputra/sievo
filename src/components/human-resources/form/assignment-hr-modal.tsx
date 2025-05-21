@@ -71,6 +71,7 @@ export function AssignmentModal({ isOpen, onClose, onAssign, projects, isLoading
             onClick={handleAssign}
             className="bg-[#1e2c4f] hover:bg-[#2a3c66]"
             disabled={!selectedProject || isLoading}
+            variant="default"
           >
             {isLoading ? (
               <>
