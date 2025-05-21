@@ -8,6 +8,7 @@ import PageHeader from "@/components/common/page-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddProposalModal } from "@/components/proposal/form/add-proposal-modal"
+import Loading from "@/components/ui/loading"
 
 export default function ViewAllProposal() {
   const { proposals, loading, fetchAllProposals, handleAddProposal, handleUpdateProposal, handleDeleteProposal } =
@@ -31,11 +32,15 @@ export default function ViewAllProposal() {
   const totalPages = Math.ceil(proposals.length / itemsPerPage)
   const columnsWithActions = createProposalColumnsWithActions(handleDeleteProposal, handleUpdateProposal)
 
+  if (loading) {
+    return (<Loading message="Fetching proposals data..." />);
+  }
+
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
       <PageHeader title="Proposal" breadcrumbs={[{ label: "Proposal", href: "/proposal" }]} />
       <div className="mb-6">
-        <Button onClick={() => setIsModalOpen(true)} className="mb-4 bg-blue-500 text-white">
+        <Button variant="default" onClick={() => setIsModalOpen(true)}>
           + Add Proposal
         </Button>
         {isModalOpen && (
@@ -66,9 +71,6 @@ export default function ViewAllProposal() {
             >
               Previous
             </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
             <Button
               variant="outline"
               size="sm"

@@ -10,7 +10,7 @@ export async function GET() {
     try {
         const refreshToken = cookieStore.get('refreshToken')?.value;
         if (!refreshToken) {
-            return responseFormat(400, 'Pengguna belum melakukan login, silakan login terlebih dahulu.', null);
+            return responseFormat(400, 'User is not logged in, please login first.', null);
         }
         const decodedToken = verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET!)
 
@@ -21,6 +21,6 @@ export async function GET() {
 
         return responseFormat(200, "Logged out successfully", null);
     } catch {
-        return responseFormat(500, "Internal Server Error", null);
+        return responseFormat(500, "Logout failed. Please try again later.", null);
     }
 }

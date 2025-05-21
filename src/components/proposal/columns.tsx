@@ -53,7 +53,6 @@ function ActionCell({
           <Pencil className="h-4 w-4" />
         </Button>
 
-        {/* Delete Button */}
         <Button variant="destructive" size="icon" className="p-1 h-8 w-8" onClick={handleDeleteClick}>
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -152,15 +151,12 @@ export const proposalColumns = [
   },
 ] as ColumnDef<Proposal, unknown>[]
 
-// Export a function to create columns with the delete and update handlers
 export function createProposalColumnsWithActions(
   onDelete: (proposalId: string) => void,
   onUpdate: (proposalId: string, updatedBy: string, data:updateProposalDTO) => void,
 ) {
-  // Create a copy of the columns array
   const columnsWithActions = [...proposalColumns]
 
-  // Replace the actions column with one that has the onDelete and onUpdate handlers
   columnsWithActions[columnsWithActions.length - 1] = {
     id: "actions",
     header: "Actions",

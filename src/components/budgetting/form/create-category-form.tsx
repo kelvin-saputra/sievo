@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,7 +25,6 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 
 interface AddBudgetItemCategoryFormProps {
   onAddBudgetItemCategory: (is_actual:boolean, dto: AddBudgetItemCategoryDTO) => void;
@@ -42,12 +42,10 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
   })
   const onSubmit = async (data: AddBudgetItemCategoryDTO) => {
     try {
-        console.log(data);
         onAddBudgetItemCategory(is_actual, data);
         form.reset();
         setOpen(false);
     } catch {
-        toast.error("Gagal mengirimkan data kategori budget")
     }
   };
 
@@ -56,12 +54,13 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
       <DialogTrigger asChild>
         <Button>
             <Plus />
-            Add Budget Category
+            Budget Category
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Budget Category</DialogTitle>
+          <DialogDescription>Fill all the field to add budget category</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -75,9 +74,9 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
               name="category_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Kategori</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nama Kategori" {...field} />
+                    <Input placeholder="Enter Budget Category Name..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -87,7 +86,7 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant={"outline"}
                 onClick={() => setOpen(false)}
               >
                 Cancel
@@ -95,7 +94,7 @@ export function AddBudgetItemCategoryForm({onAddBudgetItemCategory, is_actual} :
               <Button
                 type="submit"
                 form="add-budget-category-item-form"
-                className="text-white"
+                variant={"default"}
               >
                 Add Category
               </Button>

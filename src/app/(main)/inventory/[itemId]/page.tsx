@@ -24,13 +24,12 @@ import useInventory from "@/hooks/use-inventory";
 import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
 import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { useEffect, useState } from "react";
-import { UserSchema } from "@/models/schemas";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 
 const ItemDetail = () => {
   const router = useRouter();
   const { itemId } = useParams();
-  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
 
   const { inventory, loading, fetchInventoryById, handleDeleteInventory, handleUpdateInventory } = useInventory(); 
   const [open, setOpen] = useState(false);
@@ -43,14 +42,6 @@ const ItemDetail = () => {
       fetchInventoryById(itemId);
     }
   }, [itemId, fetchInventoryById]);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("authUser")!);
-    try {
-      const userParsed = UserSchema.partial().parse(user);
-      setUser(userParsed);
-    } catch {}
-  }, []);
 
   useEffect(() => {
     if (inventory?.inventory_id) {
@@ -84,10 +75,10 @@ const ItemDetail = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full">
           <p className="text-muted-foreground text-xl sm:text-2xl">Item Detail</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-          {["ADMIN","EXECUTIVE","INTERNAL"].includes((user?.role)||"") && (
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
             <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
           )}
-          {["ADMIN","EXECUTIVE"].includes((user?.role)||"") && (
+          {checkRoleClient(ADMINEXECUTIVE) && (
             <DeleteInventoryModal 
               inventoryId={inventory.inventory_id} 
               onDeleteInventory={async (itemId) => {
@@ -176,13 +167,13 @@ const ItemDetail = () => {
             <div className="relative border-l-2 border-muted pl-6 pb-6 space-y-8">
 
             {changeLogs.filter(log => log.action === "UPDATE").length === 0 ? (
-                <p className="text-sm text-muted-foreground">Belum ada perubahan terbaru</p>
+                <p className="text-sm text-muted-foreground">No recent changes</p>
               ) : (
                 changeLogs.map((log, index) =>
                   log.action === "UPDATE" && (
                     <div key={index} className="relative">
                       <div className="space-y-1">
-                        <p className="font-medium">Last Updated by {log.updated_by}</p>
+                        <p className="font-medium">Last updated by {log.updated_by}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(log.updated_at).toLocaleString()}
                         </p>
