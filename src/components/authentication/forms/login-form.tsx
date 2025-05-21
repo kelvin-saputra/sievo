@@ -3,11 +3,11 @@
 import { cn } from "@/utils/shadUtils"
 import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card"
 import {
     Form,
@@ -16,7 +16,7 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-  } from "@/components/ui/form"
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -48,76 +48,75 @@ export function LoginForm({
                 const replaceUrl = params.get('from') ?? '/'; 
                 router.replace(replaceUrl);
             }
-            form.setError("root", {message: "Email atau password yang anda masukkan salah!"})
+            form.setError("root", {message: "The email or password you entered is incorrect!"})
             form.reset();
         } catch {
-            console.log("LOGIN GAGAL")
-        } finally{
-            console.log("LOGIN BERHASIL")
+        } finally {
         }
     }
+    
     return (
         <div className={cn("flex flex-col gap-6")}>
-        <Card>
-            <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
-            <CardDescription>
-                Silahkan masukkan email dan password Anda untuk login.
-            </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} >
-                        <div className="flex flex-col gap-6">
-                            <div className="grid gap-2">
-                                <FormField 
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input type="email" placeholder="Masukkan Email Anda" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl">Login</CardTitle>
+                    <CardDescription>
+                        Please enter your email and password to login.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <div className="flex flex-col gap-6">
+                                <div className="grid gap-2">
+                                    <FormField 
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Email</FormLabel>
+                                                <FormControl>
+                                                    <Input type="email" placeholder="Enter Your Email" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <FormField 
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <div className="flex items-center">
+                                                    <FormLabel>Password</FormLabel>
+                                                    <Link href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+                                                        Forgot Password?
+                                                    </Link>      
+                                                </div>
+                                                <FormControl>
+                                                    <Input type="password" placeholder="Enter Your Password" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <Button type="submit" className="w-full">
+                                    Login
+                                </Button>
                             </div>
-                            <div className="grid gap-2">
-                                <FormField 
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <div className="flex items-center">
-                                                <FormLabel>Password</FormLabel>
-                                                <Link href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-                                                    Lupa Password?
-                                                </Link>      
-                                            </div>
-                                            <FormControl>
-                                                <Input type="password" placeholder="Masukkan Password Anda" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <div className="mt-4 text-center text-sm">
+                                Don&apos;t Have an Account?{" "}
+                                <Link href="/auth/register" className="underline underline-offset-4">
+                                    Register Here
+                                </Link>
                             </div>
-                            <Button type="submit" className="w-full">
-                                Login
-                            </Button>
-                        </div>
-                        <div className="mt-4 text-center text-sm">
-                            Tidak Punya Akun?{" "}
-                            <Link href="/auth/register" className="underline underline-offset-4">
-                                Daftar Disini
-                            </Link>
-                        </div>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
         </div>
     )
 }

@@ -6,3 +6,7 @@ export * from "./purchasing.dto";
 export * from "./contact.dto";
 export * from "./inventory.dto";
 export * from "./auth.dto";
+export * from "./proposal.dto";
+export * from "./purchasing.dto";
+export * from "./user.dto";
+export * from "./vendor-service.dto";

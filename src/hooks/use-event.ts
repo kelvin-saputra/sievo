@@ -6,7 +6,7 @@ import axios from "axios";
 import { BudgetSchema, EventSchema } from "@/models/schemas";
 import { AddBudgetDTO, AddEventDTO, UpdateEventDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
-import { getCurrentUserName } from "@/utils/authUtils";
+import { getUserDataClient } from "@/lib/userData";
 
 const API_URL = process.env.NEXT_PUBLIC_EVENT_API_URL!;
 const BUDGET_API_URL = process.env.NEXT_PUBLIC_BUDGET_API_URL!;
@@ -47,7 +47,7 @@ export default function useEvent() {
     data: UpdateEventDTO
   ) => {
     try {
-      const userName = getCurrentUserName();
+      const userName = getUserDataClient().name;
       if (!userName) {
         toast.error("User belum login, tidak bisa memperbarui event.");
         return;
@@ -61,6 +61,7 @@ export default function useEvent() {
       });
 
       const { data: response } = await axios.put(`${API_URL}`, updatedData);
+
       const parsedEvent = EventSchema.parse(response.data);
 
       setEvents((prevEvents) =>
@@ -93,7 +94,7 @@ export default function useEvent() {
     newStatus: EventStatusEnum
   ) => {
     try {
-      const userName = getCurrentUserName();
+      const userName = getUserDataClient().name;
       if (!userName) {
         toast.error("User belum login, tidak bisa memperbarui status event.");
         return;
@@ -115,6 +116,7 @@ export default function useEvent() {
         setEvent(parsedEvent);
       }
       toast.success("Status event berhasil diperbarui!");
+      toast.success("Status event berhasil diperbarui!");
     } catch (error) {
       console.error("Terjadi kesalahan saat memperbarui status event:", error);
       toast.error("Gagal memperbarui status event.");
@@ -123,9 +125,10 @@ export default function useEvent() {
   };
 
 
+
   const handleAddEvent = async (newEvent: AddEventDTO) => {
     try {
-      const userName = getCurrentUserName();
+      const userName = getUserDataClient().name;
       if (!userName) {
         toast.error("User belum login, tidak bisa menambahkan event.");
         return;
@@ -137,8 +140,10 @@ export default function useEvent() {
         updated_by: userName,
       });
 
+
       const { data: createdEvent } = await axios.post(API_URL, eventData);
       const parsedEvent = EventSchema.parse(createdEvent);
+
 
       setEvents((prevEvents) => [...prevEvents, parsedEvent]);
 
@@ -151,6 +156,7 @@ export default function useEvent() {
       const budgetData = BudgetSchema.partial().parse({
         ...addBudgetDTO,
       });
+
 
       await axios.post(BUDGET_API_URL, budgetData);
     } catch {

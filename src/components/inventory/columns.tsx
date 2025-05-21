@@ -9,24 +9,14 @@ import { useRouter } from "next/navigation";
 import { EditInventoryModal } from "@/components/inventory/form/edit-inventory-modal";
 import { DeleteInventoryModal } from "@/components/inventory/form/delete-inventory-modal";
 import useInventory from "@/hooks/use-inventory";
-import { useState, useEffect } from "react";
-import { UserSchema } from "@/models/schemas";
+import { useState } from "react";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 
 const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
   const router = useRouter();
   const {handleDeleteInventory, handleUpdateInventory } = useInventory(); 
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<Partial<UserSchema> | null>(null);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("authUser")!);
-    try {
-      const userParsed = UserSchema.partial().parse(user);
-      setUser(userParsed);
-    } catch {}
-  }, []);
-
 
   return (
     <div className="flex space-x-2">
@@ -38,11 +28,11 @@ const InventoryActions = ({ inventory }: { inventory: InventorySchema }) => {
       >
         <SquareArrowOutUpRight className="h-4 w-4" />
       </Button>
-      {["ADMIN","EXECUTIVE","INTERNAL"].includes((user?.role)||"") && (
+      {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
         <EditInventoryModal inventory={inventory} onUpdateInventory={handleUpdateInventory} open={open} setOpen={setOpen} />
       )}
 
-      {["ADMIN","EXECUTIVE"].includes((user?.role)||"") && (
+      {checkRoleClient(ADMINEXECUTIVE) && (
         <DeleteInventoryModal 
           inventoryId={inventory.inventory_id} 
           onDeleteInventory={async (itemId) => {

@@ -3,8 +3,9 @@ import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
 import { verify } from "@/lib/jwt";
 import redisClient from "@/utils/redis";
+import { NextRequest } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     const reqBody = await req.json();
     const { searchParams } = new URL(req.url);
     const encryptedToken = searchParams.get("token");
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     const { email, password, name, phone_number, role, ...userData } = reqBody
 
     if (!email || !password || !name || !phone_number || !role) {
-        return responseFormat(400, "Semua field wajib diisi", null);
+        return responseFormat(400, "All fields are required", null);
     }
 
     const checkuser = await prisma.user.findFirst({
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     })
 
     if (checkuser) {
-        return responseFormat(400, "Alamat email sudah digunakan, lakukan login", null);
+        return responseFormat(400, "Email address is already in use, please login", null);
     }
 
     try {
@@ -45,12 +46,12 @@ export async function POST(req: Request) {
         });
 
         if (!newUser) {
-            return responseFormat(400, "Terjadi kesalahan saat menyimpan data pengguna", null);
+            return responseFormat(400, "An error occurred while saving user data", null);
         }
         newUser.password = "[PASSWORD IS HIDDEN]"
         await redisClient.del(`registerToken:${encryptedToken}`)
-        return responseFormat(201, "Pengguna berhasil dibuat", newUser, undefined, "/login");
-    } catch (error) {
-        return responseFormat(500, "Terjadi kesalahan internal", error instanceof Error ? error.message : String(error));
+        return responseFormat(201, "User created successfully", newUser, undefined, "/login");
+    } catch {
+        return responseFormat(400, "Invalid or expired registration token", null);
     }
 }

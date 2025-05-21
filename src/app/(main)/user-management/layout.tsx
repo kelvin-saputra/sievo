@@ -31,7 +31,7 @@ export default function UserManagementLayout({
         handleGenerateToken,
       }}
     >
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 w-full mx-auto">
         <PageHeader title="User Management" />
         <div className="p-6 bg-white rounded-lg shadow-md">{children}</div>
       </div>

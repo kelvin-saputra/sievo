@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { AiOutlineDownload } from "react-icons/ai"
 import { Button } from "../ui/button"
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog"
 
 interface ImportDataPlanningProps {
     onImportData: () => void
@@ -23,14 +24,15 @@ export function ImportDataModal({onImportData}: ImportDataPlanningProps) {
       <AlertDialogTrigger asChild>
         <Button>
             <AiOutlineDownload />
-            Import Budget Planning
+            Import Budget
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl">
-            Apakah Anda yakin ingin import data dari planning?
-          </AlertDialogTitle>
+            <AlertDialogTitle className="text-xl">Import Budget Planning Data</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will add all budget item from planning into your current budget data. Are you sure you want to continue?
+            </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           
@@ -38,7 +40,7 @@ export function ImportDataModal({onImportData}: ImportDataPlanningProps) {
           <AlertDialogAction
             onClick={() => onImportData()}
           >
-            Import 
+            Continue
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

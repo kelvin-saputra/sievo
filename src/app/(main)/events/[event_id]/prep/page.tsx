@@ -6,12 +6,14 @@ import { DataTable } from "@/components/event_tasks/data-table";
 import EventContext from "@/models/context/event.context";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import { AddTaskModal } from "@/components/event_tasks/form/add-task-modal";
+import Loading from "@/components/ui/loading";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventPrepPage() {
   const {
     event,
     tasks,
-    users,
+    userAssigned,
     loading: tasksLoading,
     handleDeleteTask,
     handleAddTask,
@@ -19,27 +21,30 @@ export default function EventPrepPage() {
   } = useSafeContext(EventContext, "EventContext");
 
   if (tasksLoading) {
-    return <div>Loading tasks...</div>;
+    return <Loading message="Fetching Task Data..."/>
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <AddTaskModal
-          onAddTask={handleAddTask}
-          users={Array.isArray(users) ? users : []}
+        {checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE", "REPORTING"].includes(event.status) && (
+          <div className="mb-4">
+            <AddTaskModal
+              onAddTask={handleAddTask}
+              users={Array.isArray(userAssigned) ? userAssigned : []}
+              currentEventId={event.event_id}
         />
-      </div>
+          </div>
+        )}
       <DataTable
         columns={getPrepColumns({
           onDeleteTask: handleDeleteTask,
           onUpdateTask: handleUpdateTask,
-          users,
+          userAssigned,
           eventStartDate: event.start_date,
           eventEndDate: event.end_date,
         })}
         data={tasks}
-        users={Array.isArray(users) ? users : []}
+        users={Array.isArray(userAssigned) ? userAssigned : []}
       />
     </div>
   );

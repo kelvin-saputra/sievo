@@ -1,13 +1,15 @@
 import { AddPurchaseDTO, UpdatePurchaseDTO } from "@/models/dto/purchasing.dto";
+import { PurchasingSchema } from "@/models/schemas";
 import axios from "axios";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const PURCHASE_API = process.env.NEXT_PUBLIC_PURCHASE_API_URL
 
 export default function usePurchasing() {
-
+    const [loading, setLoading] = useState(false)
     const handleAddPurchase = async(data: AddPurchaseDTO) => {
-        // setLoading(true);
+        setLoading(true);
         try {
             const requestData = {
                 ...data,
@@ -18,40 +20,41 @@ export default function usePurchasing() {
         } catch (error) {
             console.log("error hook purchase", error instanceof Error ? error.message : error)
             toast.error("Gagal menambahkan purchase item")
+        } finally {
+            setLoading(false)
         }
     }
 
     const handleUpdatePurchase = async (data: UpdatePurchaseDTO) => {
-        // setLoading(true);
+        setLoading(true);
         try {
             const requestData = {
                 ...data,
             }
-            console.log("ini adalah requestData", requestData)
-            await axios.put(`${PURCHASE_API}`, requestData)
-            // setPurchaseItems((prevItems) => prevItems.map((item) => item.other_item_id === purchase_id ? parsedPurchaseItem : item))
-            toast.success("Berhasil mengupdate item purchasing")
-        } catch {
-            toast.error("Gagal mengupdate item purchasing")
-        }
+            const {data: updatedPurchase} = await axios.put(`${PURCHASE_API}`, requestData)
+            const updatedPurchaseParsed =  PurchasingSchema.parse(updatedPurchase.data)
+            setLoading(false);            
+            return updatedPurchaseParsed
+        } catch (error) {
+            console.log("error hook purchase", error instanceof Error ? error.message : error)        } finally {
+        } 
     }
     
     const handleDeletePurchase = async (purchase_id: string) => {
-        // setLoading(true);
+        setLoading(true);
         try {
             const requestData = { purchase_id: purchase_id }
             await axios.delete(`${PURCHASE_API}`, { params: requestData})
-            // setPurchaseItems((prevItems) => prevItems.filter((item) => item.other_item_id !== purchase_id))
             toast.success("Berhasil menghapus item purchasing")
         } catch {
             toast.error("Gagal menghapus item purchasing")
+        } finally {
+            setLoading(false)
         }
     }   
 
     return {
-        // purchaseItems,
-        // loading,
-        // fetchPurchaseBudget,
+        loading,
         handleAddPurchase,
         handleUpdatePurchase,
         handleDeletePurchase

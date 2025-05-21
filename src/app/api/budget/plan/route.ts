@@ -5,26 +5,105 @@ export async function POST(req: Request) {
     try {
         const reqBody = await req.json();
         const { category_id:categoryId, budget_id:budgetId, vendor_service_id:serviceId, inventory_id:inventoryId, other_item_id:purchasingId, ...planData } = reqBody;
-        let vendorService, inventory, purchasing;
+        let vendorService, inventory, purchasing, existingVendorPlanItem, existingInventoryPlanItem, existingPurchasingPlanItem;
 
         if (serviceId) {
             vendorService = await prisma.vendorService.findFirst({
                 where: { service_id: serviceId, is_deleted: false },
             });
+            existingVendorPlanItem = await prisma.budgetPlanItem.findFirst({
+                where: {
+                    budget_id: budgetId,
+                    vendor_service_id: serviceId,
+                    is_deleted: false
+                }
+            })
         }
         if (inventoryId) {
             inventory = await prisma.inventory.findFirst({
                 where: { inventory_id: inventoryId, is_deleted: false },
             });
+            existingInventoryPlanItem = await prisma.budgetPlanItem.findFirst({
+                where: {
+                    budget_id:budgetId,
+                    inventory_id: inventoryId,
+                    is_deleted: false
+                }
+            })
         }
         if (purchasingId) {
             purchasing = await prisma.purchasing.findFirst({
                 where: { other_item_id: purchasingId, is_deleted: false },
             });
+            existingPurchasingPlanItem = await prisma.budgetPlanItem.findFirst({
+                where: {
+                    budget_id: budgetId,
+                    other_item_id: purchasingId,
+                    is_deleted: false
+                }
+            })
         }
         
         if (!vendorService && !inventory && !purchasing) {
-            return responseFormat(404, "Data item tidak ditemukan", null);
+            return responseFormat(404, "Data not found", null);
+        }
+
+        if (existingVendorPlanItem) {
+            if (existingVendorPlanItem.category_id !== categoryId) {
+                return responseFormat(400, "Budget Item Plan has added to another category!", null)
+            }
+            const updatedBudgetPlan = await prisma.budgetPlanItem.update({
+                where: {
+                    budget_item_id: existingVendorPlanItem.budget_item_id,
+                    vendor_service_id: existingVendorPlanItem.vendor_service_id
+                },
+                data: {
+                    item_subtotal: existingVendorPlanItem.item_subtotal + planData.item_subtotal,
+                    item_qty: existingVendorPlanItem.item_qty + planData.item_qty
+                }
+            })
+            return responseFormat(200, "Budget plan successfully updated", updatedBudgetPlan);
+        }
+        if (existingInventoryPlanItem) {
+            if (existingInventoryPlanItem.category_id !== categoryId) {
+                return responseFormat(400, "Budget Item Plan has added to another category!", null)
+            }
+            const updatedBudgetPlan = await prisma.budgetPlanItem.update({
+                where: {
+                    budget_item_id: existingInventoryPlanItem.budget_item_id,
+                    inventory_id: existingInventoryPlanItem.inventory_id
+                },
+                data: {
+                    item_subtotal: existingInventoryPlanItem.item_subtotal + planData.item_subtotal,
+                    item_qty: existingInventoryPlanItem.item_qty + planData.item_qty
+                }
+            })
+            await prisma.inventory.update({
+                where: {
+                    inventory_id: inventoryId,
+                },
+                data: {
+                    item_qty_reserved: inventory?.item_qty_reserved + planData.item_qty
+                }
+            })
+            return responseFormat(200, "Budget Plan Item Successfully Added!", updatedBudgetPlan);
+        }
+
+        if (existingPurchasingPlanItem) {
+            if (existingPurchasingPlanItem.category_id !== categoryId) {
+                return responseFormat(400, "Budget Item Plan has added to another category!", null)
+            }
+            const updatedBudgetPlan = await prisma.budgetPlanItem.update({
+                where: {
+                    budget_item_id: existingPurchasingPlanItem.budget_item_id,
+                    other_item_id: existingPurchasingPlanItem.other_item_id
+                },
+                data: {
+                    item_subtotal: existingPurchasingPlanItem.item_subtotal + planData.item_subtotal,
+                    item_qty: existingPurchasingPlanItem.item_qty + planData.item_qty
+                }
+            })
+            return responseFormat(200, "Budget Plan Item Successfully Added!", updatedBudgetPlan);
         }
         
         const budgetPlanItem = await prisma.$transaction(async (transactions) => {   
@@ -33,7 +112,7 @@ export async function POST(req: Request) {
                 budgetPlan = await transactions.budgetPlanItem.create({
                     data: {
                         ...planData,
-                        vendor_service: {connect: {service_id: serviceId}},
+                        vendor_service: {connect: {service_id:serviceId}},
                         category: {connect: {category_id: categoryId}},
                         budget: {connect: {budget_id: budgetId}},
                     },
@@ -55,6 +134,11 @@ export async function POST(req: Request) {
             }
 
             if (inventoryId) {
+                const inventory = await transactions.inventory.findFirst({
+                    where: {
+                        inventory_id: inventoryId,
+                    }
+                })
                 budgetPlan = await transactions.budgetPlanItem.create({
                     data: {
                         ...planData,
@@ -75,6 +159,7 @@ export async function POST(req: Request) {
                         budget_plan_item: {
                             connect: {budget_item_id: planData.budget_item_id} 
                         },
+                        item_qty_reserved: (inventory?.item_qty_reserved||0) + planData.item_qty
                     }
                 });
             }
@@ -103,7 +188,7 @@ export async function POST(req: Request) {
                     }
                 });
             }
-            // Connectiong Categories eith BudgetItem
+
             await transactions.budgetItemCategory.update({
                 where: { category_id: categoryId, is_deleted: false },
                 data: {
@@ -113,7 +198,6 @@ export async function POST(req: Request) {
                 },
             });
 
-            // Connecting Budget Plan With Budget Plan Item
             await transactions.budget.update({
                 where: { budget_id: budgetPlan?.budget_id ?? undefined, is_deleted: false },
                 data: {
@@ -126,11 +210,11 @@ export async function POST(req: Request) {
             return budgetPlan;
         });
             if (!budgetPlanItem) {
-                return responseFormat(400, "Rencana anggaran gagal dibuat", null);
+                return responseFormat(400, "Failed to create budget plan item!", null);
             }
-            return responseFormat(201, "Rencana anggaran berhasil dibuat", budgetPlanItem);
+            return responseFormat(201, "Budget Plan Item Successfully Added!", budgetPlanItem);
     } catch {
-        return responseFormat(500, "Gagal membuat rencana anggaran", null);
+        return responseFormat(500, "Failed when creating budget plan item!", null);
     }
 }
 
@@ -162,12 +246,18 @@ export async function DELETE(req: Request) {
                 });
             }
             if (budgetPlan.inventory_id) {
+                const inventory = await transactions.inventory.findFirst({
+                    where: {
+                        inventory_id: budgetPlan.inventory_id
+                    }
+                })
                 await transactions.inventory.update({
                     where: { inventory_id: budgetPlan.inventory_id },
                     data: {
                         budget_plan_item: {
                             disconnect: { budget_item_id: budget_item_id },
                         },
+                        item_qty_reserved: (inventory?.item_qty_reserved || 0) - budgetPlan.item_qty
                     },
                 });
             }
@@ -196,13 +286,12 @@ export async function DELETE(req: Request) {
 
         });
         if (!deletedBudgetItem) {
-            return responseFormat(404, "Rencana anggaran tidak ditemukan", null);
+            return responseFormat(404, "Budget plan item not found!", null);
         }
 
-        return responseFormat(200, "Rencana anggaran berhasil dihapus", deletedBudgetItem);
-    } catch (error) {
-        console.log(error instanceof Error ? error.message : error);
-        return responseFormat(500, "Gagal menghapus rencana anggaran", null);
+        return responseFormat(200, "Budget plan item successfully deleted!", deletedBudgetItem);
+    } catch {
+        return responseFormat(500, "Failed when deleting budget plan item!", null);
     }
 }
 
@@ -210,17 +299,178 @@ export async function PUT(req: Request) {
     try {
         const reqBody = await req.json();
         const { budget_item_id:budgetItemId, category_id:categoryId, vendor_service_id:serviceId, inventory_id:inventoryId, other_item_id:purchasingId, budget_id:budgetId, ...planData } = reqBody;
-        console.log("Data PUT", budgetItemId, categoryId, serviceId, inventoryId, purchasingId, planData);
+        
         const existingPlanItem = await prisma.budgetPlanItem.findFirst({
             where: { budget_item_id: budgetItemId, is_deleted: false },
+            include: {other_item: true}
         });
-
+        
         if (!existingPlanItem) {
-            return responseFormat(404, "Rencana anggaran tidak ditemukan", null);
+            return responseFormat(404, "Budget plan item not found!", null);
+        }
+
+        const existingVendorPlanItem = await prisma.budgetPlanItem.findFirst({
+            where: {
+                budget_id: budgetId,
+                vendor_service_id: serviceId,
+                is_deleted: false
+            }
+        })
+        
+        const existingInventoryPlanItem = await prisma.budgetPlanItem.findFirst({
+            where: {
+                budget_id: budgetId,
+                inventory_id: inventoryId,
+                is_deleted: false
+            }
+        })
+        
+        const existingPurchasingPlanItem = await prisma.budgetPlanItem.findFirst({
+            where: {
+                budget_id:budgetId,
+                other_item_id: purchasingId,
+                is_deleted: false
+            },
+            include: {
+                other_item: true
+            }
+        })
+        
+        if (existingPlanItem.vendor_service_id === existingVendorPlanItem?.vendor_service_id) {
+            const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
+                const updatedBudgetPlan = await transactions.budgetPlanItem.update({
+                    where: {
+                        budget_item_id: existingPlanItem.budget_item_id,
+                        vendor_service_id: existingVendorPlanItem.vendor_service_id,
+                    },
+                    data: {
+                        ...planData,
+                        item_qty: (existingPlanItem.budget_item_id === existingVendorPlanItem.budget_item_id)? planData.item_qty: existingVendorPlanItem.item_qty + planData.item_qty
+                    }
+                })
+                if (existingPlanItem.budget_item_id !== existingVendorPlanItem.budget_item_id){
+                    const deletedItem = await transactions.budgetPlanItem.delete({
+                        where: {
+                            budget_item_id: existingPlanItem.budget_item_id,
+                        }
+                    })
+
+                    if (deletedItem.inventory_id) {
+                        const inventory = await transactions.inventory.findFirst({
+                            where: {
+                                inventory_id: deletedItem.inventory_id
+                            }
+                        })
+                        await transactions.inventory.update({
+                            where: {
+                                inventory_id: deletedItem.inventory_id,
+                            },
+                            data: {
+                                item_qty_reserved: (inventory?.item_qty_reserved||0) - deletedItem.item_qty
+                            }
+                        })
+                    }
+                }
+                return updatedBudgetPlan;
+            }) 
+            
+            return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
+        }
+        if (existingPlanItem.inventory_id === existingInventoryPlanItem?.inventory_id) {
+            const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
+                const updatedBudgetPlan = await transactions.budgetPlanItem.update({
+                    where: {
+                        budget_item_id: existingPlanItem.budget_item_id,
+                        inventory_id: existingInventoryPlanItem.inventory_id,
+                    },
+                    data: {
+                        ...planData,
+                        item_qty: (existingPlanItem.budget_item_id === existingInventoryPlanItem.budget_item_id)? planData.item_qty: existingInventoryPlanItem.item_qty + planData.item_qty
+                    }
+                })
+                if (existingPlanItem.budget_item_id !== existingInventoryPlanItem.budget_item_id){
+                    const deletedItem = await transactions.budgetPlanItem.delete({
+                        where: {
+                            budget_item_id: existingPlanItem.budget_item_id,
+                        }
+                    })
+                    if (deletedItem.inventory_id) {
+                        const inventory = await transactions.inventory.findFirst({
+                            where: {
+                                inventory_id: deletedItem.inventory_id
+                            }
+                        })
+                        await transactions.inventory.update({
+                            where: {
+                                inventory_id: deletedItem.inventory_id,
+                            },
+                            data: {
+                                item_qty_reserved: (inventory?.item_qty_reserved||0) - deletedItem.item_qty
+                            }
+                        })
+                    }
+                }
+                const inventory = await transactions.inventory.findFirst({
+                    where: {
+                        inventory_id: existingInventoryPlanItem.inventory_id || "",
+                    }
+                })
+
+                await transactions.inventory.update({
+                    where: {
+                        inventory_id: updatedBudgetPlan.inventory_id || "",
+                    },
+                    data: {
+                        item_qty_reserved: (inventory?.item_qty_reserved||0) - existingInventoryPlanItem.item_qty + updatedBudgetPlan.item_qty,
+                    }
+                })
+    
+                return updatedBudgetPlan;
+            })
+            return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
+        }
+        if (existingPlanItem.other_item === existingPurchasingPlanItem?.other_item_id) {
+            const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
+                const updatedBudgetPlan = await transactions.budgetPlanItem.update({
+                    where: {
+                        budget_item_id: existingPlanItem.budget_item_id,
+                        other_item_id: existingPurchasingPlanItem.other_item_id,
+                    },
+                    data: {
+                        ...planData,
+                        item_qty: (existingPlanItem.budget_item_id === existingPurchasingPlanItem.budget_item_id)? planData.item_qty: existingPurchasingPlanItem.item_qty + planData.item_qty
+                    }
+                })
+                if (existingPlanItem.budget_item_id !== existingPurchasingPlanItem.budget_item_id){
+                    const deletedItem = await transactions.budgetPlanItem.delete({
+                        where: {
+                            budget_item_id: existingPlanItem.budget_item_id,
+                        }
+                    })
+                    if (deletedItem.inventory_id) {
+                        const inventory = await transactions.inventory.findFirst({
+                            where: {
+                                inventory_id: deletedItem.inventory_id
+                            }
+                        })
+                        await transactions.inventory.update({
+                            where: {
+                                inventory_id: deletedItem.inventory_id,
+                            },
+                            data: {
+                                item_qty_reserved: (inventory?.item_qty_reserved||0) - deletedItem.item_qty
+                            }
+                        })
+                    }
+                }
+    
+                return updatedBudgetPlan;
+            })
+            return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
         }
 
         const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
-            if (existingPlanItem.vendor_service_id !== null && (inventoryId || purchasingId)) {
+            if (existingPlanItem.vendor_service_id !== null) {
                 await transactions.vendorService.update({
                     where: { service_id: existingPlanItem.vendor_service_id },
                     data: {
@@ -238,7 +488,7 @@ export async function PUT(req: Request) {
             }
 
             if (existingPlanItem.inventory_id !== null) {
-                await transactions.inventory.update({
+                const inventory = await transactions.inventory.update({
                     where: { inventory_id: existingPlanItem.inventory_id },
                     data: {
                         budget_plan_item: {
@@ -246,12 +496,21 @@ export async function PUT(req: Request) {
                         },
                     },
                 });
+
                 await transactions.budgetPlanItem.update({
                     where: { budget_item_id: budgetItemId },
                     data: {
                         inventory: { disconnect: true },
                     }
                 });
+                await transactions.inventory.update({
+                    where: {
+                        inventory_id: inventory.inventory_id,
+                    },
+                    data: {
+                        item_qty_reserved: inventory.item_qty_reserved - existingPlanItem.item_qty
+                    }
+                })
             }
 
             if (existingPlanItem.other_item_id !== null) {
@@ -290,18 +549,24 @@ export async function PUT(req: Request) {
             } 
             
             if (inventoryId) {
-                await transactions.budgetPlanItem.update({
+                const existingItem = await transactions.budgetPlanItem.update({
                     where: { budget_item_id: budgetItemId },
                     data: {
                         inventory: { connect: { inventory_id: inventoryId } },
                     }
                 });
+
+                const inventory = await transactions.inventory.findFirst({
+                    where: {inventory_id: inventoryId}
+                })
+
                 await transactions.inventory.update({
                     where: { inventory_id: inventoryId },
                     data: {
                         budget_plan_item: {
                             connect: { budget_item_id: budgetItemId },
-                        }
+                        },
+                        item_qty_reserved: inventory?.item_qty_reserved||0 + existingItem.item_qty
                     },
                 });
             }
@@ -343,63 +608,11 @@ export async function PUT(req: Request) {
         });
 
         if (!updatedBudgetPlan) {
-            return responseFormat(404, "Rencana anggaran tidak ditemukan", null);
+            return responseFormat(404, "Budget plan item not found!", null);
         }
 
-        return responseFormat(200, "Rencana anggaran berhasil diubah", updatedBudgetPlan);
-    } catch (error) {
-        console.log(error instanceof Error ? error.message : error);
-        return responseFormat(500, "Gagal mengubah rencana anggaran", null);
-    }
-}
-
-export async function GET(req: Request) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const event_id = searchParams.get("event_id");
-        const budget_id = searchParams.get("budget_id");
-
-        if (budget_id) {
-            const budgetPlanItems = await prisma.budgetPlanItem.findMany({
-                where: {
-                    budget_id: budget_id,
-                },
-                include: {
-                    category: true,
-                    vendor_service: true,
-                    inventory: true,
-                    other_item: true,
-                },
-            });
-            return responseFormat(200, "Rencana anggaran ditemukan", budgetPlanItems);
-        }
-
-        if (event_id) {
-            const budgetPlanItems = await prisma.$transaction(async (transactions) => {
-                const budget = await transactions.budget.findFirst({
-                    where: {
-                        event_id: event_id,
-                        is_deleted: false,
-                        is_actual: false,
-                    },
-                });
-    
-                const budgetPlanItems = await prisma.budgetPlanItem.findMany({
-                    where: {
-                        budget_id: budget?.budget_id,
-                    },
-                    include: {
-                        category: true,
-                        vendor_service: true,
-                        inventory: true,
-                        other_item: true,
-                    },
-                });
-                return budgetPlanItems;
-            });
-            return responseFormat(200, "Rencana anggaran ditemukan", budgetPlanItems);
-        }
+        return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
     } catch {
-        return responseFormat(500, "Gagal mendapatkan rencana anggaran", null);
+        return responseFormat(500, "Failed when updating budget plan item!", null);
     }
 }

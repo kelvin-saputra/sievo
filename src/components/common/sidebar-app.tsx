@@ -7,6 +7,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 import { NavMain } from "@/components/common/nav-main"
@@ -23,6 +24,9 @@ export function SidebarApp({ onLogout, ...props }: SidebarAppProps) {
         <Sidebar collapsible="icon" {...props} >
         <SidebarHeader>
           <NavHeader />
+          <div className="">
+            <SidebarTrigger />
+          </div>
         </SidebarHeader>
         <SidebarContent>
           <NavMain />
