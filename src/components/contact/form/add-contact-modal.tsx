@@ -275,10 +275,10 @@ export function AddContactModal({ onAddContact }: AddContactModalProps) {
             )}
 
             <div className="flex justify-end space-x-2 pt-2">
-              <Button variant="secondary" type="button" onClick={() => setOpen(false)}>
+              <Button variant="outline" type="button" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" form="add-contact-form" className="bg-green-500 text-white">
+              <Button variant={"default"} type="submit" form="add-contact-form">
                 Add Contact
               </Button>
             </div>

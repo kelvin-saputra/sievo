@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
 
     const contactItem = await prisma.contact.findUnique({
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     });
     
     if (!contactItem) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Determine role based on relationships
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
       updated_by_name: updatedByUser?.name || null
     };
     
-    return responseFormat(200, "[FOUND] Contact successfully retrieved!", contactWithMetadata);
+    return responseFormat(200, "Contact successfully retrieved!", contactWithMetadata);
   } catch (error) {
     console.error("Error fetching contact:", error);
     return responseFormat(500, "Failed to retrieve contact", null);
@@ -87,7 +87,7 @@ export async function PUT(req: NextRequest) {
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
 
     const data = await req.json();
@@ -102,7 +102,7 @@ export async function PUT(req: NextRequest) {
     });
     
     if (!existingContact) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Extract contact data and metadata
@@ -156,7 +156,7 @@ export async function PUT(req: NextRequest) {
       type: type || (existingContact.client?.type || existingContact.vendor?.type || "")
     };
     
-    return responseFormat(200, "[UPDATED] Contact successfully updated!", responseData);
+    return responseFormat(200, "Contact successfully updated!", responseData);
   } catch (error) {
     console.error("Error updating contact:", error);
     return responseFormat(500, "Failed to update contact", null);
@@ -178,7 +178,7 @@ export async function DELETE(req: NextRequest) {
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
     
     // Check if contact exists
@@ -187,7 +187,7 @@ export async function DELETE(req: NextRequest) {
     });
     
     if (!existingContact) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Soft delete the contact
@@ -199,9 +199,8 @@ export async function DELETE(req: NextRequest) {
       }
     });
     
-    return responseFormat(200, "[DELETED] Contact successfully deleted!", deletedContact);
-  } catch (error) {
-    console.error("Error deleting contact:", error);
+    return responseFormat(200, "Contact successfully deleted!", deletedContact);
+  } catch {
     return responseFormat(500, "Failed to delete contact", null);
   }
 }
@@ -221,14 +220,14 @@ export async function PATCH(req: NextRequest) {
       const id = url.pathname.split("/").pop();
       
       if (!id) {
-        return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+        return responseFormat(400, "Contact ID is required", null);
       }
   
       const data = await req.json();
       const { role, updated_by } = data;
       
       if (!["none", "client", "vendor"].includes(role)) {
-        return responseFormat(400, "[BAD REQUEST] Invalid role. Must be 'none', 'client', or 'vendor'", null);
+        return responseFormat(400, "Invalid role. Must be 'none', 'client', or 'vendor'", null);
       }
       
       // Validate if contact exists
@@ -241,7 +240,7 @@ export async function PATCH(req: NextRequest) {
       });
       
       if (!existingContact) {
-        return responseFormat(404, "[NOT FOUND] Contact not found", null);
+        return responseFormat(404, "Contact not found", null);
       }
       
       // Update role relationships based on the new role
@@ -279,7 +278,7 @@ export async function PATCH(req: NextRequest) {
         }
       });
       
-      return responseFormat(200, "[UPDATED] Contact role successfully updated!", {
+      return responseFormat(200, "Contact role successfully updated!", {
         ...updatedContact,
         role
       });

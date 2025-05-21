@@ -35,10 +35,10 @@ export function DeleteConfirmationModal({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">
-          <Button variant="outline" onClick={onConfirm} disabled={isLoading}>
+          <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
             Delete
           </Button>
-          <Button variant="secondary" onClick={onClose} disabled={isLoading}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
         </DialogFooter>

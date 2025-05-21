@@ -2,7 +2,6 @@ import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
 import { NextRequest } from "next/server";
 
-
 export async function GET(req: NextRequest) {
     try {
         const { searchParams }= new URL(req.url);
@@ -15,7 +14,7 @@ export async function GET(req: NextRequest) {
             }
         })
         if (!existingEvent) {
-            return responseFormat(400, "Event yang dilihat tidak terdaftar!", null);
+            return responseFormat(400, "Event not found!", null);
         }
         let budgets;
         if (is_actual) {
@@ -73,9 +72,9 @@ export async function GET(req: NextRequest) {
                 }
             });
         }
-        return responseFormat(200, `Budget ${is_actual === true? "Actual":"Planning"} untuk event ${existingEvent.event_name} ditemukan!`, budgets);
+        return responseFormat(200, `${is_actual === true? "Actual":"Planning"} Budget for event ${existingEvent.event_name} found!`, budgets);
     } catch {
-        return responseFormat(500, "Gagal saat mengambil data budget!", null);
+        return responseFormat(500, "Failed to retrieve budget data!", null);
     }
 }
 
@@ -91,7 +90,7 @@ export async function POST(req: NextRequest) {
         })
 
         if (!existingEvent) {
-            return responseFormat(400, "Event yang dilihat tidak terdaftar!", null);
+            return responseFormat(400, "Event not found!", null);
         }
 
         const budgetList = await prisma.$transaction(async (transactions) => {
@@ -132,12 +131,12 @@ export async function POST(req: NextRequest) {
             return [budgetPlan, actualBudget];
         });
         if (!budgetList) {
-            return responseFormat(400, `Budget untuk event ${existingEvent.event_name} gagal diinisiasi!`, null);
+            return responseFormat(400, `Budget initialization for event ${existingEvent.event_name} failed!`, null);
         }
 
-        return responseFormat(201, `Budget untuk event ${existingEvent.event_name} berhasil diinisiasi!`, budgetList);
+        return responseFormat(201, `Budget for event ${existingEvent.event_name} successfully initialized!`, budgetList);
     } catch {
-        return responseFormat(500, "Gagal melakukan inisiasi budget!", null);
+        return responseFormat(500, "Failed to initialize budget!", null);
     }
 }
 
@@ -146,7 +145,7 @@ export async function PUT(req: NextRequest) {
     const {budget_id, ...data} = reqBody
 
     if (!budget_id) {
-        return responseFormat(400, "Budget yang diupdate tidak tersedia!", null);
+        return responseFormat(400, "Budget to update not available!", null);
     }
     try {
         const updatedBudget = await prisma.budget.update({
@@ -159,8 +158,8 @@ export async function PUT(req: NextRequest) {
                 ...data
             }
         })
-        return responseFormat(200, "Status budget berhasil diperbaharui!",updatedBudget);
+        return responseFormat(200, "Budget status successfully updated!", updatedBudget);
     } catch {
-        return responseFormat(500, "Terjadi kesalahan saat memperbaharui budget!", null);
+        return responseFormat(500, "An error occurred while updating the budget!", null);
     }
 }

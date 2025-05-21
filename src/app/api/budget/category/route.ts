@@ -1,7 +1,8 @@
 import { responseFormat } from "@/utils/api"
 import { prisma } from "@/utils/prisma"
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
         const { searchParams }= new URL(req.url);
         const event_id  = searchParams.get('event_id')!;
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
         });
 
         if (!existingEvent) {
-            return responseFormat(400, "Event yang dilihat tidak terdaftar!", null);
+            return responseFormat(400, "Event not found!", null);
         }
 
         const categoriesBudget = await prisma.$transaction(async (transactions) => {
@@ -38,15 +39,15 @@ export async function GET(req: Request) {
         });
         const { categories, budget } = categoriesBudget;
         if (categories.length === 0) {
-            return responseFormat(404, `Kategori Budget ${budget?.is_actual? "realisasi":"plan"} belum dibuat!`, null)
+            return responseFormat(404, `${budget?.is_actual? "Actual":"Plan"} budget categories not created yet!`, null)
         }
-        return responseFormat(200, `Berhasil mengambil kategori budget ${budget?.is_actual? "realisasi":"plan"}`, categories)
+        return responseFormat(200, `Successfully retrieved ${budget?.is_actual? "actual":"plan"} budget categories`, categories)
     } catch {
-        return responseFormat(500, "Gagal mengambil kategori budget", null)
+        return responseFormat(500, "Failed to retrieve budget categories", null)
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const reqBody = await req.json()
         const { budget_id, category_name }  = reqBody;
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
             }
         })
         if (!existingBudget) {
-            return responseFormat(400, "Budget yang dicari tidak ditemukan!", null);
+            return responseFormat(400, "Budget not found!", null);
         }
 
         const existingCategory = await prisma.budgetItemCategory.findFirst({
@@ -105,11 +106,11 @@ export async function POST(req: Request) {
                     
                 })
                 if (!createdCategory) {
-                    return responseFormat(400, `Gagal membuat kategori ${category_name}, input tidak sesuai!`, null)
+                    return responseFormat(400, `Failed to create category ${category_name}, invalid input!`, null)
                 }
-                return responseFormat(200, `Kategori ${category_name} berhasil dibuat!`, createdCategory)
+                return responseFormat(200, `Category ${category_name} successfully created!`, createdCategory)
             } else {
-                return responseFormat(400, `Kategori ${category_name} sudah dibuat untuk budget ini!`, null)
+                return responseFormat(400, `Category ${category_name} already exists for this budget!`, null)
             }
         }
 
@@ -146,16 +147,16 @@ export async function POST(req: Request) {
         });
 
         if (!category) {
-            return responseFormat(400, `Gagal membuat kategori ${category_name}, input tidak sesuai!`, null)
+            return responseFormat(400, `Failed to create category ${category_name}, invalid input!`, null)
         }
 
-        return responseFormat(200, `Kategori ${category_name} berhasil dibuat!`, category)
+        return responseFormat(200, `Category ${category_name} successfully created!`, category)
     }catch {
-        return responseFormat(500, "Gagal saat membuat kategori budget!", null)
+        return responseFormat(500, "Failed to create budget category!", null)
     }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
     try {
         const reqBody = await req.json()
         const { category_id, ...data } = reqBody;
@@ -168,7 +169,7 @@ export async function PUT(req: Request) {
         })
 
         if (!existingCategory) {
-            return responseFormat(400, `Kategori yang dicari tidak ditemukan!`, null)
+            return responseFormat(400, `Category not found!`, null)
         }
 
         const category = await prisma.budgetItemCategory.update({
@@ -181,19 +182,19 @@ export async function PUT(req: Request) {
             },
         })
 
-        return responseFormat(200, "Berhasil mengubah kategori budget", category)
+        return responseFormat(200, "Successfully updated budget category", category)
     } catch {
-        return responseFormat(500, "Gagal mengubah kategori budget", null)
+        return responseFormat(500, "Failed to update budget category", null)
     }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
     try {
         const reqBody = await req.json()
         const {category_id, budget_id, ...data} = reqBody;
 
         if (!category_id) {
-            return responseFormat(400, "ID Kategori tidak ditemukan!", null)
+            return responseFormat(400, "Category ID not found!", null)
         }
 
         const categoryDeleted = await prisma.$transaction(async (transactions) => {
@@ -220,10 +221,10 @@ export async function DELETE(req: Request) {
         })
 
         if (categoryDeleted === null) {
-            return responseFormat(400, "Kategori budget tidak bisa dihapus, terdapat budget pada kategori!", null)
+            return responseFormat(400, "Category cannot be deleted, budget items exist in this category!", null)
         }
-        return responseFormat(200, "Berhasil menghapus kategori budget!", categoryDeleted)
+        return responseFormat(200, "Successfully deleted budget category!", categoryDeleted)
     } catch {
-        return responseFormat(500, "Gagal menghapus kategori budget!", null)
+        return responseFormat(500, "Failed to delete budget category!", null)
     }
 }

@@ -29,15 +29,16 @@ export function DeleteVendorServiceForm({onDeleteVendorServices, serviceId, exis
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl">
-            Apakah Anda yakin ingin menghapus vendor service {existingVendor.service_name}?
+            Are you sure you want to delete vendor service {existingVendor.service_name}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Vendor Service yang dihapus tidak dapat dikembalikan.
+            Deleted Vendor Service cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           
           <AlertDialogAction
+            className="bg-destructive text-white hover:bg-destructive/80"
             onClick={() => {
               onDeleteVendorServices(serviceId);
               window.location.replace("/vendor-service")

@@ -45,11 +45,11 @@ export function DeleteInventoryModal({
         <div className="flex flex-col space-y-4">
           <p>This action cannot be undone. This will permanently delete the item.</p>
           <div className="flex justify-end space-x-2">
-            <Button variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Yes, delete item
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
             </Button>
           </div>
         </div>

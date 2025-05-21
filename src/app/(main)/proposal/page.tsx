@@ -66,9 +66,6 @@ export default function ViewAllProposal() {
             >
               Previous
             </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
             <Button
               variant="outline"
               size="sm"

@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         }
         
         if (!vendorService && !inventory && !purchasing) {
-            return responseFormat(404, "Data item tidak ditemukan", null);
+            return responseFormat(404, "Data not found", null);
         }
 
         if (existingVendorPlanItem) {
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
                     item_qty: existingVendorPlanItem.item_qty + planData.item_qty
                 }
             })
-            return responseFormat(200, "Rencana anggaran berhasil diubah", updatedBudgetPlan);
+            return responseFormat(200, "Budget plan successfully updated", updatedBudgetPlan);
         }
         if (existingInventoryPlanItem) {
             if (existingInventoryPlanItem.category_id !== categoryId) {

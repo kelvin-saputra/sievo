@@ -60,7 +60,6 @@ export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: 
   };
 
   const onSubmit = async (data: z.infer<typeof ProposalSchema>) => {
-    console.log("Form submitted:", data);
     await onAddProposal(data);
     form.reset();
     handleClose(); 
@@ -110,7 +109,7 @@ export function AddProposalModal({ onAddProposal, onClose, fetchAllProposals }: 
               <Button variant="secondary" type="button" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" variant="default" form="add-proposal-form" className="bg-green-500 text-white">
+              <Button type="submit" variant="default" form="add-proposal-form">
                 Add Proposal
               </Button>
             </div>

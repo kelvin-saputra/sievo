@@ -1,7 +1,7 @@
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
 import { NextRequest } from "next/server";
-// TODO:
+
 export async function POST(req: NextRequest) {
     try {
         const reqBody = await req.json();
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         }
         
         if (!vendorService && !inventory && !purchasing) {
-            return responseFormat(404, "Data tidak ditemukan", null);
+            return responseFormat(404, "Data not found", null);
         }
 
         if (existingVendorActualItem) {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
                     item_qty: existingVendorActualItem.item_qty + actualData.item_qty
                 }
             })
-            return responseFormat(200, "Rencana anggaran berhasil diubah", updatedBudgetActual);
+            return responseFormat(200, "Budget plan successfully updated", updatedBudgetActual);
         }
         if (existingInventoryActualItem) {
             if (existingInventoryActualItem.category_id !== categoryId) {
@@ -320,7 +320,7 @@ export async function PUT(req: NextRequest) {
         });
 
         if (!existingActualBudget) {
-            return responseFormat(404, "Actual Budget Item NoT Found", null);
+            return responseFormat(404, "Actual Budget Item Not Found", null);
         }
 
         const existingVendorActualItem = await prisma.actualBudgetItem.findFirst({

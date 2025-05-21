@@ -66,8 +66,8 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Update Layanan Vendor</DialogTitle>
-          <DialogDescription>Isi form berikut untuk memperbaharui layanan vendor.</DialogDescription>
+          <DialogTitle>Update Vendor Service</DialogTitle>
+          <DialogDescription>Fill in the following form to update vendor service.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -81,7 +81,7 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih vendor" />
+                        <SelectValue placeholder="Select vendor" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -102,9 +102,9 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
               name="service_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Layanan</FormLabel>
+                  <FormLabel>Service Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan nama layanan" {...field} />
+                    <Input placeholder="Enter service name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -116,11 +116,11 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kategori</FormLabel>
+                  <FormLabel>Category</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -141,7 +141,7 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Harga (Rp)</FormLabel>
+                  <FormLabel>Price (Rp)</FormLabel>
                   <FormControl>
                     <Input type="number" min="0" step="1000" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
@@ -155,9 +155,9 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Masukkan deskripsi layanan" className="resize-none" rows={3} {...field} />
+                    <Textarea placeholder="Enter service description" className="resize-none" rows={3} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,7 +169,7 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rating (Opsional)</FormLabel>
+                  <FormLabel>Rating</FormLabel>
                   <FormControl>
                     <Input type="number" min="0" max="5" step="0.1" placeholder="0-5" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
@@ -180,10 +180,10 @@ export function UpdateVendorServiceForm({ open, existingVendorService, onOpenCha
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Batal
+                Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Menyimpan..." : "Simpan"}
+                {isSubmitting ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>

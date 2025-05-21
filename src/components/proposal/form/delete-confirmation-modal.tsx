@@ -36,11 +36,11 @@ export function DeleteConfirmationModal({ isOpen, onClose, onConfirm}: DeleteCon
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2 mt-6">
+          <Button variant = "destructive" onClick={onConfirm} >
+            Delete
+          </Button>
           <Button variant="outline" onClick={onClose} className="border-gray-300">
             Cancel
-          </Button>
-          <Button variant = "destructive"onClick={onConfirm} className="bg-red-500 hover:bg-red-600 text-white">
-            Delete
           </Button>
         </DialogFooter>
       </DialogContent>

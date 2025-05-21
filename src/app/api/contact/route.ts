@@ -15,7 +15,7 @@ export async function GET() {
     });
     
     if (contacts.length === 0) {
-      return responseFormat(404, "[NOT FOUND] No contact found", null);
+      return responseFormat(404, "No contact found", null);
     }
     
     const transformedContacts = contacts.map((contact: typeof contacts[number]) => {
@@ -30,7 +30,7 @@ export async function GET() {
       });
       
     
-    return responseFormat(200, "[FOUND] Contacts successfully retrieved", transformedContacts);
+    return responseFormat(200, "Contacts successfully retrieved", transformedContacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
     return responseFormat(500, "Failed to retrieve contacts", null);
@@ -84,10 +84,10 @@ export async function POST(req: Request) {
     };
     
     if (!contactWithRole) {
-      return responseFormat(404, "[NOT FOUND] Item is not created", null);
+      return responseFormat(404, "Item is not created", null);
     }
     
-    return responseFormat(201, "[CREATED] Item has been created", contactWithRole);
+    return responseFormat(201, "Item has been created", contactWithRole);
   } catch (error) {
     console.error("Error adding contact:", error);
     return responseFormat(500, "Failed to add contact item", null);
