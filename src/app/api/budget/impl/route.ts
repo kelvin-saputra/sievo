@@ -323,23 +323,23 @@ export async function PUT(req: NextRequest) {
             return responseFormat(404, "Actual Budget Item Not Found", null);
         }
 
-        const existingVendorActualItem = await prisma.actualBudgetItem.findFirst({
+        const existingVendorActualItem = serviceId ? await prisma.actualBudgetItem.findFirst({
             where: {
                 budget_id: budgetId,
                 vendor_service_id: serviceId,
                 is_deleted: false
             }
-        })
+        }): null;
         
-        const existingInventoryActualItem = await prisma.actualBudgetItem.findFirst({
+        const existingInventoryActualItem = inventoryId ? await prisma.actualBudgetItem.findFirst({
             where: {
                 budget_id: budgetId,
                 inventory_id: inventoryId,
                 is_deleted: false
             }
-        })
+        }): null;
         
-        const existingPurchasingActualItem = await prisma.actualBudgetItem.findFirst({
+        const existingPurchasingActualItem = purchasingId ? await prisma.actualBudgetItem.findFirst({
             where: {
                 budget_id:budgetId,
                 other_item_id: purchasingId,
@@ -348,9 +348,9 @@ export async function PUT(req: NextRequest) {
             include: {
                 other_item: true
             }
-        })
+        }) : null;
 
-        if (existingActualBudget.vendor_service_id === existingVendorActualItem?.vendor_service_id) {
+        if (existingVendorActualItem && existingActualBudget.vendor_service_id === existingVendorActualItem?.vendor_service_id) {
             const updatedActualBudget = await prisma.$transaction(async (transactions) => {
                 const updatedActualBudget = await transactions.actualBudgetItem.update({
                     where: {
@@ -389,7 +389,7 @@ export async function PUT(req: NextRequest) {
             
             return responseFormat(200, "Budget plan item successfully updated!", updatedActualBudget);
         }
-        if (existingActualBudget.inventory_id === existingInventoryActualItem?.inventory_id) {
+        if (existingInventoryActualItem && existingActualBudget.inventory_id === existingInventoryActualItem?.inventory_id) {
             const updatedActualBudget = await prisma.$transaction(async (transactions) => {
                 const updatedActualBudget = await transactions.actualBudgetItem.update({
                     where: {
@@ -441,7 +441,7 @@ export async function PUT(req: NextRequest) {
             })
             return responseFormat(200, "Actual budget item successfully updated!", updatedActualBudget);
         }
-        if (existingActualBudget.other_item === existingPurchasingActualItem?.other_item_id) {
+        if (existingPurchasingActualItem && existingActualBudget.other_item === existingPurchasingActualItem?.other_item_id) {
             const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
                 const updatedBudgetPlan = await transactions.actualBudgetItem.update({
                     where: {

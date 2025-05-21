@@ -301,9 +301,6 @@ export function EventCalendar() {
           </div>
         ))}
       </div>
-      <div className="mt-2 text-xs text-muted-foreground">
-        <span>Note: Events with tasks are marked with a white dot</span>
-      </div>
     </div>
   )
 }

@@ -75,7 +75,7 @@ export function ActionCell({
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-xl sm:max-w-[500px] w-[90vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detail Pengguna</DialogTitle>
+            <DialogTitle>User Detail</DialogTitle>
           </DialogHeader>
           <UserDetailCard user={user} />
         </DialogContent>

@@ -8,6 +8,7 @@ import PageHeader from "@/components/common/page-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddProposalModal } from "@/components/proposal/form/add-proposal-modal"
+import Loading from "@/components/ui/loading"
 
 export default function ViewAllProposal() {
   const { proposals, loading, fetchAllProposals, handleAddProposal, handleUpdateProposal, handleDeleteProposal } =
@@ -30,6 +31,10 @@ export default function ViewAllProposal() {
 
   const totalPages = Math.ceil(proposals.length / itemsPerPage)
   const columnsWithActions = createProposalColumnsWithActions(handleDeleteProposal, handleUpdateProposal)
+
+  if (loading) {
+    return (<Loading message="Fetching proposals data..." />);
+  }
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
