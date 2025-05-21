@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
 import useHr from "@/hooks/use-hr";
-import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 interface EventCardProps {
   event: EventSchema;
@@ -83,7 +83,7 @@ const EventCard = ({
     <div className="mb-6 border rounded-lg shadow-md bg-white">
       <div
         className={`flex justify-between items-center ${
-          eventData.status !== "DONE" ? "bg-green-200" : "bg-gray-200"
+          eventData.status !== "DONE" ? "bg-blue-50" : "bg-gray-50"
         } p-4 rounded-md cursor-pointer`}
         onClick={() => setExpanded((prev) => !prev)}
       >
@@ -158,16 +158,18 @@ const EventCard = ({
             )}
           </DropdownMenu>
 
-          <Button variant="secondary" onClick={handleViewDetails}>
+          <Button variant="outline" onClick={handleViewDetails}>
             View Details
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={userRole === "FREELANCE"}
-          >
-            Delete
-          </Button>
+          {checkRoleClient(ADMINEXECUTIVE) && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={userRole === "FREELANCE"}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 

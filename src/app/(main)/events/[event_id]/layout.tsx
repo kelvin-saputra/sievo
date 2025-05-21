@@ -122,7 +122,6 @@ export default function EventLayout({
 
   useEffect(() => {
     refetchAll();
-    setUserRole(getUserRoleFromStorage());
   }, [refetchAll]);
 
   useEffect(() => {

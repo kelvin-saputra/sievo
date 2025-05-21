@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { BudgetItemActual } from "@/models/response/actual-item"
 import { Pencil } from "lucide-react"
 import { VendorWithService } from "@/models/response/vendor-with-service"
+import EventContext from "@/models/context/event.context"
+import { useSafeContext } from "@/hooks/use-safe-context"
 
 interface UpdateActualBudgetItemProps {
   onUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>
@@ -37,6 +39,8 @@ export function UpdateActualBudgetItemForm({
   const [open, setOpen] = useState(false)
   const [selectedVendorService, setSelectedVendorService] = useState<VendorServiceSchema[]>([])
   const [selectedInventory, setSelectedInventory] = useState<InventorySchema | null>(null)
+  const {refetchAll} = useSafeContext(EventContext, "EventContext")
+  
 
   let item_name, description, item_price;
   if (currentSource === "other") {
@@ -82,7 +86,7 @@ export function UpdateActualBudgetItemForm({
         form.setError("inventory_id", { message: "Please select an inventory item" })
         return
       }
-      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0))) {
+      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0))) {
         form.setError("item_qty", { message: "Reserved Inventory cannot more than available inventory" })
         return
       }
@@ -125,6 +129,7 @@ export function UpdateActualBudgetItemForm({
       }
       form.reset()
       setOpen(false)
+      refetchAll()
     } finally {
     }
   }
@@ -372,7 +377,7 @@ export function UpdateActualBudgetItemForm({
                       <FormLabel>Quantity</FormLabel>
                       <FormControl>
                       {selectedSource === "inventory"? (
-                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                        <Input type="number" min="1" max={(selectedInventory?.item_qty || 1)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0)} {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
                       ): (
                         <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
 

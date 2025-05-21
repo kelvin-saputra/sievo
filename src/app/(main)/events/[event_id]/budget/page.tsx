@@ -11,7 +11,7 @@ import { UpdateBudgetDTO } from "@/models/dto"
 import { getUserDataClient } from "@/lib/userData"
 import { ImportDataModal } from "@/components/budgetting/handle-import-data"
 import { ActualBudgetManagementAccordion } from "@/components/budgetting/budget-actual-management.ts"
-import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client"
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client"
 
 export default function EventBudgetPlanningPage() {  
   const {
@@ -116,7 +116,7 @@ export default function EventBudgetPlanningPage() {
           <div className="border-b p-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="font-medium">Approval Status:</span>
-              {budgetPlanData?.status !== "APPROVED" && !["DONE"].includes(event.status) ? (
+              {checkRoleClient(ADMINEXECUTIVE) &&budgetPlanData?.status !== "APPROVED" && !["DONE"].includes(event.status) ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Badge className={`cursor-pointer shadow-lg ${getStatusColorClass(budgetPlanData?.status)}`}>
