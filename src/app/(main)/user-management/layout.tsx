@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/common/page-header";
+import Loading from "@/components/ui/loading";
 import useUserManagement from "@/hooks/use-user";
 import UserContext from "@/models/context/user-context";
 import { useEffect } from "react";
@@ -21,6 +22,10 @@ export default function UserManagementLayout({
   useEffect(() => {
     fetchAllUsers();
   }, [fetchAllUsers]);
+
+  if (loading) {
+    return (<Loading message="Fetching user data..." />);
+  }
   return (
     <UserContext.Provider
       value={{

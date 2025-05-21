@@ -80,13 +80,13 @@ export default function ViewAllEvents() {
         </div>
       )}
 
-      <div className="mb-8 p-6 border rounded-lg shadow-lg bg-green-100">
-        <h2 className="text-xl font-semibold text-green-800 mb-4">
+      <div className="mb-8 p-6 border rounded-lg shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">
           Active Events
         </h2>
 
         {loading ? (
-          <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
+          <Skeleton className="h-24 w-full mb-4 rounded-lg" />
         ) : activeEvents.length > 0 ? (
           activeEvents.map((event) => (
             <EventCard
@@ -102,20 +102,20 @@ export default function ViewAllEvents() {
             />
           ))
         ) : (
-          <p className="text-sm text-green-800 italic">
+          <p className="text-sm italic">
             You have no active events assigned. Please contact your
             administrator or manager to get assigned to one.
           </p>
         )}
       </div>
 
-      <div className="mb-8 p-6 border rounded-lg shadow-lg bg-gray-100">
+      <div className="mb-8 p-6 border rounded-lg shadow-lg">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Past Events
         </h2>
 
         {loading ? (
-          <Skeleton className="h-24 w-full mb-4 rounded-lg bg-gray-300" />
+          <Skeleton className="h-24 w-full mb-4 rounded-lg" />
         ) : pastEvents.length > 0 ? (
           pastEvents.map((event) => (
             <EventCard
@@ -131,7 +131,7 @@ export default function ViewAllEvents() {
             />
           ))
         ) : (
-          <p className="text-sm text-gray-700 italic">
+          <p className="text-sm italic">
             You have no past events recorded. Once you complete an assigned
             event, it will appear here.
           </p>

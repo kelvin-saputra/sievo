@@ -1,5 +1,6 @@
 import { responseFormat } from "@/utils/api";
 import { prisma } from "@/utils/prisma";
+import { NextRequest } from "next/server";
 
 export async function POST(req: Request) {
     try {
@@ -295,7 +296,7 @@ export async function DELETE(req: Request) {
     }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
     try {
         const reqBody = await req.json();
         const { budget_item_id:budgetItemId, category_id:categoryId, vendor_service_id:serviceId, inventory_id:inventoryId, other_item_id:purchasingId, budget_id:budgetId, ...planData } = reqBody;
@@ -309,23 +310,23 @@ export async function PUT(req: Request) {
             return responseFormat(404, "Budget plan item not found!", null);
         }
 
-        const existingVendorPlanItem = await prisma.budgetPlanItem.findFirst({
+        const existingVendorPlanItem = serviceId ? await prisma.budgetPlanItem.findFirst({
             where: {
                 budget_id: budgetId,
                 vendor_service_id: serviceId,
                 is_deleted: false
             }
-        })
+        }): null
         
-        const existingInventoryPlanItem = await prisma.budgetPlanItem.findFirst({
+        const existingInventoryPlanItem = inventoryId ? await prisma.budgetPlanItem.findFirst({
             where: {
                 budget_id: budgetId,
                 inventory_id: inventoryId,
                 is_deleted: false
             }
-        })
+        }): null
         
-        const existingPurchasingPlanItem = await prisma.budgetPlanItem.findFirst({
+        const existingPurchasingPlanItem = purchasingId ? await prisma.budgetPlanItem.findFirst({
             where: {
                 budget_id:budgetId,
                 other_item_id: purchasingId,
@@ -334,9 +335,9 @@ export async function PUT(req: Request) {
             include: {
                 other_item: true
             }
-        })
+        }): null
         
-        if (existingPlanItem.vendor_service_id === existingVendorPlanItem?.vendor_service_id) {
+        if (existingVendorPlanItem && existingPlanItem.vendor_service_id === existingVendorPlanItem?.vendor_service_id) {
             const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
                 const updatedBudgetPlan = await transactions.budgetPlanItem.update({
                     where: {
@@ -376,7 +377,7 @@ export async function PUT(req: Request) {
             
             return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
         }
-        if (existingPlanItem.inventory_id === existingInventoryPlanItem?.inventory_id) {
+        if (existingInventoryPlanItem && existingPlanItem.inventory_id === existingInventoryPlanItem?.inventory_id) {
             const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
                 const updatedBudgetPlan = await transactions.budgetPlanItem.update({
                     where: {
@@ -429,7 +430,7 @@ export async function PUT(req: Request) {
             })
             return responseFormat(200, "Budget plan item successfully updated!", updatedBudgetPlan);
         }
-        if (existingPlanItem.other_item === existingPurchasingPlanItem?.other_item_id) {
+        if (existingPurchasingPlanItem && existingPlanItem.other_item === existingPurchasingPlanItem?.other_item_id) {
             const updatedBudgetPlan = await prisma.$transaction(async (transactions) => {
                 const updatedBudgetPlan = await transactions.budgetPlanItem.update({
                     where: {

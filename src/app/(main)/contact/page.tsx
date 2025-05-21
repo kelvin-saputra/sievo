@@ -40,7 +40,6 @@ export default function ViewAllContacts() {
     created_by: contact.created_by ?? "",
     role: contact.role ?? "none",
   }));
-  
 
   if (loading) {
     return (
