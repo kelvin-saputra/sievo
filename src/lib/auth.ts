@@ -4,10 +4,10 @@ import redisClient from "@/utils/redis";
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET!
 const REFRESH_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET!
-export async function setSession(userId: string, role: string) {
+export async function setSession(userId: string, name:string, role: string) {
     try {
-        const accessToken = await sign({ id: userId, role: role }, ACCESS_SECRET, { expiresIn: '15m' });
-        const refreshToken = await sign({ id: userId, role: role }, REFRESH_SECRET, { expiresIn: '1d' });
+        const accessToken = await sign({ id: userId, name:name, role: role }, ACCESS_SECRET, { expiresIn: '15m' });
+        const refreshToken = await sign({ id: userId,name:name , role: role }, REFRESH_SECRET, { expiresIn: '1d' });
 
         return setCookies(accessToken, refreshToken, userId);
     } catch {
@@ -48,7 +48,7 @@ export async function setCookies(accessToken: string, refreshToken: string, user
 export async function updateAccessToken(refreshToken: string) {
     try {
         const decodedRefreshToken = await verify(refreshToken, REFRESH_SECRET);
-        const newAccessToken = await sign({ id: (decodedRefreshToken as any).id, role: (decodedRefreshToken as any).role }, ACCESS_SECRET, { expiresIn: '15m' });
+        const newAccessToken = await sign({ id: (decodedRefreshToken as any).id, name:(decodedRefreshToken as any).name, role: (decodedRefreshToken as any).role }, ACCESS_SECRET, { expiresIn: '15m' });
 
         const cookiesToSet = [
             {

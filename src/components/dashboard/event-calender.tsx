@@ -6,6 +6,29 @@ import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import useDashboard from "@/hooks/use-dashboard"
 
+// Update or add these type definitions at the top of the file
+type TaskAssigned = {
+  id: string
+  name: string
+}
+
+type Task = {
+  task_id: string
+  title: string
+  due_date: string
+  status: string
+  assigned: TaskAssigned
+}
+
+
+type CalendarData = {
+  event_id: string
+  event_name: string
+  start_date: string
+  end_date: string
+  task?: Task[]
+}
+
 export function EventCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const { eventsDates, loading, fetchCalendarEvents } = useDashboard()
@@ -14,11 +37,36 @@ export function EventCalendar() {
     fetchCalendarEvents()
   }, [fetchCalendarEvents])
 
-  const mappedEvents = eventsDates.map((event) => ({
-    start: new Date(event.start_date),
-    end: new Date(event.end_date),
-    title: event.event_name,
-  }))
+  // Map events and tasks for calendar display
+  const mappedEvents = eventsDates.flatMap((event: CalendarData) => {
+    // Create event entry
+    const eventEntry = {
+      id: event.event_id,
+      start: new Date(event.start_date),
+      end: new Date(event.end_date),
+      title: event.event_name,
+      isTask: false,
+      taskInfo: null,
+    }
+
+    // Create task entries with same color as parent event
+    const taskEntries =
+      event.task?.map((task) => ({
+        id: task.task_id,
+        start: new Date(task.due_date),
+        end: new Date(task.due_date),
+        title: event.event_name, // Same title as event for color consistency
+        isTask: true,
+        taskInfo: {
+          title: task.title,
+          dueDate: task.due_date,
+          status: task.status,
+          assignedName: task.assigned.name,
+        },
+      })) || []
+
+    return [eventEntry, ...taskEntries]
+  })
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate()
@@ -121,14 +169,28 @@ export function EventCalendar() {
                     <TooltipTrigger asChild>
                       <div className={`absolute inset-0 flex items-center justify-center ${color} rounded-full z-10`}>
                         {dayInfo.day}
+                        {event.isTask && <span className="absolute top-0 right-0 h-2 w-2 bg-white rounded-full"></span>}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="p-3 space-y-1">
-                      <div className="font-medium">{event.title}</div>
-                      <div className="text-xs">
-                        <div>Start: {formatDate(event.start)}</div>
-                        <div>End: {formatDate(event.end)}</div>
-                      </div>
+                      {event.isTask && event.taskInfo ? (
+                        <>
+                          <div className="font-medium">{event.taskInfo.title}</div>
+                          <div className="text-xs space-y-1">
+                            <div>Due date: {new Date(event.taskInfo.dueDate).toLocaleDateString()}</div>
+                            <div>Status: {event.taskInfo.status}</div>
+                            <div>Assigned to: {event.taskInfo.assignedName}</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-medium">{event.title}</div>
+                          <div className="text-xs">
+                            <div>Start: {formatDate(event.start)}</div>
+                            <div>End: {formatDate(event.end)}</div>
+                          </div>
+                        </>
+                      )}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -146,14 +208,30 @@ export function EventCalendar() {
               <TooltipProvider key={`event-${eventIndex}`}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={className}>{dayInfo.day}</div>
+                    <div className={className}>
+                      {dayInfo.day}
+                      {event.isTask && <span className="absolute top-0 right-0 h-2 w-2 bg-white rounded-full"></span>}
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="p-3 space-y-1">
-                    <div className="font-medium">{event.title}</div>
-                    <div className="text-xs">
-                      <div>Start: {formatDate(event.start)}</div>
-                      <div>End: {formatDate(event.end)}</div>
-                    </div>
+                    {event.isTask && event.taskInfo ? (
+                      <>
+                        <div className="font-medium">{event.taskInfo.title}</div>
+                        <div className="text-xs space-y-1">
+                          <div>Due date: {new Date(event.taskInfo.dueDate).toLocaleDateString()}</div>
+                          <div>Status: {event.taskInfo.status}</div>
+                          <div>Assigned to: {event.taskInfo.assignedName}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-medium">{event.title}</div>
+                        <div className="text-xs">
+                          <div>Start: {formatDate(event.start)}</div>
+                          <div>End: {formatDate(event.end)}</div>
+                        </div>
+                      </>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -186,6 +264,9 @@ export function EventCalendar() {
     return <div>Loading calendar...</div>
   }
 
+  // Get unique event names for the legend
+  const uniqueEventNames = [...new Set(eventsDates.map((event: CalendarData) => event.event_name))]
+
   return (
     <div className="w-full rounded-lg border p-4">
       <div className="flex items-center justify-between mb-6">
@@ -213,12 +294,15 @@ export function EventCalendar() {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {mappedEvents.map((event, index) => (
+        {uniqueEventNames.map((eventName, index) => (
           <div key={index} className="flex items-center gap-1 text-xs">
-            <div className={`h-3 w-3 rounded-full ${getEventColor(event.title).split(" ")[0]}`}></div>
-            <span>{event.title}</span>
+            <div className={`h-3 w-3 rounded-full ${getEventColor(eventName).split(" ")[0]}`}></div>
+            <span>{eventName}</span>
           </div>
         ))}
+      </div>
+      <div className="mt-2 text-xs text-muted-foreground">
+        <span>Note: Events with tasks are marked with a white dot</span>
       </div>
     </div>
   )

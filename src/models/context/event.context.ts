@@ -1,35 +1,30 @@
 // src/context/event-context.tsx
 import { createContext } from "react";
-import { BudgetItemCategorySchema, BudgetSchema, ContactSchema, EventSchema, InventorySchema, TaskSchema, VendorServiceSchema } from "@/models/schemas";
+import { ContactSchema, EventSchema, InventorySchema, PurchasingSchema, TaskSchema } from "@/models/schemas";
 import { UpdateEventDTO } from "@/models/dto/event.dto";
-import { UpdateTaskDTO, AddTaskDTO, AddBudgetPlanItemDTO, UpdateBudgetPlanItemDTO, AddBudgetItemCategoryDTO, AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, AddPurchaseDTO, UpdatePurchaseDTO, UpdateBudgetItemCategoryDTO } from "@/models/dto";
+import { UpdateTaskDTO, AddTaskDTO, AddBudgetPlanItemDTO, UpdateBudgetPlanItemDTO, AddBudgetItemCategoryDTO, AddActualBudgetItemDTO, UpdateActualBudgetItemDTO, AddPurchaseDTO, UpdatePurchaseDTO, UpdateBudgetItemCategoryDTO, UpdateBudgetDTO } from "@/models/dto";
 import { EventStatusEnum } from "@/models/enums";
-import { BudgetItemPlanResponse } from "../response/item-plan.response";
-import { ActualBudgetItemResponse } from "../response/item-actual.response";
 import { UserWithStatus } from "@/hooks/use-hr";
+import { BudgetWithCategoryBudgetPlan } from "../response/budget-with-category-budget-plan";
+import { BudgetWithCategoryBudgetActual } from "../response/budget-with-category-budget-actual";
+import { VendorWithService } from "../response/vendor-with-service";
 
 interface EventContextType {
   event: EventSchema;
   tasks: TaskSchema[];
-  users: UserWithStatus[];
+  userAssigned: UserWithStatus[];
   client?: ContactSchema | null;
   manager?: UserWithStatus | null;
 
-  // BUDGETTING
-  budgetPlan: BudgetSchema | null;
-  actualBudget: BudgetSchema | null;
-  budgetPlanItems: BudgetItemPlanResponse[];
-  actualBudgetItems: ActualBudgetItemResponse[];
-  
-  // BUDGET CATEGORIES
-  categoriesPlan: BudgetItemCategorySchema[];
-  actualCategories: BudgetItemCategorySchema[];
+  // BUDGETS
+  budgetPlanData: BudgetWithCategoryBudgetPlan | null;
+  budgetActualData: BudgetWithCategoryBudgetActual | null;
 
   // INVENTORY
   inventories: InventorySchema[];
 
   // VENDORSERVICE
-  vendorServices: VendorServiceSchema[];
+  vendorServices: VendorWithService[];
 
   // LOADING
   loading: boolean;
@@ -54,26 +49,21 @@ interface EventContextType {
   handleDeleteTask: (taskId: string) => Promise<void>;
   handleAddTask: (data: AddTaskDTO) => Promise<void>;
 
+  // BUDGETS
+  fetchBudgetDataPlan: () => Promise<void>;
+  fetchBudgetDataActual: () => Promise<void>;
+  handleUpdateBudgetPlanStatus: (data:UpdateBudgetDTO) => Promise<void>;
+
   // BUDGETTING PLAN
-  fetchBudgetPlan: () => Promise<void>;
-  fetchAllBudgetPlanItems: () => Promise<void>;
   handleAddBudgetPlanItem: (data: AddBudgetPlanItemDTO) => Promise<void>;
   handleDeleteBudgetPlanItem: (budgetPlanItemId: string) => Promise<void>;
   handleUpdateBudgetPlanItem: (data: UpdateBudgetPlanItemDTO) => Promise<void>;
 
   // BUDGETTING ACTUAL
-  fetchActualBudget: () => Promise<void>;
-  fetchAllActualBudgetItems: () => Promise<void>;
   handleAddActualBudgetItem: (data: AddActualBudgetItemDTO) => Promise<void>;
   handleDeleteActualBudgetItem: (actualBudgetItemId: string) => Promise<void>;
   handleUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>;
   handleImportBudgetData: () => Promise<void>;
-
-  // BUDGET CATEGORIES PLAN
-  fetchCategoriesByBudgetIdPlan: () => Promise<void>;
-
-  // BUDGET CATEGORIES ACTUAL
-  fetchCategoriesByActualBudgetId: () => Promise<void>;
 
   // BUDGET CATEGORIES
   handleAddCategory: (is_actual: boolean, data: AddBudgetItemCategoryDTO) => Promise<void>;
@@ -87,9 +77,9 @@ interface EventContextType {
   fetchAllVendorServices: () => Promise<void>;
 
   // PURCHASING
-  handleAddPurchase: (data: AddPurchaseDTO) => void;
-  handleUpdatePurchase: (data: UpdatePurchaseDTO) => void;
-  handleDeletePurchase: (purchaseId: string) => void;
+  handleAddPurchase: (data: AddPurchaseDTO) => Promise<void>;
+  handleUpdatePurchase: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>;
+  handleDeletePurchase: (purchaseId: string) => Promise<void>;
   
   refetchAll: () => void;
 }

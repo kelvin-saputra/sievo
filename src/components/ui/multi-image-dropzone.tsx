@@ -6,6 +6,7 @@ import * as React from 'react';
 import { useDropzone, type DropzoneOptions } from 'react-dropzone';
 import { twMerge } from 'tailwind-merge';
 import Image from "next/image";
+import { Button } from './button';
 
 const variants = {
   base: 'relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer min-h-[150px] min-w-[200px] border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out',
@@ -175,7 +176,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 <UploadCloudIcon className="mb-2 h-7 w-7" />
                 <div className="text-gray-400">drag & drop to upload</div>
                 <div className="mt-3">
-                  <Button type="button" disabled={disabled}>
+                  <Button className='bg-primary hover:bg-primary/80 text-super-white hover:text-super-white h-6 text-xs' type="button" disabled={disabled}>
                     select
                   </Button>
                 </div>
@@ -238,28 +239,6 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
   },
 );
 MultiImageDropzone.displayName = 'MultiImageDropzone';
-
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => {
-  return (
-    <button
-      className={twMerge(
-        // base
-        'focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50',
-        // color
-        'border border-gray-400 text-gray-400 shadow hover:bg-gray-100 hover:text-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700',
-        // size
-        'h-6 rounded-md px-2 text-xs',
-        className,
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-Button.displayName = 'Button';
 
 export { MultiImageDropzone };
 

@@ -16,7 +16,6 @@ import { UserWithStatus } from "@/hooks/use-hr";
 import { cn } from "@/utils/shadUtils";
 import { taskStatusColorMap } from "@/utils/eventStatusColorMap";
 
-// Helper to compact UUID
 function compactId(id: string, front = 6, back = 4) {
   if (!id || id.length <= front + back + 3) return id;
   return `${id.slice(0, front)}...${id.slice(-back)}`;
@@ -48,7 +47,7 @@ export function EventTaskDetailModal({
       >
         <DialogHeader>
           <DialogTitle>{eventData.title}</DialogTitle>
-          <DialogDescription>Detail tugas dari event ini.</DialogDescription>
+          <DialogDescription>Task details from this event.</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 bg-gray-50 rounded-md p-4 border">
@@ -73,7 +72,7 @@ export function EventTaskDetailModal({
             </Badge>
           </div>
           <div>
-            <div className="text-xs text-gray-500">Judul</div>
+            <div className="text-xs text-gray-500">Title</div>
             <div className="break-words">{eventData.title}</div>
           </div>
           <div>
@@ -81,7 +80,7 @@ export function EventTaskDetailModal({
             <div>{assignee}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-500">Jatuh Tempo</div>
+            <div className="text-xs text-gray-500">Due Date</div>
             <div>
               {eventData.due_date ? (
                 new Date(eventData.due_date).toLocaleDateString()
@@ -91,7 +90,7 @@ export function EventTaskDetailModal({
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500">ID Event</div>
+            <div className="text-xs text-gray-500">Event ID</div>
             <div
               className="font-mono text-xs bg-gray-100 rounded px-2 py-1 cursor-pointer w-fit"
               title={eventData.event_id}
@@ -102,10 +101,10 @@ export function EventTaskDetailModal({
         </div>
 
         <div className="my-4">
-          <div className="text-xs text-gray-500 mb-1">Deskripsi</div>
+          <div className="text-xs text-gray-500 mb-1">Description</div>
           <div className="whitespace-pre-line break-words bg-gray-100 rounded p-3 border min-h-[44px]">
             {eventData.description || (
-              <span className="italic text-gray-400">Tidak ada deskripsi</span>
+              <span className="italic text-gray-400">No description</span>
             )}
           </div>
         </div>
@@ -113,15 +112,15 @@ export function EventTaskDetailModal({
         <div className="border-t mt-6 pt-4 text-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
             <div>
-              <div className="text-xs text-gray-500">Dibuat Oleh</div>
+              <div className="text-xs text-gray-500">Created By</div>
               <div>{eventData.created_by}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Diperbarui Oleh</div>
+              <div className="text-xs text-gray-500">Updated By</div>
               <div>{eventData.updated_by}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Tanggal Dibuat</div>
+              <div className="text-xs text-gray-500">Created At</div>
               <div>
                 {eventData.created_at ? (
                   new Date(eventData.created_at).toLocaleString()
@@ -131,7 +130,7 @@ export function EventTaskDetailModal({
               </div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Tanggal Diperbarui</div>
+              <div className="text-xs text-gray-500">Updated At</div>
               <div>
                 {eventData.updated_at ? (
                   new Date(eventData.updated_at).toLocaleString()
@@ -150,7 +149,7 @@ export function EventTaskDetailModal({
               onClose();
             }}
           >
-            Tutup
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>

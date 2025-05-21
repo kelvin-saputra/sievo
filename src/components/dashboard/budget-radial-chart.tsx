@@ -1,34 +1,73 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { TrendingUp } from "lucide-react";
-import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import useDashboard from "@/hooks/use-dashboard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect } from "react"
+import { TrendingUp, Filter } from "lucide-react"
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import useDashboard from "@/hooks/use-dashboard"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+enum EventStatus {
+  PLANNING = "PLANNING",
+  BUDGETING = "BUDGETING",
+  PREPARATION = "PREPARATION",
+  IMPLEMENTATION = "IMPLEMENTATION",
+  REPORTING = "REPORTING",
+  DONE = "DONE",
+}
+
+type StatusFilter = "ALL" | "DONE" | "IN_PROGRESS"
 
 export function BudgetRadialChart() {
   const { budgetSummary, loading, fetchBudgetSummary } = useDashboard()
-  const [selectedEventId, setSelectedEventId] = useState<"total" | string>("total");
+  const [selectedEventId, setSelectedEventId] = useState<"total" | string>("total")
+  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("ALL")
 
   useEffect(() => {
-    fetchBudgetSummary();
-  }, [fetchBudgetSummary]);
+    fetchBudgetSummary()
+  }, [fetchBudgetSummary])
 
   if (loading || !budgetSummary) {
-    return <div>Loading chart...</div>;
+    return <div>Loading chart...</div>
   }
 
-  const selectedEvent = selectedEventId === "total"
-    ? {
-        planned_budget: budgetSummary.planned_budget,
-        actual_budget: budgetSummary.actual_budget,
-      }
-    : budgetSummary.events.find((event) => event.event_id === selectedEventId);
+  // Filter events by status
+  const filteredEvents = budgetSummary.events.filter((event) => {
+    if (selectedStatus === "ALL") return true
+    if (selectedStatus === "DONE") return event.event_status === EventStatus.DONE
+    if (selectedStatus === "IN_PROGRESS") {
+      return event.event_status !== EventStatus.DONE
+    }
+    return true
+  })
 
-  const totalActual = selectedEvent?.actual_budget || 0;
-  const totalProjected = selectedEvent?.planned_budget || 1; // avoid division by zero
-  const percentUsed = Math.round((totalActual / totalProjected) * 100);
+  // Calculate totals for filtered events
+  const filteredTotalPlanned = filteredEvents.reduce((sum, event) => sum + event.planned_budget, 0)
+  const filteredTotalActual = filteredEvents.reduce((sum, event) => sum + event.actual_budget, 0)
+
+  // Get data for selected event or filtered totals
+  const selectedEvent =
+    selectedEventId === "total"
+      ? {
+          planned_budget: filteredTotalPlanned,
+          actual_budget: filteredTotalActual,
+        }
+      : filteredEvents.find((event) => event.event_id === selectedEventId)
+
+  // If the selected event is not in the filtered list, use the first filtered event or default to 0
+  const totalActual = selectedEvent?.actual_budget || 0
+  const totalProjected = selectedEvent?.planned_budget || 1 // avoid division by zero
+  const percentUsed = Math.round((totalActual / totalProjected) * 100)
 
   const chartData = [
     {
@@ -36,10 +75,10 @@ export function BudgetRadialChart() {
       actual: totalActual,
       projected: totalProjected,
     },
-  ];
+  ]
 
-  const actualColor = "#e07a5f";
-  const projectedColor = "#a8dadc";
+  const actualColor = "#e07a5f"
+  const projectedColor = "#a8dadc"
 
   const chartConfig = {
     actual: {
@@ -50,26 +89,105 @@ export function BudgetRadialChart() {
       label: "Projected Budget",
       color: projectedColor,
     },
-  };
+  }
+
+  // Format currency for display
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  // Get status label with color
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case EventStatus.DONE:
+        return <span className="text-green-500 font-medium">Done</span>
+      case EventStatus.REPORTING:
+        return <span className="text-blue-500 font-medium">Reporting</span>
+      case EventStatus.IMPLEMENTATION:
+        return <span className="text-purple-500 font-medium">Implementation</span>
+      case EventStatus.PREPARATION:
+        return <span className="text-orange-500 font-medium">Preparation</span>
+      case EventStatus.BUDGETING:
+        return <span className="text-pink-500 font-medium">Budgeting</span>
+      case EventStatus.PLANNING:
+        return <span className="text-yellow-500 font-medium">Planning</span>
+      default:
+        return <span>{status}</span>
+    }
+  }
+
+  // Get status filter display name
+  const getStatusFilterName = (filter: StatusFilter) => {
+    switch (filter) {
+      case "ALL":
+        return "All Events"
+      case "DONE":
+        return "Done"
+      case "IN_PROGRESS":
+        return "In Progress"
+      default:
+        return filter
+    }
+  }
 
   return (
     <div className="flex flex-col">
-      {/* Select event */}
-      <div className="mb-4 flex justify-center">
+      {/* Filter controls */}
+      <div className="mb-4 flex flex-wrap justify-between gap-2">
+        {/* Event selector */}
         <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Pilih Event" />
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Event" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="total">Total Semua Event</SelectItem>
-            {budgetSummary.events.map((event) => (
+            <SelectItem value="total">All Events</SelectItem>
+            {filteredEvents.map((event) => (
               <SelectItem key={event.event_id} value={event.event_id}>
-                {event.event_name}
+                {event.event_name.length > 20 ? `${event.event_name.substring(0, 18)}...` : event.event_name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
+        {/* Status filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-10">
+              <Filter className="mr-2 h-4 w-4" />
+              {getStatusFilterName(selectedStatus)}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={selectedStatus}
+              onValueChange={(value) => setSelectedStatus(value as StatusFilter)}
+            >
+              <DropdownMenuRadioItem value="ALL">All Events</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="DONE">Done</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="IN_PROGRESS">In Progress</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {/* Selected event info */}
+      {selectedEventId !== "total" && selectedEvent && (
+        <div className="mb-4 text-center">
+          <h3 className="text-sm font-medium truncate">
+            {filteredEvents.find((e) => e.event_id === selectedEventId)?.event_name}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Status: {getStatusLabel(filteredEvents.find((e) => e.event_id === selectedEventId)?.event_status || "")}
+          </p>
+        </div>
+      )}
 
       {/* Chart */}
       <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[250px]">
@@ -97,7 +215,7 @@ export function BudgetRadialChart() {
                         of budget used
                       </tspan>
                     </text>
-                  );
+                  )
                 }
               }}
             />
@@ -111,6 +229,14 @@ export function BudgetRadialChart() {
           <RadialBar dataKey="actual" fill={actualColor} className="stroke-transparent stroke-2" />
         </RadialBarChart>
       </ChartContainer>
+
+      {/* Budget amounts */}
+      <div className="mt-2 text-center text-sm">
+        <div className="text-muted-foreground">
+          <span className="font-medium text-foreground">{formatCurrency(totalActual)}</span> of{" "}
+          {formatCurrency(totalProjected)}
+        </div>
+      </div>
 
       {/* Legend */}
       <div className="mt-4 flex justify-center gap-6">
@@ -130,5 +256,5 @@ export function BudgetRadialChart() {
         <div className="font-medium leading-none">Budget utilization: {percentUsed}%</div>
       </div>
     </div>
-  );
+  )
 }

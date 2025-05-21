@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const events = await prisma.event.findMany({
+      const events = await prisma.event.findMany({
       where: {
         is_deleted: false,
       },
@@ -12,11 +12,33 @@ export async function GET() {
         event_name: true,
         start_date: true,
         end_date: true,
+        task: {
+          where: {
+            is_deleted: false,
+            status: {
+              in: ['PENDING', 'ON_PROGRESS'],
+            },
+          },
+          select: {
+            task_id: true,
+            title: true,
+            due_date: true,
+            status: true,
+            assigned: {
+              select: {
+                id: true,
+                name: true, 
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        start_date: "asc", 
+        start_date: "asc",
       },
     });
+
+
 
     return NextResponse.json(events);
   } catch (error) {

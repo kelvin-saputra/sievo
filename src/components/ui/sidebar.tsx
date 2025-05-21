@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeftIcon } from "lucide-react"
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/utils/shadUtils"
@@ -246,7 +246,7 @@ function Sidebar({
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
           className
         )}
         {...props}
@@ -267,7 +267,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, state } = useSidebar()
 
   return (
     <Button
@@ -275,14 +275,23 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className)}
+      className={cn(
+        `absolute flex size-5 items-center justify-center bg-transparent text-green-950 hover:bg-transparent ${state==="expanded"?"-ml-8 mt-3.5 flex-col":"mt-3 ml-4"}`,
+        className,
+      )}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      {state === "expanded" ? (
+        
+          <PanelLeftClose className="text-super-white size-5" />
+        ) : (
+          <PanelLeftOpen className="text-super-white size-5" />
+        )
+      }
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -342,11 +351,12 @@ function SidebarInput({
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
+  const { state } = useSidebar()
   return (
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 py-2", className)}
+      className={cn(`flex ${state === "expanded"?"flex-row":"flex-col-reverse"}`, className)}
       {...props}
     />
   )

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { EventStatusEnum } from "@/models/enums";
@@ -13,13 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 const taskStatusLabel: Record<string, string> = {
-  PENDING: "Belum Dikerjakan",
-  ON_PROGRESS: "Sedang Berjalan",
-  DONE: "Selesai",
-  CANCELLED: "Dibatalkan",
+  PENDING: "Not Started",
+  ON_PROGRESS: "In Progress",
+  DONE: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 const taskStatusColorMap: Record<string, string> = {
@@ -30,14 +29,7 @@ const taskStatusColorMap: Record<string, string> = {
 };
 
 export default function EventDetailPage() {
-  const { event, tasks, budgetPlanItems, client, manager, handleStatusChange } =
-    useSafeContext(EventContext, "EventContext");
-
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
+  const { event, tasks, budgetPlanData, budgetActualData, client, manager, handleStatusChange } = useSafeContext(EventContext, "EventContext");
 
   const clientName = client?.name || "-";
   const managerName = manager?.name || "-";
@@ -54,18 +46,22 @@ export default function EventDetailPage() {
   const diff = Math.ceil((end.getTime() - today.getTime()) / msInDay);
 
   const dateStatus =
-    diff > 0
-      ? `${diff} hari lagi`
-      : diff === 0
-      ? "Hari terakhir"
-      : "Sudah lewat";
+    diff > 0 ? `${diff} day(s) remaining` : diff === 0 ? "Last day" : "Expired";
 
-  const plannedBudget = Array.isArray(budgetPlanItems)
-    ? budgetPlanItems.reduce(
-        (sum, item) => sum + (Number(item.item_subtotal) || 0),
-        0
-      )
-    : 0;
+
+  const totalBudgetPlan = budgetPlanData?.categories?.reduce((sumCat, category) => {
+    const subTotal = category?.budget_plan_item
+      .filter(item => !item?.is_deleted)
+      .reduce((sumItem, item) => sumItem + (item?.item_subtotal ?? 0), 0);
+    return sumCat + (subTotal ?? 0);
+  }, 0) ?? 0;
+
+  const totalBudgetActual = budgetActualData?.categories?.reduce((sumCat, category) => {
+    const subTotal = category?.actual_budget_item
+      .filter(item => !item?.is_deleted)
+      .reduce((sumItem, item) => sumItem + (item?.item_subtotal ?? 0), 0);
+    return sumCat + (subTotal ?? 0);
+  }, 0) ?? 0;
 
   const taskStatusCount = {
     PENDING: 0,
@@ -87,7 +83,7 @@ export default function EventDetailPage() {
       <div className="flex flex-col h-full space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-500">Klien</p>
+            <p className="text-sm text-gray-500">Client</p>
             <div className="mt-1 p-2 border rounded-md bg-gray-50 text-gray-700">
               {client?.contact_id ? (
                 <a
@@ -95,7 +91,7 @@ export default function EventDetailPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 underline hover:text-blue-800"
-                  title={`Lihat detail klien: ${clientName}`}
+                  title={`View client details: ${clientName}`}
                 >
                   {clientName}
                 </a>
@@ -105,7 +101,7 @@ export default function EventDetailPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm text-gray-500">PIC</p>
+            <p className="text-sm text-gray-500">Manager (PIC)</p>
             <div className="mt-1 p-2 border rounded-md bg-gray-50 text-gray-700">
               {managerName}
             </div>
@@ -113,25 +109,25 @@ export default function EventDetailPage() {
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Lokasi</p>
+          <p className="text-sm text-gray-500">Location</p>
           <div className="mt-1 p-2 border rounded-md bg-gray-50 text-gray-700">
             {event.location}
           </div>
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Tanggal</p>
+          <p className="text-sm text-gray-500">Date</p>
           <div className="flex gap-4 mt-1">
             <div className="flex-1">
               <div className="p-2 border rounded-md bg-gray-50 text-gray-700">
-                <span className="text-xs text-gray-400">Mulai:</span>{" "}
-                {start.toLocaleDateString("id-ID")}
+                <span className="text-xs text-gray-400">Start:</span>{" "}
+                {start.toLocaleDateString("en-GB")}
               </div>
             </div>
             <div className="flex-1">
               <div className="p-2 border rounded-md bg-gray-50 text-gray-700">
-                <span className="text-xs text-gray-400">Selesai:</span>{" "}
-                {end.toLocaleDateString("id-ID")}
+                <span className="text-xs text-gray-400">End:</span>{" "}
+                {end.toLocaleDateString("en-GB")}
               </div>
             </div>
           </div>
@@ -143,50 +139,49 @@ export default function EventDetailPage() {
         </div>
 
         <div className="flex flex-col flex-1">
-          <p className="text-sm text-gray-500">Keterangan</p>
+          <p className="text-sm text-gray-500">Notes</p>
           <div className="mt-1 p-2 border rounded-md bg-gray-50 text-gray-700 flex-1 min-h-[6rem]">
-            {event.notes || "Tidak ada keterangan"}
+            {event.notes || "No additional notes"}
           </div>
         </div>
 
         <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700 space-y-2">
           <div className="flex justify-between">
-            <span className="text-gray-500">Dibuat oleh</span>
+            <span className="text-gray-500">Created by</span>
             <span className="font-medium">{event.created_by || "-"}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Tanggal dibuat</span>
+            <span className="text-gray-500">Created at</span>
             <span className="font-medium">
               {event.created_at
-                ? new Date(event.created_at).toLocaleString("id-ID")
+                ? new Date(event.created_at).toLocaleString("en-GB")
                 : "-"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Diperbarui oleh</span>
+            <span className="text-gray-500">Updated by</span>
             <span className="font-medium">{event.updated_by || "-"}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Tanggal diperbarui</span>
+            <span className="text-gray-500">Updated at</span>
             <span className="font-medium">
               {event.updated_at
-                ? new Date(event.updated_at).toLocaleString("id-ID")
+                ? new Date(event.updated_at).toLocaleString("en-GB")
                 : "-"}
             </span>
           </div>
         </div>
       </div>
-
       <div className="flex flex-col h-full bg-blue-50 p-4 rounded-lg border-2">
         <div className="flex gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500">Status</p>
 
-            {["ADMIN", "EXECUTIVE", "EMPLOYEE"].includes(userRole || "") ? (
+            {(checkRoleClient(ADMINEXECUTIVEINTERNAL) && !["DONE"].includes(event.status)) ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant={"outline"}
                     className="cursor-pointer w-full flex items-center justify-between gap-2"
                   >
                     <span
@@ -236,20 +231,26 @@ export default function EventDetailPage() {
           </div>
 
           <div className="flex flex-row items-center justify-between bg-blue-100 border rounded-lg px-4 min-w-[200px]">
-            <span className="text-sm text-gray-600">Jumlah Peserta</span>
+            <span className="text-sm text-gray-600">Participants</span>
             <span className="text-lg font-bold">{event.participant_plan}</span>
           </div>
         </div>
 
         <div className="mt-4 flex-1 flex flex-col justify-evenly gap-4">
           <div className="p-4 border rounded-lg bg-blue-100">
-            <p className="text-sm text-gray-500">Total Anggaran Rencana</p>
+            <p className="text-sm text-gray-500">Total Planned Budget</p>
             <p className="text-2xl font-bold">
-              Rp{plannedBudget.toLocaleString("id-ID")}
+              Rp{totalBudgetPlan.toLocaleString("id-ID")}
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-blue-100">
-            <p className="text-sm text-gray-500 mb-4">Progress Tugas</p>
+            <p className="text-sm text-gray-500">Budget Realization Total</p>
+            <p className="text-2xl font-bold">
+              Rp{totalBudgetActual.toLocaleString("id-ID")}
+            </p>
+          </div>
+          <div className="p-4 border rounded-lg bg-blue-100">
+            <p className="text-sm text-gray-500 mb-4">Task Progress</p>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(taskStatusCount).map(([status, count]) => (
                 <div
@@ -259,7 +260,7 @@ export default function EventDetailPage() {
                     (taskStatusColorMap[status] || "bg-gray-100 text-gray-800")
                   }
                   style={{ minWidth: 120 }}
-                  title={`${taskStatusLabel[status]}: ${count} tugas`}
+                  title={`${taskStatusLabel[status]}: ${count} task(s)`}
                 >
                   <span className="text-3xl font-extrabold leading-tight">
                     {count}
@@ -274,5 +275,5 @@ export default function EventDetailPage() {
         </div>
       </div>
     </div>
-  );
-}
+  )
+};

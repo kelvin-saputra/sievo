@@ -77,4 +77,20 @@ export const taskColumns = (
 
     enableSorting: false,
   },
+  {
+    accessorKey: "created_by",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="text-left w-full justify-start"
+      >
+        Assigned By
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      return row.original.created_by;
+    },
+  },
 ];

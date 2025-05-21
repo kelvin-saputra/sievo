@@ -1,27 +1,28 @@
 "use client"
 import { useEffect, useState } from "react"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { toast } from "sonner"
 import { UpdateActualBudgetItemDTO, type UpdatePurchaseDTO } from "@/models/dto"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { InventorySchema, VendorServiceSchema } from "@/models/schemas"
+import { PurchasingSchema, type InventorySchema, type VendorServiceSchema } from "@/models/schemas"
 import { Textarea } from "@/components/ui/textarea"
-import type { ActualBudgetItemResponse } from "@/models/response/item-actual.response"
+import { BudgetItemActual } from "@/models/response/actual-item"
+import { Pencil } from "lucide-react"
+import { VendorWithService } from "@/models/response/vendor-with-service"
 
 interface UpdateActualBudgetItemProps {
-  onUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => void
-  onUpdatePurchasing: (data: UpdatePurchaseDTO) => void
+  onUpdateActualBudgetItem: (data: UpdateActualBudgetItemDTO) => Promise<void>
+  onUpdatePurchasing: (data: UpdatePurchaseDTO) => Promise<PurchasingSchema|undefined>
   categoryId: number
   inventories: InventorySchema[]
-  vendorServices: VendorServiceSchema[]
+  vendorServices: VendorWithService[]
   currentSource: string
-  existingItem: ActualBudgetItemResponse
+  existingItem: BudgetItemActual
 }
 
 export function UpdateActualBudgetItemForm({
@@ -34,32 +35,25 @@ export function UpdateActualBudgetItemForm({
   existingItem,
 }: UpdateActualBudgetItemProps) {
   const [open, setOpen] = useState(false)
+  const [selectedVendorService, setSelectedVendorService] = useState<VendorServiceSchema[]>([])
+  const [selectedInventory, setSelectedInventory] = useState<InventorySchema | null>(null)
 
-  // Extract item details based on source
-  const getItemDetails = () => {
-    if (currentSource === "other" && existingItem.other_item) {
-      return {
-        item_name: existingItem.other_item.item_name,
-        description: existingItem.other_item.description,
-        item_price: existingItem.other_item.item_price,
-      }
-    } else if (currentSource === "inventory" && existingItem.inventory) {
-      return {
-        item_name: existingItem.inventory.item_name,
-        description: existingItem.inventory.description,
-        item_price: existingItem.inventory.item_price,
-      }
-    } else if (currentSource === "vendor" && existingItem.vendor_service) {
-      return {
-        item_name: existingItem.vendor_service.service_name,
-        description: existingItem.vendor_service.description,
-        item_price: existingItem.vendor_service.price,
-      }
-    }
-    return { item_name: "", description: "", item_price: 0 }
+  let item_name, description, item_price;
+  if (currentSource === "other") {
+    item_name = existingItem.other_item?.item_name
+    description = existingItem.other_item?.description
+    item_price = existingItem.other_item?.item_price
   }
-
-  const itemDetails = getItemDetails()
+  if (currentSource === "inventory") {
+    item_name = existingItem.inventory?.item_name
+    item_price = existingItem.inventory?.item_price
+    description = existingItem.inventory?.description
+  }
+  if (currentSource === "vendor") {
+    item_name = existingItem.vendor_service?.service_name
+    item_price = existingItem.vendor_service?.price
+    description = existingItem.vendor_service?.description
+  }
 
   const form = useForm<UpdateActualBudgetItemDTO>({
     resolver: zodResolver(UpdateActualBudgetItemDTO),
@@ -69,23 +63,27 @@ export function UpdateActualBudgetItemForm({
       item_qty: existingItem.item_qty,
       category_id: categoryId,
       source: currentSource,
-      item_name: itemDetails.item_name || "",
-      description: itemDetails.description || "",
-      item_price: itemDetails.item_price || 0,
+      item_name: item_name || "",
+      description: description || "",
+      item_price: item_price || 0,
       inventory_id: existingItem.inventory_id || undefined,
-      vendor_service_id: existingItem.vendor_service_id || undefined,
+      vendor_id: existingItem.vendor_service?.vendor_id,
+      vendor_service_id: existingItem.vendor_service_id || (existingItem.vendor_service_id ? selectedVendorService.find(service => service.service_id === existingItem.vendor_service_id)?.service_id : undefined),
       other_item_id: existingItem.other_item_id || undefined,
     },
   })
 
   const onSubmit = async (data: UpdateActualBudgetItemDTO) => {
-    console.log("Submitting form:", data)
-    const { source, ...dataUpdate } = data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { source, vendor_id, ...dataUpdate } = data
 
     try {
-      // Validate based on source
       if (source === "inventory" && !dataUpdate.inventory_id) {
         form.setError("inventory_id", { message: "Please select an inventory item" })
+        return
+      }
+      if (source === "inventory" && (dataUpdate.item_qty || 0) > ((selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0))) {
+        form.setError("item_qty", { message: "Reserved Inventory cannot more than available inventory" })
         return
       }
       if (source === "vendor" && !dataUpdate.vendor_service_id) {
@@ -94,7 +92,6 @@ export function UpdateActualBudgetItemForm({
       }
 
       if (source === "other") {
-        // Validate other item fields
         if (!dataUpdate.item_name) {
           form.setError("item_name", { message: "Item name is required" })
           return
@@ -106,7 +103,6 @@ export function UpdateActualBudgetItemForm({
 
         const { item_name, item_price, description, created_by, ...actualBudgetData } = dataUpdate
 
-        // Update purchase data first
         const purchaseData: UpdatePurchaseDTO = {
           other_item_id: dataUpdate.other_item_id,
           item_name: item_name,
@@ -115,65 +111,47 @@ export function UpdateActualBudgetItemForm({
           updated_by: created_by || "",
         }
 
-        console.log("Updating purchase item:", purchaseData)
-        await onUpdatePurchasing(purchaseData)
-
-        // Then update budget item
-        console.log("Updating budget item:", actualBudgetData)
+        const updatedPurchase = await onUpdatePurchasing(purchaseData)
+        actualBudgetData.other_item_id = PurchasingSchema.parse(updatedPurchase).other_item_id
         await onUpdateActualBudgetItem(actualBudgetData)
-
-        toast.success("Item updated successfully")
       } else {
-        // For inventory or vendor sources
         const { item_name, item_price, description, created_by, ...actualBudgetData } = dataUpdate
+        
         if (item_name || item_price || description || created_by) {
           form.reset({ item_name: "", item_price: 0, description: "", created_by: "" })
         }
 
-        console.log("Updating budget item:", actualBudgetData)
         await onUpdateActualBudgetItem(actualBudgetData)
-
-        toast.success("Item updated successfully")
       }
-
+      form.reset()
       setOpen(false)
-    } catch (error) {
-      console.error("Error updating form:", error)
-      toast.error("Failed to update budget item")
+    } finally {
     }
   }
 
+  const selectedVendor = form.watch("vendor_id")
   const selectedSource = form.watch("source")
   const selectedInventoryId = form.watch("inventory_id")
   const selectedVendorServiceId = form.watch("vendor_service_id")
   const quantity = form.watch("item_qty")
   const otherItemPrice = form.watch("item_price")
 
-  // Reset fields when source changes
   useEffect(() => {
-    if (selectedSource !== currentSource) {
-      // Source has changed, reset relevant fields
-      form.setValue("inventory_id", undefined)
-      form.setValue("vendor_service_id", undefined)
-
-      if (selectedSource === "other") {
-        // Keep other fields if switching to "other"
-        form.setValue("item_name", "")
-        form.setValue("description", "")
-        form.setValue("item_price", 0)
+    if (selectedSource) {
+      if (selectedSource === "other" && selectedSource === currentSource) {
+        form.setValue("item_name", existingItem.other_item?.item_name)
+        form.setValue("description", existingItem.other_item?.description)
+        form.setValue("item_price", existingItem.other_item?.item_price)
+        form.setValue("item_subtotal", existingItem.item_subtotal)
       } else {
-        // Clear other fields if switching to inventory or vendor
         form.setValue("item_name", "")
         form.setValue("description", "")
         form.setValue("item_price", 0)
       }
-
-      // Reset subtotal when changing source
       form.setValue("item_subtotal", 0)
     }
-  }, [selectedSource, form, currentSource])
+  }, [selectedSource, form, currentSource, existingItem.other_item?.item_name, existingItem.other_item?.description, existingItem.other_item?.item_price, existingItem.item_subtotal])
 
-  // Update price and subtotal when selections change
   useEffect(() => {
     let price = 0
 
@@ -181,11 +159,12 @@ export function UpdateActualBudgetItemForm({
       const item = inventories.find((item) => item.inventory_id === selectedInventoryId)
       if (item) {
         price = item.item_price
+        setSelectedInventory(item)
         form.setValue("item_name", item.item_name)
         form.setValue("description", item.description || "")
       }
     } else if (selectedSource === "vendor" && selectedVendorServiceId) {
-      const service = vendorServices.find((service) => service.service_id === selectedVendorServiceId)
+      const service = selectedVendorService.find((service) => service.service_id === selectedVendorServiceId)
       if (service) {
         price = service.price
         form.setValue("item_name", service.service_name)
@@ -195,25 +174,14 @@ export function UpdateActualBudgetItemForm({
       price = otherItemPrice || 0
     }
 
-    // Only update item_price if it's not "other" source (since user sets that manually)
     if (selectedSource !== "other") {
       form.setValue("item_price", price)
     }
 
-    // Always update subtotal
     const currentQty = quantity || 0
     const currentPrice = price || 0
     form.setValue("item_subtotal", currentPrice * currentQty)
-  }, [
-    selectedSource,
-    selectedInventoryId,
-    selectedVendorServiceId,
-    otherItemPrice,
-    quantity,
-    form,
-    inventories,
-    vendorServices,
-  ])
+  }, [selectedSource, selectedInventoryId, selectedVendorServiceId, otherItemPrice, quantity, form, inventories, vendorServices, selectedVendorService])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -223,29 +191,38 @@ export function UpdateActualBudgetItemForm({
     }).format(value)
   }
 
+  useEffect(() => {
+    if (selectedVendor) {
+      const selectedVendorEntity = vendorServices.find(vs => vs.vendor_id === selectedVendor)
+      const selectedVendorServiceByVendor = selectedVendorEntity?.vendor_service || []
+      setSelectedVendorService(selectedVendorServiceByVendor)
+    }
+  }, [selectedVendor, vendorServices])
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="text-gray-500 hover:text-blue-matahati hover:bg-blue-50 transition-colors rounded-md px-3 py-1 text-sm border border-gray-200">
-          Edit
-        </button>
+        <Button variant={"ghost"} className="text-gray-500 hover:text-blue-matahati hover:bg-blue-50 transition-colors rounded-md p-1">
+          <Pencil size={16} />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit Item</DialogTitle>
+          <DialogTitle>Update Budget Actual Item</DialogTitle>
+          <DialogDescription>Change data that you want to change to update your budget actual item</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form id="update-item-plan-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form id="update-actual-item-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="source"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Source</FormLabel>
+                  <FormLabel>Item Source</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select source" />
+                        <SelectValue placeholder="Select Budget Item Source..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -258,6 +235,7 @@ export function UpdateActualBudgetItemForm({
                 </FormItem>
               )}
             />
+
             {selectedSource === "inventory" && (
               <FormField
                 control={form.control}
@@ -265,10 +243,10 @@ export function UpdateActualBudgetItemForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inventory Item</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select inventory item" />
+                            <SelectValue placeholder="Select the Inventory Item..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -285,30 +263,56 @@ export function UpdateActualBudgetItemForm({
               />
             )}
             {selectedSource === "vendor" && (
-              <FormField
-                control={form.control}
-                name="vendor_service_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vendor Service</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select vendor service" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {vendorServices.map((service) => (
-                          <SelectItem key={service.service_id} value={service.service_id}>
-                            {service.service_name} - {formatCurrency(service.price)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <>
+                <FormField
+                  control={form.control}
+                  name="vendor_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vendor</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select the Vendor..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {vendorServices.map((vendor) => (
+                            <SelectItem key={vendor.vendor_id} value={vendor.vendor_id}>
+                              {vendor.contact.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="vendor_service_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vendor Service</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                              <SelectValue placeholder="Select the Vendor Service Item..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {selectedVendorService.map((service) => (
+                            <SelectItem key={service.service_id} value={service.service_id}>
+                              {service.service_name} - {formatCurrency(service.price)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
             {selectedSource === "other" && (
               <>
@@ -317,9 +321,9 @@ export function UpdateActualBudgetItemForm({
                   name="item_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Item Name</FormLabel>
+                      <FormLabel>Budget Item Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter item name" {...field} />
+                        <Input placeholder="Enter the budget item name..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,13 +334,13 @@ export function UpdateActualBudgetItemForm({
                   name="item_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Item Price</FormLabel>
+                      <FormLabel>Budget Item Price</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Enter item price"
+                          placeholder="Enter the budget item price..."
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -350,7 +354,7 @@ export function UpdateActualBudgetItemForm({
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Enter item description" className="resize-none" {...field} />
+                        <Textarea placeholder="Enter the budget item description..." className="resize-none" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -358,19 +362,45 @@ export function UpdateActualBudgetItemForm({
                 />
               </>
             )}
-            <FormField
-              control={form.control}
-              name="item_qty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className={`${selectedSource === "inventory" ? "flex justify-between gap-6":""}`}>
+              <div className={`${selectedSource === "inventory"?"w-1/2":""}`}>
+                <FormField
+                  control={form.control}
+                  name="item_qty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantity</FormLabel>
+                      <FormControl>
+                      {selectedSource === "inventory"? (
+                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+                      ): (
+                        <Input type="number" min="1" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)}/>
+
+                      )}
+
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {selectedSource === "inventory" && (
+                <div className="w-1/2">
+                  <FormItem>
+                    <FormLabel>Available Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value= {(selectedInventory?.item_qty || 0)-(selectedInventory?.item_qty_damaged || 0)-(selectedInventory?.item_qty_reserved || 0) - (quantity || 0) + (existingItem.inventory_id === selectedInventory?.inventory_id? existingItem.item_qty:0)}
+                        disabled
+                        className="bg-gray-50 text-gray-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
+                  )}
+            </div>
             <FormField
               control={form.control}
               name="item_subtotal"
@@ -393,7 +423,7 @@ export function UpdateActualBudgetItemForm({
               <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" form="update-item-plan-form">
+              <Button type="submit" form="update-actual-item-form">
                 Update
               </Button>
             </div>

@@ -1,10 +1,10 @@
 import { encryptAES } from "@/lib/aes";
 import { LoginDTO, RegisterDTO } from "@/models/dto";
 import { UserSchema } from "@/models/schemas"
-import axios from "axios";
+import { handlingError, handlingSuccess } from "@/utils/toastHandler";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
 
 const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 
@@ -30,10 +30,12 @@ export default function useAuthentication() {
                 is_admin: parsedResponse.is_admin
             }
             localStorage.setItem("authUser", JSON.stringify(userAccess))
-            toast.success("Login berhasil");
+            handlingSuccess("Login successful");
+            setLoading(false);
             return true;
-        } catch {
-            toast.success("Terjadi kesalahan saat melakukan login");
+        } catch (error) {
+            handlingError(error as AxiosError);
+            setLoading(false);
             return false;
         }
     }, [])
@@ -48,9 +50,9 @@ export default function useAuthentication() {
             const parsedRequest = UserSchema.parse(requestData);
             const response = await axios.post(`${AUTH_API}/register`, parsedRequest, { params: { token: await encryptAES(token) } });
             const { } = UserSchema.parse(response.data.data);
-            toast.success("Registrasi berhasil, Silahkan lakukan login");
-        } catch {
-            toast.error("Gagal menambahkan user ke dalam database");
+            handlingSuccess("Registration successful, please login");
+        } catch (error) {
+            handlingError(error as AxiosError);
         }
     }, []);
 
@@ -61,8 +63,8 @@ export default function useAuthentication() {
                 id: user?.id,
             }
             const { } = await axios.post(`${AUTH_API}/ack`, requestData);
-        } catch {
-            toast.error("Sesi anda telah berakhir, silahkan login kembali");
+        } catch (error) {
+            handlingError(error as AxiosError);
         }
         setLoading(false);
     }, [user?.id]);
@@ -73,10 +75,10 @@ export default function useAuthentication() {
             const { } = await axios.get(`${AUTH_API}/logout`)
             setUser(null);
             localStorage.removeItem("authUser");
-            toast.success("Logout berhasil");
+            handlingSuccess("Logout successful");
             router.replace("/auth/login");
-        } catch {
-            toast.error("Logout gagal");
+        } catch (error) {
+            handlingError(error as AxiosError);
         }
     }, [router]);
 
@@ -87,11 +89,11 @@ export default function useAuthentication() {
                 token: token
             }
             const { } = await axios.post(`${AUTH_API}/check-token`, requestData);
-            toast.success("Token valid, silahkan lanjutkan registrasi");
+            handlingSuccess("Token valid, please continue with registration");
             setLoading(false);
             return true;
-        } catch {
-            toast.error("Token tidak valid");
+        } catch (error) {
+            handlingError(error as AxiosError);
             setLoading(false);
             return false;
         }
