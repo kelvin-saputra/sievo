@@ -94,7 +94,7 @@ export function AddEventModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Event</Button>
+        <Button variant={"default"}>+ Add Event</Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen overflow-y-auto">
         <DialogHeader>
@@ -380,7 +380,7 @@ export function AddEventModal({
             />
             <div className="flex justify-end space-x-2">
               <Button
-                variant="secondary"
+                variant={"outline"}
                 type="button"
                 onClick={() => setOpen(false)}
               >
@@ -389,7 +389,7 @@ export function AddEventModal({
               <Button
                 type="submit"
                 form="add-event-form"
-                className="bg-green-500 text-white"
+                variant={"default"}
               >
                 Add Event
               </Button>

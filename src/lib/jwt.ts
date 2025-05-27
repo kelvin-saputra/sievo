@@ -1,5 +1,4 @@
 import { SignJWT, jwtVerify, type JWTPayload, type JWTHeaderParameters } from 'jose';
-import { NextRequest } from 'next/server';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -154,18 +153,3 @@ export function decode(
   );
   return options.complete ? { header, payload } : payload;
 }
-
-export async function getPayloadToken(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value
-
-  if (!accessToken) {
-    return null;
-  }
-
-  const decodedToken = await verify(accessToken, process.env.JWT_ACCESS_TOKEN_SECRET!)
-
-  if (!decodedToken) {
-    return null;
-  }
-  return decodedToken as any;
-} 

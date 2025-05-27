@@ -188,7 +188,7 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
       </DialogTrigger>
       <DialogContent className="flex flex-col max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Inventory</DialogTitle>
+          <DialogTitle>Update Inventory</DialogTitle>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 p-2">
           <Form {...form}>
@@ -238,6 +238,7 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
                 <FormField
                   control={form.control}
                   name="item_qty_reserved"
+                  disabled={true}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Reserved Quantity</FormLabel>
@@ -374,8 +375,8 @@ export function EditInventoryModal({ inventory, onUpdateInventory }: EditInvento
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-green-500 text-white" disabled={isUploading}>
-                  Save
+                <Button type="submit" variant={"default"} disabled={isUploading}>
+                  Save Changes
                 </Button>
               </div>
             </form>
