@@ -1,82 +1,134 @@
+"use client"
+
+import Image from "next/image"
+import Link from "next/link"
+import { Calendar, BarChart3, Users, Contact, FileText, Package } from "lucide-react"
+import useHomepage from "@/hooks/use-homepage";
+import { useEffect } from "react";
+import { eventStatusColorMap } from "@/utils/eventStatusColorMap";
+import { ADMINEXECUTIVE, ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
+import Loading from "@/components/ui/loading";
+
 export default function Home() {
+  const {
+      homepageData,
+      loading,
+      fetchHomepageData
+    } = useHomepage();
+
+  useEffect(() => {
+      fetchHomepageData()
+    }, [fetchHomepageData]);
+
+  if (loading) {
+    return <Loading message="Fetching user data..." />
+  }
+
   return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center px-4 py-12">
-      <div className="max-w-7xl mx-auto text-center">
-        <h1 className="text-3xl md:text-4xl lg:text-6xl mb-6 md:mb-10 lg:mb-16 font-extrabold">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-black to-slate-900">
-            PROYEK PENGEMBANGAN SISTEM INFORMASI
-          </span>
-        </h1>
-        <h2 className="tex`t-2xl md:text-3xl lg:text-5xl font-bold mb-10 md:mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-          SI-EVO: Sistem Informasi Event Organizer
-        </h2>
+    <main className="min-h-screen bg-white">
+      <div className="relative h-[400px] w-full">
+        <div className="absolute inset-0">
+          <Image
+            src="/header.png?height=400&width=1200"
+            alt="Event collage"
+            fill
+            className="object-cover brightness-75"
+            priority
+          />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <h1 className="text-5xl md:text-7xl font-bold text-white drop-shadow-lg">Welcome to SI-EVO!</h1>
+        </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 px-4">
-          {/* Team Card */}
-          <div className="w-full md:w-1/2 lg:w-2/5 rounded-xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-            <div className="p-1 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-xl">
-              <div className="bg-black text-white p-6 md:p-8 rounded-lg">
-                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-                  Propensi Cracked
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <tbody>
-                      <tr className="border-b border-gray-800">
-                        <td className="py-3 text-sm md:text-base font-semibold">Calista Sekar Pamaja</td>
-                        <td className="py-3 text-sm md:text-base font-semibold text-pink-400">Product Manager</td>
-                      </tr>
-                      <tr className="border-b border-gray-800">
-                        <td className="py-3 text-sm md:text-base font-semibold">Aiza Derisyana</td>
-                        <td className="py-3 text-sm md:text-base font-semibold text-pink-400">System Designer</td>
-                      </tr>
-                      <tr className="border-b border-gray-800">
-                        <td className="py-3 text-sm md:text-base font-semibold">Edward Salim</td>
-                        <td className="py-3 text-sm md:text-base font-semibold text-pink-400">Scrum Master</td>
-                      </tr>
-                      <tr className="border-b border-gray-800">
-                        <td className="py-3 text-sm md:text-base font-semibold">Kelvin Saputra</td>
-                        <td className="py-3 text-sm md:text-base font-semibold text-pink-400">Lead Programmer</td>
-                      </tr>
-                      <tr>
-                        <td className="py-3 text-sm md:text-base font-semibold">Roger Moreno</td>
-                        <td className="py-3 text-sm md:text-base font-semibold text-pink-400">System Analyst</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+      <div className="px-4 py-8 max-w-7xl mx-auto">
+        <div className={`grid grid-cols-1 md:grid-cols-${homepageData?.role !== "FREELANCE"? 3:2} gap-4`}>
+          <div className="bg-[#2c3e50] text-white p-6 rounded-lg">
+            <h3 className="text-lg font-medium">All Active Events</h3>
+            <p className="text-5xl font-bold mt-2">{homepageData?.event.length}</p>
           </div>
+          {homepageData?.role !== "FREELANCE" && (<div className="bg-[#2c3e50] text-white p-6 rounded-lg">
+            <h3 className="text-lg font-medium">Managed Active Events</h3>
+            <p className="text-5xl font-bold mt-2">{homepageData?.total_manage}</p>
+          </div>)}
+          <div className="bg-[#2c3e50] text-white p-6 rounded-lg">
+            <h3 className="text-lg font-medium">Open Tasks</h3>
+            <p className="text-5xl font-bold mt-2">{homepageData?.total_task}</p>
+          </div>
+        </div>
 
-          {/* Company Card */}
-          <div className="w-full md:w-1/2 lg:w-2/5 rounded-xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl mt-8 md:mt-0">
-            <div className="p-1 bg-gradient-to-r from-red-500 via-pink-500 to-purple-400 rounded-xl">
-              <div className="bg-black text-white p-6 md:p-8 rounded-lg flex flex-col justify-between h-full">
-                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-purple-400">
-                  PT Matahati Inspira
-                </h2>
-                <div className="mt-4">
-                  <p className="text-base md:text-lg font-medium leading-relaxed">
-                    Hadir dari tahun 2011 selalu berkomitmen memberikan
-                    <span className="font-bold text-pink-400 block mt-2">Best Quality Services-Product</span>
-                    untuk advertising dan MICE
-                  </p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+          <Link
+            href="/events"
+            className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+            >
+            <Calendar className="h-6 w-6" />
+            <span className="text-center">Event</span>
+          </Link>
+            {checkRoleClient(ADMINEXECUTIVE) && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                >
+                  <BarChart3 className="h-6 w-6" />
+                  <span className="text-center">Dashboard</span>
+                </Link>
+                <Link
+                  href="/human-resources"
+                  className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                >
+                  <Users className="h-6 w-6" />
+                  <span className="text-center">Human Resource</span>
+                </Link>
+              </>
+            )}
+          <Link
+            href="/contact"
+            className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+          >
+            <Contact className="h-6 w-6" />
+            <span>Contact</span>
+          </Link>
+          {checkRoleClient(ADMINEXECUTIVEINTERNAL) && (
+            <Link
+              href="/proposal"
+              className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+            >
+              <FileText className="h-6 w-6" />
+              <span className="text-center">Proposal</span>
+            </Link>
+          )}
+          <Link
+            href="/inventory"
+            className="bg-gray-100 p-6 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+          >
+            <Package className="h-6 w-6" />
+            <span className="text-center">Inventory</span>
+          </Link>
+        </div>
 
-                  <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-medium">
-                      Advertising
-                    </span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-red-500 rounded-full text-xs font-medium">
-                      Events
-                    </span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-full text-xs font-medium">
-                      MICE
-                    </span>
+        {/* Upcoming Events */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
+          <div className="border-t border-gray-200">
+            {homepageData?.event && homepageData.event.length > 0 ? (
+              homepageData.event.map((event, index) => (
+                <Link key={index} href={`events/${event.event_id}`} >
+                  <div  className="py-4 border-b border-gray-200 flex justify-between items-center">
+                    <div className="text-sm">
+                      {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
+                    </div>
+                    <div className="font-medium">{event.event_name}</div>
+                    <div className={`${eventStatusColorMap[event.status]} px-4 py-1 rounded-full text-sm`}>
+                      {event.status}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
+                </Link>
+              ))
+            ) : (
+              <div className="py-8 text-center text-gray-500">No upcoming events at this time</div>
+            )}
           </div>
         </div>
       </div>

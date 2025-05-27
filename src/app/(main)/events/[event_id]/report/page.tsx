@@ -1,34 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { useSafeContext } from "@/hooks/use-safe-context";
 import EventContext from "@/models/context/event.context";
 import { PDFViewer } from "@react-pdf/renderer";
 import { EventReportPDF } from "@/components/events/event-report-pdf";
-import { getUserRoleFromStorage } from "@/utils/authUtils";
+import { ADMINEXECUTIVEINTERNAL, checkRoleClient } from "@/lib/rbac-client";
 
 export default function EventReportPage() {
   const ctx = useSafeContext(EventContext, "EventContext");
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromStorage());
-  }, []);
-
-  const allowedRoles = ["ADMIN", "EXECUTIVE", "INTERNAL"];
 
   if (!ctx.event) {
-    return <p className="text-red-600">No event data available.</p>;
+    return (<p className="text-red-600">No event data available.</p>);
   }
 
-  if (!allowedRoles.includes(userRole || "")) {
+  if (!checkRoleClient(ADMINEXECUTIVEINTERNAL)) {
     return (
       <div className="max-w-2xl mx-auto mt-16 p-8 bg-red-50 border border-red-300 rounded text-center">
         <h2 className="text-xl font-semibold mb-2 text-red-800">
-          Akses ditolak
+          Access Denied
         </h2>
         <p className="text-red-700">
-          Anda tidak memiliki akses untuk melihat laporan ini.
+          You do not have permission to view this report.
         </p>
       </div>
     );
@@ -36,15 +28,15 @@ export default function EventReportPage() {
 
   if (ctx.event.status !== "DONE" && ctx.event.status !== "REPORTING") {
     return (
-      <div className="max-w-2xl mx-auto mt-16 p-8 bg-yellow-50 border border-yellow-300 rounded text-center">
+      <div className="max-w-2xl mx-auto p-8 bg-yellow-50 border border-yellow-300 rounded text-center">
         <h2 className="text-xl font-semibold mb-2 text-yellow-800">
-          Laporan belum tersedia
+          Report Not Available
         </h2>
         <p className="text-yellow-700">
-          Laporan hanya dapat diakses jika status event sudah{" "}
-          <b>REPORTING atau DONE</b>.
+          The report is only accessible when the event status is{" "}
+          <b>REPORTING</b> or <b>DONE</b>.
           <br />
-          Saat ini status event adalah:{" "}
+          Current event status:{" "}
           <span className="font-semibold">{ctx.event.status}</span>
         </p>
       </div>

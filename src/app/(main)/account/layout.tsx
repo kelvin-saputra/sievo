@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/common/page-header";
+import Loading from "@/components/ui/loading";
 import useProfile from "@/hooks/use-profile";
 import ProfileContext from "@/models/context/profile-context";
 import { useEffect } from "react";
@@ -15,6 +16,12 @@ export default function UserManagementLayout({
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  if (loading) {
+    return (
+      <Loading message="Fetching profile data..." />
+    );
+  }
   return (
     <ProfileContext.Provider
       value={{
@@ -24,7 +31,7 @@ export default function UserManagementLayout({
         handleUpdateProfile,
       }}
     >
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 w-full mx-auto">
         <PageHeader title="Profile Management" />
         <div className="p-6 bg-white rounded-lg shadow-md">{children}</div>
       </div>

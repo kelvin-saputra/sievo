@@ -20,7 +20,7 @@ export const ActualBudgetItemSchema = z.object({
     invoice_photo: z
         .array(z.string())
         .default([]),
-    status: BudgetItemStatusEnum.default("PENDING"),
+    status: BudgetItemStatusEnum.default("DONE"),
     budget_id: z
         .string()
         .uuid({ message: "ID budget tidak valid" })

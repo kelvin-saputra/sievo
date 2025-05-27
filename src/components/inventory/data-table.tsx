@@ -133,7 +133,7 @@ export function InventoryTable({ columns, data }: InventoryTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Belum ada inventaris yang tersedia.
+                  No inventory items available.
                 </TableCell>
               </TableRow>
             )}

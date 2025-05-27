@@ -10,7 +10,7 @@ interface UserDetailCardProps {
 
 // Extract the UserDetailContent component from UserDetailCard
 export function UserDetailCard({ user }: UserDetailCardProps) {
-  const formatDateToIndonesian = (date: Date | string | undefined) => {
+  const formatDate = (date: Date | string | undefined) => {
     if (!date) return "";
 
     // Convert to Date object if it's a string
@@ -22,31 +22,31 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
       return "";
     }
 
-    // Array of day names in Indonesian
+    // Array of day names in English
     const days = [
-      "Minggu",
-      "Senin",
-      "Selasa",
-      "Rabu",
-      "Kamis",
-      "Jumat",
-      "Sabtu",
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
     ];
 
-    // Array of month names in Indonesian
+    // Array of month names in English
     const months = [
-      "Januari",
-      "Februari",
-      "Maret",
+      "January",
+      "February",
+      "March",
       "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
+      "May",
+      "June",
+      "July",
+      "August",
       "September",
-      "Oktober",
+      "October",
       "November",
-      "Desember",
+      "December",
     ];
 
     const day = days[dateObj.getDay()];
@@ -90,29 +90,29 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
         <div className="grid gap-3">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">E-mail</p>
+            <p className="text-sm font-medium text-muted-foreground">Email</p>
             <p>{user.email}</p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Nomor Telepon
+              Phone Number
             </p>
             <p>{user.phone_number}</p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Mulai Kerja
+              Start Date
             </p>
-            <p>{formatDateToIndonesian(user.started_at)}</p>
+            <p>{formatDate(user.started_at)}</p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Akhir Kerja
+              End Date
             </p>
-            <p>{formatDateToIndonesian(user.ended_at)==="Kamis, 1 Januari 1970"? "-":formatDateToIndonesian(user.ended_at)}</p>
+            <p>{formatDate(user.ended_at)==="Thursday, 1 January 1970"? "-":formatDate(user.ended_at)}</p>
           </div>
 
           <div>

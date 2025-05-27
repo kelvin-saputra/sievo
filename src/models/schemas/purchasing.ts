@@ -18,7 +18,8 @@ export const PurchasingSchema = z.object({
         .string(),
     updated_by: z
         .string()
-        .optional(),
+        .optional()
+        .nullable(),
     created_at : z.coerce
         .date({ invalid_type_error: "Tanggal dibuat tidak valid" })
         .default(() => new Date()),

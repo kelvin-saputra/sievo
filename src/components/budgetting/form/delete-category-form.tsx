@@ -28,21 +28,21 @@ export function DeleteCategoryModal({onDeleteCategory, categoryId, categoryName,
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-[400px]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl">
-            Apakah Anda yakin ingin menghapus kategori {categoryName}?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Kategori yang dihapus tidak dapat dikembalikan.
-          </AlertDialogDescription>
+            <AlertDialogTitle className="text-xl">
+              Category Deletion
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the category {categoryName}? Deleted categories cannot be undone.
+            </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => onDeleteCategory(categoryId, is_actual)}
+            className={`bg-destructive hover:bg-destructive/80`}
           >
             Delete
           </AlertDialogAction>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

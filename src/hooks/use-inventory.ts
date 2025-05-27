@@ -1,10 +1,11 @@
 "use client"
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { InventorySchema } from "@/models/schemas";
 import { AddInventoryDTO, UpdateInventoryDTO } from "@/models/dto";
 import { InventoryCategoryEnum } from "@/models/enums";
+import { handlingError } from "@/utils/toastHandler";
 
 
 const API_URL = process.env.NEXT_PUBLIC_INVENTORY_API_URL!;
@@ -28,8 +29,8 @@ export default function useInventory() {
         console.warn("Expected an array but received:", rawInventories);
         setInventorys([]);
       }
-    } catch {
-      toast.error("Gagal mengambil data Inventory.");
+    } catch (error) {
+      handlingError(error as AxiosError);
     }
     setLoading(false);
   }, []);
@@ -40,8 +41,8 @@ export default function useInventory() {
     try {
       const { data } = await axios.get(`${API_URL}/${id}`);
       setInventory(InventorySchema.parse(data.data));
-    } catch {
-      toast.error("Gagal mengambil Inventory.");
+    } catch (error) {
+      handlingError(error as AxiosError);
     }
     setLoading(false);
   }, []);
@@ -52,7 +53,6 @@ export default function useInventory() {
     user_id: string
   ) => {
     try {
-      console.log(user_id)
       const response = await axios.get(API_URL);
       if (response.status !== 200) {
         toast.error("Failed to fetch existing inventories: " + response.data.message);
@@ -124,14 +124,15 @@ export default function useInventory() {
           ev.inventory_id === inventoryId ? parsedInventory : ev
         )
       );
+      fetchAllInventories()
       if (inventory?.inventory_id === inventoryId) {
         setInventory(parsedInventory);
       }
   
       toast.success("Inventory berhasil diperbarui!");
+      window.location.reload();
     } catch (error) {
-      console.error("Failed to update inventory:", error);
-      toast.error("Gagal memperbarui Inventory.");
+      handlingError(error as AxiosError)
     }
   };
   
@@ -148,14 +149,10 @@ export default function useInventory() {
         );
 
         toast.success("Inventory berhasil dihapus!");
-      } else {
-        console.error("Failed to delete inventory:", response);
-        toast.error("Gagal menghapus Inventory.");
       }
-
+      window.location.reload()
     } catch (error) {
-      console.error("Error deleting inventory:", error);
-      toast.error("Gagal menghapus Inventory.");
+      handlingError(error as AxiosError)
     }
   };
   
@@ -178,8 +175,8 @@ export default function useInventory() {
       if (inventory?.inventory_id === inventoryId) {
         setInventory(parsedInventory);
       }
-    } catch {
-      toast.error("Gagal memperbarui status Inventory.");
+    } catch (error) {
+      handlingError(error as AxiosError)
     }
     setLoading(false);
   };
@@ -218,8 +215,8 @@ export default function useInventory() {
 
       setInventorys((prevInventorys) => [...prevInventorys, parsedInventory]);
       toast.success("Inventory berhasil ditambahkan!");
-    } catch {
-      toast.error("Gagal menambahkan Inventory.");
+    } catch (error) {
+      handlingError(error as AxiosError)
     }
   };
 

@@ -21,10 +21,6 @@ export default function useUserManagement() {
             })));
             const parsedResponse = UserSchema.array().parse(transformedData);
             setUsers(parsedResponse);
-            toast.success("Daftar pengguna berhasil didapatkan");
-        } catch (error) {
-            console.log(error instanceof Error ? error.message : "Failed to acknowledge user");
-            toast.error("Gagal memuat daftar pengguna");
         } finally {
             setLoading(false);
         }

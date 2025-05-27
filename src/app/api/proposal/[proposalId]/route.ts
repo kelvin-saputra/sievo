@@ -35,7 +35,7 @@ export async function DELETE(req: NextRequest) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const proposalId = url.pathname.split("/").pop(); // ✅ extract ID from URL
+    const proposalId = url.pathname.split("/").pop();
     const data = await req.json();
 
     const updatedProposal = await prisma.proposal.update({

@@ -42,7 +42,7 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Register</CardTitle>
-          <CardDescription>Isi data diri untuk menyelesaikan pendaftaran.</CardDescription>
+          <CardDescription>Fill in your details to complete registration.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -54,9 +54,9 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nama Lengkap</FormLabel>
+                        <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan nama lengkap anda" {...field} />
+                          <Input placeholder="Enter your full name" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -69,9 +69,9 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
                     name="phone_number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>No. Handphone</FormLabel>
+                        <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan nomor handphone anda" {...field} />
+                          <Input placeholder="Enter your phone number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -86,7 +86,7 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Masukkan email anda" {...field} />
+                          <Input type="email" placeholder="Enter your email" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -101,7 +101,7 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Masukkan password anda" {...field} />
+                          <Input type="password" placeholder="Enter your password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -109,13 +109,13 @@ export default function RegisterForm({ onRegister, token}: RegisterFormProps) {
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  Daftar
+                  Register
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
-                Sudah Memiliki Akun?{" "}
+                Already have an account?{" "}
                 <Link href="/login" className="underline underline-offset-4">
-                  Masuk Disini
+                  Login Here
                 </Link>
               </div>
             </form>

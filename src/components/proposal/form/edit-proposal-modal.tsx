@@ -13,7 +13,6 @@ import { ProposalSchema } from "@/models/schemas"
 import type { Proposal } from "../columns"
 import type { updateProposalDTO } from "@/models/dto/proposal.dto"
 
-// 🧠 Only allow editing these fields
 const UpdateProposalSchema = ProposalSchema.pick({
   proposal_name: true,
   client_name: true,
@@ -95,7 +94,7 @@ export function UpdateProposalModal({ isOpen, onClose, onUpdate, proposal }: Upd
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#1e2a4a] hover:bg-[#162039] text-white">
+            <Button type="submit" variant="default"className="bg-[#1e2a4a] hover:bg-[#162039] text-white">
               Update Proposal
             </Button>
           </DialogFooter>

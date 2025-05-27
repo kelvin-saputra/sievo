@@ -124,7 +124,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
         }}
       >
         <DialogTrigger asChild>
-        <Button className="bg-blue-500 text-white">+ Add Inventory</Button>
+        <Button variant={"default"}>+ Add Inventory</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -244,7 +244,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
                             <FormItem>
                               <FormLabel>Upload Images</FormLabel>
                               <FormControl>
-                                <div className="max-h-[300px] overflow-y-auto border border-gray-300 p-2 rounded-lg">
+                                <div className="max-h-[300px] overflow-y-auto p-2 rounded-lg">
                                   <MultiImageDropzone
                                     value={fileStates}
                                     dropzoneOptions={{ maxFiles: 6 }}
@@ -272,7 +272,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
 
             <div className="flex justify-end space-x-2">
                 <Button 
-                  variant="secondary" 
+                  variant="outline" 
                   type="button" 
                   onClick={() => {
                     form.reset(); 
@@ -285,7 +285,7 @@ export function AddInventoryModal({ onAddInventory }: AddInventoryModalProps) {
               <Button 
                 type="submit" 
                 form="add-inventory-form" 
-                className="bg-green-500 text-white"
+                variant={"default"}
                 disabled={isUploading } 
               >
                 {isUploading ? "Uploading..." : "Add Inventory"} 

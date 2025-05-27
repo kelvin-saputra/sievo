@@ -375,7 +375,7 @@ export function UpdateEventForm({
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant={"outline"}
                 onClick={() => setOpen(false)}
               >
                 Cancel
@@ -383,7 +383,7 @@ export function UpdateEventForm({
               <Button
                 type="submit"
                 form="update-event-form"
-                className="bg-green-500 text-white"
+                variant={"default"}
               >
                 Update Event
               </Button>
