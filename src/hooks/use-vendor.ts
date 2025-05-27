@@ -63,8 +63,9 @@ export default function useVendor(vendor_id:string) {
             };
 
             await axios.delete(`${VENDOR_SERVICE_API}`, {data:requestData});
-            fetchAllVendorServices()
             toast.success("Berhasil menghapus vendor service!");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            fetchAllVendorServices()
         } catch {
             toast.error("Gagal menghapus vendor service!")
         } finally {
