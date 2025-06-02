@@ -41,9 +41,9 @@ export default function Dashboard() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Task Completion</CardTitle>
               </CardHeader>
-              <CardContent>
-                <TaskBarChart />
-              </CardContent>
+              <CardContent style={{ paddingLeft: 0, textAlign: 'left' }}>
+  <TaskBarChart />
+</CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

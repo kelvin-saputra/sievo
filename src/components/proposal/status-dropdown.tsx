@@ -60,7 +60,6 @@ const StatusDropdown = ({
 
   const availableStatuses = getAvailableStatuses(status as ProposalStatusEnum)
 
-  // Check if user has permission to change status from ON_REVIEW
   const canChangeFromOnReview = () => {
     return ["ADMIN", "EXECUTIVE"].includes(user?.role || "")
   }
@@ -68,7 +67,6 @@ const StatusDropdown = ({
   const onStatusSelect = (newStatus: ProposalStatusEnum) => {
     if (newStatus === status) return
 
-    // Check if current status is ON_REVIEW and user doesn't have permission
     if (status === "ON_REVIEW" && !canChangeFromOnReview()) {
       setIsUnauthorizedModalOpen(true)
       return
@@ -172,7 +170,7 @@ const StatusDropdown = ({
             </DialogHeader>
             <div className="py-4">
               <p className="text-sm text-gray-600 mb-3">
-                You don't have permission to change the status from{" "}
+                You don&#39;t have permission to change the status from{" "}
                 <span className="font-semibold text-blue-600">ON_REVIEW</span>.
               </p>
               <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
