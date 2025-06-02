@@ -36,7 +36,7 @@ export function ConfirmationModal({
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={onConfirm} variant="destructive" disabled={isLoading}>
+          <Button onClick={onConfirm} variant="default" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

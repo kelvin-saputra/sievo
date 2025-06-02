@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Check, ChevronsUpDown, Edit } from "lucide-react";
+import { Check, ChevronsUpDown, Pencil } from "lucide-react";
 
 import { cn } from "@/utils/shadUtils";
 import {
@@ -98,19 +98,18 @@ export function UpdateTaskModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="hover:bg-gray-200 rounded-md transition"
+        <Button 
+          variant={"ghost"} 
+          className="text-gray-500 hover:text-blue-matahati hover:bg-blue-50 transition-colors rounded-md p-1"
           onClick={(e) => {
             e.stopPropagation();
           }}
           onMouseEnter={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
         >
-          <Edit
+          <Pencil
+            size={16}
             onClick={(e) => e.stopPropagation()}
-            size={18}
-            className="text-blue-500"
           />
         </Button>
       </DialogTrigger>
@@ -300,7 +299,7 @@ export function UpdateTaskModal({
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setOpen(false)}
               >
                 Cancel
@@ -308,7 +307,7 @@ export function UpdateTaskModal({
               <Button
                 type="submit"
                 form="update-task-form"
-                className="bg-green-500 text-white"
+                variant={"default"}
               >
                 Update Task
               </Button>

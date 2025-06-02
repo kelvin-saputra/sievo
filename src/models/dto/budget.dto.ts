@@ -9,6 +9,7 @@ export const AddBudgetDTO = BudgetSchema.pick({
 });
 
 export const UpdateBudgetDTO = BudgetSchema.pick({
+    budget_id: true,
     status: true,
     updated_by: true,
 }).partial();
@@ -23,6 +24,7 @@ export const AddBudgetPlanItemDTO = BudgetPlanItemSchema.pick({
     other_item_id: true,
 }).extend({
     source: z.string().optional(),
+    vendor_id: z.string().optional().nullable(),
     item_price: z.number().optional(),
     item_name: z.string().optional(),
     description: z.string().optional(),
@@ -39,6 +41,7 @@ export const UpdateBudgetPlanItemDTO = BudgetPlanItemSchema.pick({
     other_item_id: true,
 }).extend({
     source: z.string().optional(),
+    vendor_id: z.string().optional().nullable(),
     item_price: z.number().optional(),
     item_name: z.string().optional(),
     description: z.string().optional(),
@@ -55,6 +58,7 @@ export const AddActualBudgetItemDTO = ActualBudgetItemSchema.pick({
     other_item_id: true,
 }).extend({
     source: z.string().optional(),
+    vendor_id: z.string().optional().nullable(),
     item_price: z.number().optional(),
     item_name: z.string().optional(),
     description: z.string().optional(),
@@ -72,11 +76,11 @@ export const UpdateActualBudgetItemDTO = ActualBudgetItemSchema.pick({
     other_item_id: true,
 }).extend({
     source: z.string().optional(),
+    vendor_id: z.string().optional().nullable(),
     item_price: z.number().optional(),
     item_name: z.string().optional(),
     description: z.string().optional(),
     created_by: z.string().optional(),
-
 }).partial();
 
 export type AddBudgetDTO = z.infer<typeof AddBudgetDTO>;

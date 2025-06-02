@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
 
     const contactItem = await prisma.contact.findUnique({
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     });
     
     if (!contactItem) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Determine role based on relationships
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
       updated_by_name: updatedByUser?.name || null
     };
     
-    return responseFormat(200, "[FOUND] Contact successfully retrieved!", contactWithMetadata);
+    return responseFormat(200, "Contact successfully retrieved!", contactWithMetadata);
   } catch (error) {
     console.error("Error fetching contact:", error);
     return responseFormat(500, "Failed to retrieve contact", null);
@@ -75,59 +75,88 @@ export async function GET(req: Request) {
  * ✅ UPDATE Contact Detail
  * Restricted to ADMIN, EMPLOYEE, EXECUTIVE roles
  */
+
 export async function PUT(req: NextRequest) {
   try {
     // Check user role - only ADMIN, EMPLOYEE, and EXECUTIVE can update contacts
     if (!(await checkRole(roleAccess.ADMINEXECUTIVEINTERNAL, req))) {
-      return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null);
+      return responseFormat(403, "You don't have access to this resource", null);
     }
 
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
 
     const data = await req.json();
     
     // Validate if contact exists
     const existingContact = await prisma.contact.findUnique({
-      where: { contact_id: id }
+      where: { contact_id: id },
+      include: {
+        client: true,
+        vendor: true
+      }
     });
     
     if (!existingContact) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Extract contact data and metadata
-    const { name, email, phone_number, description, updated_by, metadata } = data;
+    const { name, email, phone_number, description, address, updated_by, type } = data;
     
-    // Update contact data
-    const updatedContact = await prisma.contact.update({
-      where: { contact_id: id },
-      data: {
-        name,
-        email,
-        phone_number,
-        description,
-        updated_by,
-        updated_at: new Date(),
-        // Store metadata as JSON if provided
-        ...(metadata && { metadata: JSON.stringify(metadata) })
+    // Start a transaction to ensure data consistency
+    const updatedContact = await prisma.$transaction(async (tx) => {
+      const contact = await tx.contact.update({
+        where: { contact_id: id },
+        data: {
+          name,
+          email,
+          phone_number,
+          description,
+          address, 
+          updated_by,
+          updated_at: new Date()
+        }
+      });
+      
+      // Update type based on the contact's role, but don't include it in the main contact update
+      if (existingContact.client && type) {
+        await tx.client.update({
+          where: { contact_id: id },
+          data: { type }
+        });
+      } else if (existingContact.vendor && type) {
+        await tx.vendor.update({
+          where: { contact_id: id },
+          data: { type }
+        });
       }
+      
+      return contact;
     });
     
     // Fetch updater user info if available
     const updaterInfo = updated_by ? await getUserEmailInfo(updated_by) : null;
     
+    // Determine role for response
+    let role = "none";
+    if (existingContact.client) role = "client";
+    if (existingContact.vendor) role = "vendor";
+    
     const responseData = {
       ...updatedContact,
-      updated_by_email: updaterInfo?.email || metadata?.updater_email || null,
-      updated_by_name: updaterInfo?.name || null
+      role,
+      updated_by_email: updaterInfo?.email || null,
+      updated_by_name: updaterInfo?.name || null,
+      // Include type in response
+      type: type || (existingContact.client?.type || existingContact.vendor?.type || "")
     };
     
-    return responseFormat(200, "[UPDATED] Contact successfully updated!", responseData);
+    return responseFormat(200, "Contact successfully updated!", responseData);
   } catch (error) {
     console.error("Error updating contact:", error);
     return responseFormat(500, "Failed to update contact", null);
@@ -142,14 +171,14 @@ export async function DELETE(req: NextRequest) {
   try {
     // Check user role - only ADMIN and EXECUTIVE can delete contacts
     if (!(await checkRole(roleAccess.ADMINEXECUTIVE, req))) {
-      return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null);
+      return responseFormat(403, "You don't have access to this resource", null);
     }
 
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
     
     if (!id) {
-      return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+      return responseFormat(400, "Contact ID is required", null);
     }
     
     // Check if contact exists
@@ -158,7 +187,7 @@ export async function DELETE(req: NextRequest) {
     });
     
     if (!existingContact) {
-      return responseFormat(404, "[NOT FOUND] Contact not found", null);
+      return responseFormat(404, "Contact not found", null);
     }
     
     // Soft delete the contact
@@ -170,9 +199,8 @@ export async function DELETE(req: NextRequest) {
       }
     });
     
-    return responseFormat(200, "[DELETED] Contact successfully deleted!", deletedContact);
-  } catch (error) {
-    console.error("Error deleting contact:", error);
+    return responseFormat(200, "Contact successfully deleted!", deletedContact);
+  } catch {
     return responseFormat(500, "Failed to delete contact", null);
   }
 }
@@ -185,21 +213,21 @@ export async function PATCH(req: NextRequest) {
     try {
       // Check user role - only ADMIN and EXECUTIVE can update contact roles
       if (!(await checkRole(roleAccess.ADMINEXECUTIVE, req))) {
-        return responseFormat(403, "Anda tidak memiliki akses terhadap resource ini", null);
+        return responseFormat(403, "You don't have access to this resource", null);
       }
   
       const url = new URL(req.url);
       const id = url.pathname.split("/").pop();
       
       if (!id) {
-        return responseFormat(400, "[BAD REQUEST] Contact ID is required", null);
+        return responseFormat(400, "Contact ID is required", null);
       }
   
       const data = await req.json();
       const { role, updated_by } = data;
       
       if (!["none", "client", "vendor"].includes(role)) {
-        return responseFormat(400, "[BAD REQUEST] Invalid role. Must be 'none', 'client', or 'vendor'", null);
+        return responseFormat(400, "Invalid role. Must be 'none', 'client', or 'vendor'", null);
       }
       
       // Validate if contact exists
@@ -212,7 +240,7 @@ export async function PATCH(req: NextRequest) {
       });
       
       if (!existingContact) {
-        return responseFormat(404, "[NOT FOUND] Contact not found", null);
+        return responseFormat(404, "Contact not found", null);
       }
       
       // Update role relationships based on the new role
@@ -226,7 +254,7 @@ export async function PATCH(req: NextRequest) {
           }
         });
       } else if (role === "vendor" && !existingContact.vendor) {
-        // Create vendor relationship with required bankAccountDetail
+        // Create vendor relationship 
         await prisma.vendor.create({
           data: {
             bankAccountDetail: "", // Add the required field with an empty string or default value
@@ -250,7 +278,7 @@ export async function PATCH(req: NextRequest) {
         }
       });
       
-      return responseFormat(200, "[UPDATED] Contact role successfully updated!", {
+      return responseFormat(200, "Contact role successfully updated!", {
         ...updatedContact,
         role
       });

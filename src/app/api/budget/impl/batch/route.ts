@@ -1,160 +1,74 @@
 import { prisma } from "@/utils/prisma";
 import { responseFormat } from "@/utils/api";
+import { NextRequest } from "next/server";
 
-export async function POST(req:Request){
+export async function POST(req:NextRequest){
     try {
         const {event_id:eventId, ...reqBody} = await req.json();
 
-
-        console.log(reqBody);
-
-        const budgets = await prisma.budget.findFirst({
+        const budgetActual = await prisma.budget.findFirst({
             where: { event_id: eventId, is_actual: true },
         });
 
-        const importedBudget = await prisma.$transaction( async (transactions) => {
+        if (reqBody.status !== "APPROVED" && reqBody.is_deleted) {
+            return responseFormat(400, `Failed to import budget, Budget Plan is not Approved!`, null);
+        }
 
-            await Promise.all(Object.values(reqBody).map(async (budget: any) => {
-                    let budgetItem;
-                    console.log("Iterasi ",budget)
-                    const category = await transactions.budgetItemCategory.create({
-                        data: {
-                            category_name: budget.category.category_name,
-                            is_deleted: false
-                        }
-                    });
-
-                    if (budget.vendor_service_id !== null) {
-                        budgetItem = await transactions.actualBudgetItem.create({
-                            data: {
-                                item_qty: budget.item_qty,
-                                item_subtotal: budget.item_subtotal,
-                                is_deleted: false, 
-                                budget: {
-                                    connect: {
-                                        budget_id: budgets?.budget_id
-                                    }
-                                },
-                                category: {
-                                    connect: {
-                                        category_id: category.category_id
-                                    }
-                                },
-                                vendor_service: {
-                                    connect: {
-                                        service_id: budget.vendor_service_id
-                                    }
-                                },
-                            }
-                        });
-                        await transactions.budgetItemCategory.update({
-                            where: { category_id: category.category_id },
-                            data: {
-                                budget: {
-                                    connect: { budget_id: budgets?.budget_id }
-                                },
-                                actual_budget_item: {
-                                    connect: { actual_budget_item_id: budgetItem?.actual_budget_item_id }
-                                }
-                            }
-                        })
-                    } 
-                    if (budget.inventory_id !== null) {
-                        budgetItem = await transactions.actualBudgetItem.create({
-                            data: {
-                                item_qty: budget.item_qty,
-                                item_subtotal: budget.item_subtotal,
-                                is_deleted: false, 
-                                budget: {
-                                    connect: {
-                                        budget_id: budgets?.budget_id
-                                    }
-                                },
-                                category: {
-                                    connect: {
-                                        category_id: category.category_id
-                                    }
-                                },
-                                inventory: {
-                                    connect: {
-                                        inventory_id: budget.inventory_id
-                                    }
-                                },
-                            }
-                        });
-                        await transactions.budgetItemCategory.update({
-                            where: { category_id: category.category_id },
-                            data: {
-                                budget: {
-                                    connect: { budget_id: budgets?.budget_id }
-                                },
-                                actual_budget_item: {
-                                    connect: { actual_budget_item_id: budgetItem?.actual_budget_item_id }
-                                }
-                            }
-                        })
-                    }
-                    
-                    if (budget.other_item_id !== null) {
-                        const otherItem = await transactions.purchasing.create({
-                            data: {
-                                item_name: budget.other_item.item_name,
-                                item_price: budget.other_item.item_price,
-                                description: budget.other_item.description,
-                                created_by: budget.other_item.created_by,
-                                is_deleted: false,
-                            }
-                        })
-                        budgetItem = await transactions.actualBudgetItem.create({
-                            data: {
-                                item_qty: budget.item_qty,
-                                item_subtotal: budget.item_subtotal,
-                                is_deleted: false, 
-                                budget: {
-                                    connect: {
-                                        budget_id: budgets?.budget_id
-                                    }
-                                },
-                                category: {
-                                    connect: {
-                                        category_id: category.category_id
-                                    }
-                                },
-                                other_item: {
-                                    connect: {
-                                       other_item_id : budget.other_item_id
-                                    }
-                                },
-                            }
-                        });
-
-                        await transactions.purchasing.update({
-                            where: { other_item_id: otherItem.other_item_id },
-                            data: {
-                                actual_budget_item: {
-                                    connect: {
-                                        actual_budget_item_id: budgetItem?.actual_budget_item_id
-                                    }
-                                }
-                            }
-                        })
-                        await transactions.budgetItemCategory.update({
-                            where: { category_id: category.category_id },
-                            data: {
-                                budget: {
-                                    connect: { budget_id: budgets?.budget_id }
-                                },
-                                actual_budget_item: {
-                                    connect: { actual_budget_item_id: budgetItem?.actual_budget_item_id }
-                                }
-                            }
-                        })
-                    }
-                }));
-            });
-        return responseFormat(200, "Berhasil mendapatkan data budget", importedBudget);
-    } catch (error) {
-        console.log(error instanceof Error ? error.message : error);
-        return responseFormat(500, "Gagal mendapatkan data budget", null);
+        const importedBudget = await prisma.$transaction(async (transactions) => {
+            const results: any[] = [];
+          
+            for (const cat of Object.values(reqBody.categories) as any[]) {
+              const newCategory = await transactions.budgetItemCategory.create({
+                data: {
+                  category_name: cat.category_name,
+                  is_deleted: false,
+                  budget: { connect: { budget_id: budgetActual?.budget_id } },
+                },
+              });
+      
+              for (const item of cat.budget_plan_item) {
+                let otherConnect: { other_item: { connect: { other_item_id: string } } } | undefined;
+                if (item.other_item) {
+                  const createdOther = await transactions.purchasing.create({
+                    data: {
+                      item_name:    item.other_item.item_name,
+                      item_price:   item.other_item.item_price,
+                      description:  item.other_item.description,
+                      created_by:   item.other_item.created_by,
+                      is_deleted:   false,
+                    },
+                  });
+                  otherConnect = { other_item: { connect: { other_item_id: createdOther.other_item_id } } };
+                }
+      
+                // Data for Actual Budget Item
+                const data: any = {
+                  item_qty:      item.item_qty,
+                  item_subtotal: item.item_subtotal,
+                  is_deleted:    false,
+                  budget:        { connect: { budget_id: budgetActual?.budget_id } },
+                  category:      { connect: { category_id: newCategory.category_id } },
+                  
+                  // Connect to Item 
+                  ...(item.vendor_service_id && {
+                    vendor_service: { connect: { service_id: item.vendor_service_id } },
+                  }),
+                  ...(item.inventory_id && {
+                    inventory: { connect: { inventory_id: item.inventory_id } },
+                  }),
+                  ...(otherConnect ?? {}),
+                };
+      
+                // Create the Item for Actual budget
+                const newActual = await transactions.actualBudgetItem.create({ data });
+                results.push(newActual);
+              }
+            }
+      
+            return results;
+          });
+        return responseFormat(200, "Budget Import is Successful!", importedBudget);
+    } catch {
+        return responseFormat(500, "There's something wrong when importing budget!", null);
     }
 }
