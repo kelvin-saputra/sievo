@@ -21,39 +21,85 @@ export async function GET(req:NextRequest) {
         if (!existingUser) {
             return responseFormat(404, "Pengguna tidak ditemukan!", null);
         }
-
-        const userHomepage = await prisma.user.findFirst({
-            where: {
-                id: userData.id
-            },
-            include: {
-                _count: {
-                    select: {
-                        task: {
-                            where: {
-                                status: {
-                                    in: [
-                                        TaskStatusEnum.Enum.ON_PROGRESS, TaskStatusEnum.enum.PENDING
-                                    ]
+        let userHomepage;
+        if (existingUser.role === "ADMIN" || existingUser.role === "EXECUTIVE") {
+            userHomepage = await prisma.user.findFirst({
+                where: {
+                    id: userData.id
+                },
+                include: {
+                    _count: {
+                        select: {
+                            task: {
+                                where: {
+                                    status: {
+                                        in: [
+                                            TaskStatusEnum.Enum.ON_PROGRESS, TaskStatusEnum.enum.PENDING
+                                        ]
+                                    }
+                                }
+                            },
+                            event: {
+                                where: {
+                                    manager_id: existingUser.id
                                 }
                             }
-                        },
-                        event: {
-                            where: {
-                                manager_id: existingUser.id
-                            }
                         }
-                    }
-                },
-                event: {
-                    where: {
-                        status: {
-                            not: EventStatusEnum.Enum.DONE
+                    },
+                    event: {
+                        where: {
+                            status: {
+                                not: EventStatusEnum.Enum.DONE
+                            }
                         }
                     }
                 }
+            })
+            const userEvent = await prisma.event.findMany({
+                where: {
+                    status: {
+                        not: EventStatusEnum.Enum.DONE
+                    }
+                },
+            })
+            if (userHomepage) {
+                userHomepage.event = userEvent;
             }
-        })
+        } else {
+            userHomepage = await prisma.user.findFirst({
+                where: {
+                    id: userData.id
+                },
+                include: {
+                    _count: {
+                        select: {
+                            task: {
+                                where: {
+                                    status: {
+                                        in: [
+                                            TaskStatusEnum.Enum.ON_PROGRESS, TaskStatusEnum.enum.PENDING
+                                        ]
+                                    }
+                                }
+                            },
+                            event: {
+                                where: {
+                                    manager_id: existingUser.id
+                                }
+                            }
+                        }
+                    },
+                    event: {
+                        where: {
+                            status: {
+                                not: EventStatusEnum.Enum.DONE
+                            }
+                        }
+                    }
+                }
+            })
+
+        }
 
         if(!userHomepage) {
             return responseFormat(404, "Pengguna tidak ditemukan!", null);
