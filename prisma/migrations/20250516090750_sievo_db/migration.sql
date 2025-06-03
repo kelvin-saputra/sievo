@@ -1,9 +1,13 @@
 -- CreateEnum
+<<<<<<< HEAD
 <<<<<<<< HEAD:prisma/migrations/20250516090750_sievo_db/migration.sql
 CREATE TYPE "ROLE" AS ENUM ('ADMIN', 'EXECUTIVE', 'INTERNAL', 'FREELANCE');
 ========
 CREATE TYPE "ROLE" AS ENUM ('EXECUTIVE', 'INTERNAL', 'FREELANCE', 'ADMIN');
 >>>>>>>> 384f67c28e3dae5db7b46e83c891ecca9052b5a2:prisma/migrations/20250422135632_change_roger/migration.sql
+=======
+CREATE TYPE "ROLE" AS ENUM ('ADMIN', 'EXECUTIVE', 'INTERNAL', 'FREELANCE');
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
 
 -- CreateEnum
 CREATE TYPE "TaskStatus" AS ENUM ('PENDING', 'ON_PROGRESS', 'DONE', 'CANCELLED');
@@ -267,14 +271,20 @@ CREATE TABLE "UserEvent" (
     "userId" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+<<<<<<< HEAD
 <<<<<<<< HEAD:prisma/migrations/20250516090750_sievo_db/migration.sql
     "updated_by" TEXT NOT NULL,
     "is_deleted" BOOLEAN NOT NULL,
 ========
+=======
+    "updated_by" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL,
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
 
     CONSTRAINT "UserEvent_pkey" PRIMARY KEY ("id")
 );
 
+<<<<<<< HEAD
 -- CreateTable
 CREATE TABLE "_BudgetToBudgetItemCategory" (
     "A" TEXT NOT NULL,
@@ -284,6 +294,8 @@ CREATE TABLE "_BudgetToBudgetItemCategory" (
     CONSTRAINT "UserEvent_pkey" PRIMARY KEY ("id")
 );
 
+=======
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -293,12 +305,15 @@ CREATE UNIQUE INDEX "Vendor_contact_id_key" ON "Vendor"("contact_id");
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_contact_id_key" ON "Client"("contact_id");
 
+<<<<<<< HEAD
 <<<<<<<< HEAD:prisma/migrations/20250516090750_sievo_db/migration.sql
 ========
 -- CreateIndex
 CREATE INDEX "_BudgetToBudgetItemCategory_B_index" ON "_BudgetToBudgetItemCategory"("B");
 
 >>>>>>>> 384f67c28e3dae5db7b46e83c891ecca9052b5a2:prisma/migrations/20250422135632_change_roger/migration.sql
+=======
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
 -- AddForeignKey
 ALTER TABLE "InventoryLog" ADD CONSTRAINT "InventoryLog_inventory_id_fkey" FOREIGN KEY ("inventory_id") REFERENCES "Inventory"("inventory_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -351,12 +366,18 @@ ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_inventory_id_fke
 ALTER TABLE "ActualBudgetItem" ADD CONSTRAINT "ActualBudgetItem_other_item_id_fkey" FOREIGN KEY ("other_item_id") REFERENCES "Purchasing"("other_item_id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+<<<<<<< HEAD
 <<<<<<<< HEAD:prisma/migrations/20250516090750_sievo_db/migration.sql
 ALTER TABLE "BudgetItemCategory" ADD CONSTRAINT "BudgetItemCategory_budget_id_fkey" FOREIGN KEY ("budget_id") REFERENCES "Budget"("budget_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ========
 >>>>>>>> 384f67c28e3dae5db7b46e83c891ecca9052b5a2:prisma/migrations/20250422135632_change_roger/migration.sql
+=======
+ALTER TABLE "BudgetItemCategory" ADD CONSTRAINT "BudgetItemCategory_budget_id_fkey" FOREIGN KEY ("budget_id") REFERENCES "Budget"("budget_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
 ALTER TABLE "Event" ADD CONSTRAINT "Event_manager_id_fkey" FOREIGN KEY ("manager_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -369,6 +390,7 @@ ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_userId_fkey" FOREIGN KEY ("use
 
 -- AddForeignKey
 ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+<<<<<<< HEAD
 
 -- AddForeignKey
 ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Budget"("budget_id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -376,3 +398,5 @@ ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCat
 
 -- AddForeignKey
 ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+=======
+>>>>>>> 936413d102a71f66eeb015e03bc365b5949a42d5
