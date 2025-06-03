@@ -179,22 +179,29 @@ export default function EventBudgetPlanningPage() {
                 <div className="flex flex-col items-start w-full mb-2">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium">Budget Usage:</span>
-                    <span className="text-sm font-semibold">
-                        {totalBudgetPlan > 0
-                        ? `${((totalActualBudget / totalBudgetPlan) * 100).toFixed(2)}%`
-                        : "0%"}
-                    </span>
                   </div>
-                  <div className="w-64 h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{
-                        width: totalBudgetPlan > 0
-                          ? `${((totalActualBudget / totalBudgetPlan) * 100).toFixed(2)}%`
-                          : "0%",
-                      }}
-                    />
-                  </div>
+                    <div className="flex flex-col mb-1">
+                      <div className="flex items-center gap-2">
+                      <div className="w-64 h-6 bg-gray-200 rounded-full overflow-hidden relative">
+                        <div
+                          className={`h-full transition-all shadow-lg flex items-center justify-center ${
+                            totalActualBudget / totalBudgetPlan > 1 
+                              ? 'bg-danger'
+                              : 'bg-success'
+                          }`}
+                          style={{
+                            width: totalBudgetPlan > 0
+                              ? `${Math.min(((totalActualBudget / totalBudgetPlan) * 100), 100).toFixed(2)}%`
+                              : "0%",
+                          }}
+                        >
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium">
+                        {`${((totalActualBudget / totalBudgetPlan) * 100).toFixed(2)}%`}
+                      </span>
+                      </div>
+                    </div>
                 </div>
               </div>
                 <div>
