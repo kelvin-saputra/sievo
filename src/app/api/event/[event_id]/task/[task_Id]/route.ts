@@ -46,11 +46,11 @@ export async function PUT(
     const raw = await req.json();
     const { assigned_id, ...updateData } = raw;
 
-    const ids = await params;
+    const { task_id, event_id } = await params;
     const task = await prisma.task.findFirst({
       where: {
-        task_id: ids.task_id,
-        event_id: ids.event_id,
+        task_id: task_id,
+        event_id: event_id,
         is_deleted: false,
       },
     });
@@ -84,7 +84,7 @@ export async function PUT(
     }
 
     const updatedTask = await prisma.task.update({
-      where: { task_id: ids.task_id },
+      where: { task_id: task_id },
       data: prismaData,
     });
 

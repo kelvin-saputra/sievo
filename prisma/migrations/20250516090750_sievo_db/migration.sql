@@ -269,6 +269,13 @@ CREATE TABLE "UserEvent" (
     CONSTRAINT "UserEvent_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_BudgetToBudgetItemCategory" (
+    "A" TEXT NOT NULL,
+    "B" INTEGER NOT NULL,
+    CONSTRAINT "UserEvent_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -277,6 +284,9 @@ CREATE UNIQUE INDEX "Vendor_contact_id_key" ON "Vendor"("contact_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_contact_id_key" ON "Client"("contact_id");
+
+-- CreateIndex
+CREATE INDEX "_BudgetToBudgetItemCategory_B_index" ON "_BudgetToBudgetItemCategory"("B");
 
 -- AddForeignKey
 ALTER TABLE "InventoryLog" ADD CONSTRAINT "InventoryLog_inventory_id_fkey" FOREIGN KEY ("inventory_id") REFERENCES "Inventory"("inventory_id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -341,5 +351,9 @@ ALTER TABLE "Event" ADD CONSTRAINT "Event_client_id_fkey" FOREIGN KEY ("client_i
 -- AddForeignKey
 ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+
 -- AddForeignKey
 ALTER TABLE "UserEvent" ADD CONSTRAINT "UserEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("event_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BudgetToBudgetItemCategory" ADD CONSTRAINT "_BudgetToBudgetItemCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Budget"("budget_id") ON DELETE CASCADE ON UPDATE CASCADE;

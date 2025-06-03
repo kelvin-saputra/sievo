@@ -6,6 +6,9 @@ export async function GET() {
       const events = await prisma.event.findMany({
       where: {
         is_deleted: false,
+        status: {
+        not: 'DONE',
+        },
       },
       select: {
         event_id: true,
@@ -16,7 +19,7 @@ export async function GET() {
           where: {
             is_deleted: false,
             status: {
-              in: ['PENDING', 'ON_PROGRESS'],
+              notIn: ['DONE', 'CANCELLED'],
             },
           },
           select: {
@@ -27,7 +30,7 @@ export async function GET() {
             assigned: {
               select: {
                 id: true,
-                name: true, 
+                name: true,
               },
             },
           },

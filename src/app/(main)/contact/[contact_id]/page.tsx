@@ -169,8 +169,8 @@ const ContactDetail = () => {
       
       setIsEditing(false);
       fetchContactById(contact_id);
-    } catch (error) {
-      console.error("Error updating contact:", error);
+    } catch {
+      
       toast.error("Failed to update contact. Please try again.");
     }
   };
@@ -194,8 +194,7 @@ const ContactDetail = () => {
     try {
       await handleDeleteContact(contact_id);
       router.push("/contact");
-    } catch (error) {
-      console.error("Error deleting contact:", error);
+    } catch {
       toast.error("Failed to delete contact. Please try again.");
     }
     setIsDeleteDialogOpen(false);

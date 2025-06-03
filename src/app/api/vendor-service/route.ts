@@ -2,6 +2,27 @@ import { prisma } from "@/utils/prisma";
 import { responseFormat } from "@/utils/api";
 import { NextRequest } from "next/server";
 
+
+async function updateVendorRating(vendor_id: string) {
+    const avgRating = await prisma.vendorService.aggregate({
+      where: {
+        vendor_id,
+        is_deleted: false
+      },
+      _avg: {
+        rating: true
+      }
+    });
+  
+    await prisma.vendor.update({
+      where: { vendor_id },
+      data: {
+        rating: avgRating._avg.rating ?? 0
+      }
+    });
+  }
+  
+
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
@@ -59,12 +80,15 @@ export async function POST(req: NextRequest) {
         if (existingServices) {
             return responseFormat(400, "Vendor service saat ini sudah terdaftar!", null);
         }
-             
+        
         const newVendorService = await prisma.vendorService.create({
             data: {
                 ...data
             }
         })
+
+        await updateVendorRating(data.vendor_id);
+
 
         if (!newVendorService) {
             return responseFormat(400, "Data vendor service baru tidak valid!", null);
@@ -97,6 +121,10 @@ export async function PUT(req: NextRequest){
             return responseFormat(400, "Data update inventory tidak sesuai!", null);
         }
 
+        const existing = await prisma.vendorService.findUnique({ where: { service_id } });
+        await updateVendorRating(existing?.vendor_id || "");
+
+
         return responseFormat(200, "Berhasil update data vendor service!", updatedVendorService);
     } catch {
         return responseFormat(500, "Terjadi kesalahan saat melakukan update vendor service!", null);
@@ -118,6 +146,9 @@ export async function DELETE(req:NextRequest) {
         if (!deletedVendorService) {
             return responseFormat(404, "Vendor service tidak ditemukan!", null);
         }
+          
+          await updateVendorRating(deletedVendorService.vendor_id); 
+          
 
         return responseFormat(200, "Vendor service berhasil dihapus!", null);
     } catch {
