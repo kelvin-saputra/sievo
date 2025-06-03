@@ -40,7 +40,6 @@ export default function useUserManagement() {
     }, [fetchAllUsers]);
 
     const handleGenerateToken = useCallback(async (data: GenerateTokenDTO) => {
-        setLoading(true);
         try {
             const { data: response } = await axios.get(`${USER_MANAGEMENT_API}/gen-token`, { params: { ...data } });
             toast.success("Token generated successfully");
@@ -48,8 +47,6 @@ export default function useUserManagement() {
         } catch {
             toast.error("Failed to generate token");
             return null
-        } finally {
-            setLoading(false);
         }
     }, []);
 
