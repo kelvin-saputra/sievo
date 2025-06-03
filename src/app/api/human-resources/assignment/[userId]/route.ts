@@ -12,6 +12,12 @@ export async function GET(req: NextRequest) {
             where: {
                 userId: id,
                 is_deleted: false,
+                event: {
+                    is_deleted: false,
+                    status: {
+                        not: "DONE",
+                    },
+                },
             },
             select: {
                 event: {

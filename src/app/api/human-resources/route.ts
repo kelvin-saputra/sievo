@@ -5,7 +5,17 @@ export async function GET() {
   try {
     const users = await prisma.user.findMany({
       include: {
-        userEvents: true,
+      userEvents: {
+        where: {
+        is_deleted: false,
+        event: {
+          is_deleted: false,
+          status: {
+            not: "DONE"
+          }
+        }
+        },
+      }
       },
     });
 
