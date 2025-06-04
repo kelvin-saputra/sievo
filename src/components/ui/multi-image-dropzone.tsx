@@ -80,7 +80,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
       isDragAccept,
       isDragReject,
     } = useDropzone({
-      accept: { 'image/*': [] },
+      accept: { 'image/': ['.jpg'] },
       disabled,
       onDrop: (acceptedFiles) => {
         const files = acceptedFiles;
