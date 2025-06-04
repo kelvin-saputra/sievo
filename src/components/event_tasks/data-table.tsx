@@ -9,6 +9,8 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
   useReactTable,
+  getFilteredRowModel,
+  ColumnFiltersState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -20,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { EventTaskDetailModal } from "@/components/event_tasks/event-task-detail-dialog";
 import { UserWithStatus } from "@/hooks/use-hr";
+import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,15 +38,23 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [selectedTask, setSelectedTask] = React.useState<TData | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
 
   const table = useReactTable({
     data,
     columns,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: { sorting },
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
   });
 
   const handleTitleClick = (rowData: TData) => {
@@ -51,8 +62,20 @@ export function DataTable<TData, TValue>({
     setDialogOpen(true);
   };
 
+  const taskNameColumn = table.getColumn("title");
+
   return (
     <div className="w-full">
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter by task name..."
+          value={(taskNameColumn?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            taskNameColumn?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -112,7 +135,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="text-center py-4"
                 >
-                  No tasks assigned.
+                  No tasks found.
                 </TableCell>
               </TableRow>
             )}
