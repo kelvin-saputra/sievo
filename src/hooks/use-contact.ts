@@ -149,14 +149,24 @@ const handleUpdateContact = async (
 
   const handleAddContact = async (newContact: AddContactDTO) => {
     try {
-      const isDuplicate = contacts.some(
+      const isDuplicateEmail = contacts.some(
         (c: ContactSchema) => c.email.toLowerCase() === newContact.email.toLowerCase()
       );
 
-      if (isDuplicate) {
+      if (isDuplicateEmail) {
         toast.error("Email is already registered. Please use another email.");
         return;
       }
+
+      const isDuplicateName = contacts.some(
+        (c: ContactSchema) => c.name.toLowerCase() === newContact.name.toLowerCase()
+      );
+
+      if (isDuplicateName) {
+        toast.error("Name is already registered. Please use another name.");
+        return;
+      }
+
 
       const contactPayload = {
         ...newContact,
