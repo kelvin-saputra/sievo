@@ -42,6 +42,11 @@ export const HomepageData = z.object({
     total_manage: z
         .number()
         .default(0),
+    contact: z
+        .number()
+        .default(0)
+        .optional()
+        .nullable(),
     event: z.array(EventSchema)
 });
 

@@ -55,6 +55,12 @@ export async function GET(req:NextRequest) {
                     }
                 }
             })
+            const allContact = await prisma.contact.count({
+                where: {
+                    is_deleted: false,
+                }
+            })
+
             const userEvent = await prisma.event.findMany({
                 where: {
                     status: {
@@ -63,7 +69,12 @@ export async function GET(req:NextRequest) {
                 },
             })
             if (userHomepage) {
-                userHomepage.event = userEvent;
+                const result = {
+                    ...userHomepage,
+                    event: userEvent,
+                    contact: allContact
+                };
+                userHomepage = result;
             }
         } else {
             userHomepage = await prisma.user.findFirst({

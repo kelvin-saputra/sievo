@@ -55,6 +55,12 @@ export default function Home() {
             <h3 className="text-lg font-medium">Open Tasks</h3>
             <p className="text-5xl font-bold mt-2">{homepageData?.total_task}</p>
           </div>
+          {(homepageData?.role === "ADMIN") && (
+            <div className="bg-[#2c3e50] text-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium">All Contact</h3>
+              <p className="text-5xl font-bold mt-2">{homepageData?.contact}</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
