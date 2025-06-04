@@ -26,13 +26,24 @@ type Status = "All" | z.infer<typeof BudgetStatusEnum>;
 export function EventTable() {
   const [statusFilter, setStatusFilter] = useState<Status>("All");
   const { budgets, loading, fetchAllEventsBudgets } = useDashboard();
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     fetchAllEventsBudgets();
   }, [fetchAllEventsBudgets]);
 
-  const filteredBudgets = statusFilter === "All" ? budgets : budgets.filter((budget) => budget.status === statusFilter);
+  const filteredBudgets = budgets.filter((budget) => {
+    const matchStatus = statusFilter === "All" || budget.status === statusFilter;
+    const budgetDate = new Date(budget.updated_at);
+
+    const matchStartDate = startDate ? budgetDate >= new Date(new Date(startDate).setHours(0,0,0,0)) : true;
+    const matchEndDate = endDate ? budgetDate <= new Date(new Date(endDate).setHours(23,59,59,999)) : true;
+
+    return matchStatus && matchStartDate && matchEndDate;
+  });
+
 
   const getStatusIcon = (status: z.infer<typeof BudgetStatusEnum>) => {
     switch (status) {
@@ -86,6 +97,26 @@ export function EventTable() {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+      <div className="flex gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Start Date</label>
+          <input
+            type="date"
+            value={startDate ?? ""}
+            onChange={(e) => setStartDate(e.target.value || null)}
+            className="border rounded px-2 py-1"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">End Date</label>
+          <input
+            type="date"
+            value={endDate ?? ""}
+            onChange={(e) => setEndDate(e.target.value || null)}
+            className="border rounded px-2 py-1"
+          />
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
